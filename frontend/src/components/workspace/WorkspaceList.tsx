@@ -6,9 +6,10 @@ import { Button } from '../ui/button';
 
 interface WorkspaceListProps {
   onCreateNew: () => void;
+  onSelectWorkspace: (workspace: Workspace) => void;
 }
 
-const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew }) => {
+const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWorkspace }) => {
   const { t } = useTranslation();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,15 +46,15 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew }) => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {workspaces.map((workspace) => (
-            <Card key={workspace.id}>
+            <Card key={workspace.id} onClick={() => onSelectWorkspace(workspace)} className="cursor-pointer">
               <CardHeader>
                 <CardTitle>{workspace.name}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p>{workspace.description || t('noDescription')}</p>
                 <div className="mt-4 flex justify-end space-x-2">
-                  <Button variant="outline" size="sm">{t('edit')}</Button>
-                  <Button variant="destructive" size="sm">{t('delete')}</Button>
+                  <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); /* handle edit */ }}>{t('edit')}</Button>
+                  <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); /* handle delete */ }}>{t('delete')}</Button>
                 </div>
               </CardContent>
             </Card>

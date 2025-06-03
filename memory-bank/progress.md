@@ -15,14 +15,15 @@
 *   Multi-language support (i18n) for authentication messages (English, Arabic, Farsi) is configured.
 *   Frontend workspace management (CRUD) components (`WorkspaceList`, `WorkspaceForm`) and API integration are implemented.
 *   Multi-language support for workspace features (English, Arabic, Farsi) is configured.
+*   Frontend goal management (CRUD) components (`GoalList`, `GoalForm`) and API integration are implemented.
+*   Multi-language support for goal features (English, Arabic, Farsi) is configured.
+*   Frontend task management (CRUD, copy to next day) components (`TaskList`, `TaskForm`) and API integration are implemented.
+*   Multi-language support for task features (English, Arabic, Farsi) is configured.
 
 ## What's left to build
 
-### Project Initialization:
-*   Configuration for multi-language support (i18n) including RTL/LTR. (Authentication and Workspace translations done, general RTL/LTR setup still needed)
-*   Configuration for light/dark mode theming.
-
-### Core Features:
+*   Multi-language support (i18n) including RTL/LTR is fully configured with a language switcher.
+*   Configuration for light/dark mode theming is configured with a theme toggle.
 
 ### Enhancements:
 *   Comprehensive error handling.
@@ -32,7 +33,7 @@
 
 ## Current status
 
-The project has completed its initial setup phase and made significant progress on the frontend. All core backend features are complete. Frontend authentication components (Login and Register forms) and workspace management components (list and form) are implemented, integrated with the backend API using `fetch`, and multi-language support for these components is in place. The foundational documentation is updated, providing a clear roadmap for further development.
+The project has completed its initial setup phase and made significant progress on the frontend. All core backend features are complete. Frontend authentication components (Login and Register forms), workspace management components (list and form), goal management components (list and form), and task management components (list and form) are implemented, integrated with the backend API using `fetch`, and multi-language support for these components is in place. All project initialization tasks, including full RTL/LTR support and light/dark mode theming, are now complete. The foundational documentation is updated, providing a clear roadmap for further development.
 
 ## Known issues
 

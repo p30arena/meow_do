@@ -45,5 +45,43 @@
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "create": "Create"
-  }
+  },
+  "goalsFor": "Goals for",
+  "backToWorkspaces": "Back to Workspaces",
+  "loadingGoals": "Loading goals...",
+  "goals": "Goals",
+  "noGoalsYet": "No goals yet. Create your first one!",
+  "status": "Status",
+  "goalStatus": {
+    "pending": "Pending",
+    "reached": "Reached"
+  },
+  "deadline": "Deadline",
+  "createGoal": "Create New Goal",
+  "editGoal": "Edit Goal",
+  "goalName": "Goal Name",
+  "goalDescription": "Goal Description",
+  "selectStatus": "Select a status",
+  "tasksFor": "Tasks for",
+  "backToGoals": "Back to Goals",
+  "loadingTasks": "Loading tasks...",
+  "tasks": "Tasks",
+  "timeBudgetWarning": "Warning: Total time budget ({hours}h {minutes}m) exceeds 24 hours!",
+  "totalTimeBudget": "Total Time Budget",
+  "noTasksYet": "No tasks yet. Create your first one!",
+  "minutes": "minutes",
+  "taskStatus": {
+    "pending": "Pending",
+    "started": "Started",
+    "failed": "Failed",
+    "done": "Done"
+  },
+  "recurring": "Recurring",
+  "copyToNextDay": "Copy to Next Day",
+  "createTask": "Create New Task",
+  "editTask": "Edit Task",
+  "taskName": "Task Name",
+  "taskDescription": "Task Description",
+  "recurringTask": "Recurring Task",
+  "taskForm.invalidTimeBudget": "Time budget must be a positive number."
 }

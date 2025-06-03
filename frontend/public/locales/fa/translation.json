@@ -45,5 +45,43 @@
     "saving": "در حال ذخیره...",
     "saveChanges": "ذخیره تغییرات",
     "create": "ایجاد"
-  }
+  },
+  "goalsFor": "اهداف برای",
+  "backToWorkspaces": "بازگشت به فضاهای کاری",
+  "loadingGoals": "در حال بارگذاری اهداف...",
+  "goals": "اهداف",
+  "noGoalsYet": "هنوز هدفی وجود ندارد. اولین هدف خود را ایجاد کنید!",
+  "status": "وضعیت",
+  "goalStatus": {
+    "pending": "در انتظار",
+    "reached": "دستیابی شده"
+  },
+  "deadline": "مهلت",
+  "createGoal": "ایجاد هدف جدید",
+  "editGoal": "ویرایش هدف",
+  "goalName": "نام هدف",
+  "goalDescription": "توضیحات هدف",
+  "selectStatus": "انتخاب وضعیت",
+  "tasksFor": "وظایف برای",
+  "backToGoals": "بازگشت به اهداف",
+  "loadingTasks": "در حال بارگذاری وظایف...",
+  "tasks": "وظایف",
+  "timeBudgetWarning": "هشدار: کل بودجه زمانی ({hours} ساعت {minutes} دقیقه) از 24 ساعت بیشتر است!",
+  "totalTimeBudget": "کل بودجه زمانی",
+  "noTasksYet": "هنوز وظیفه ای وجود ندارد. اولین وظیفه خود را ایجاد کنید!",
+  "minutes": "دقیقه",
+  "taskStatus": {
+    "pending": "در انتظار",
+    "started": "شروع شده",
+    "failed": "ناموفق",
+    "done": "انجام شده"
+  },
+  "recurring": "تکرار شونده",
+  "copyToNextDay": "کپی به روز بعد",
+  "createTask": "ایجاد وظیفه جدید",
+  "editTask": "ویرایش وظیفه",
+  "taskName": "نام وظیفه",
+  "taskDescription": "توضیحات وظیفه",
+  "recurringTask": "وظیفه تکرار شونده",
+  "taskForm.invalidTimeBudget": "بودجه زمانی باید یک عدد مثبت باشد."
 }

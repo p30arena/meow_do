@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-The current focus is on frontend development. User authentication and Workspace management features have been successfully implemented. All core backend features, including Workspace, Goal, and Task management (CRUD), daily time budget calculation and 24h warning logic, and user authentication/authorization, have been successfully implemented.
+The current focus is on frontend development. All core features (User authentication, Workspace management, Goal management, and Task management) and all project initialization tasks (multi-language support including RTL/LTR, and light/dark mode theming) have been successfully implemented. All core backend features are also complete.
 
 ## Recent Changes
 
@@ -20,19 +20,31 @@ The current focus is on frontend development. User authentication and Workspace 
 *   Resolved Drizzle `Date` type incompatibility with Zod `datetime` strings by transforming the string to a `Date` object in Zod schemas.
 *   Created `frontend/src/components/auth/LoginForm.tsx` and `frontend/src/components/auth/RegisterForm.tsx` for user authentication.
 *   Created `frontend/src/api/auth.ts` to handle authentication API calls using the native `fetch` API (switched from `axios` as per user's request).
-*   Installed required Shadcn UI components (`button`, `input`, `label`, `card`, `textarea`) in the frontend.
-*   Updated `frontend/src/App.tsx` to manage authentication state and conditionally render login/register forms or main application content, and to integrate WorkspaceList and WorkspaceForm.
-*   Updated translation files (`frontend/public/locales/en/translation.json`, `ar/translation.json`, `fa/translation.json`) with new authentication-related and workspace-related keys.
+*   Installed required Shadcn UI components (`button`, `input`, `label`, `card`, `textarea`, `select`, `checkbox`, `dropdown-menu`) in the frontend.
+*   Updated `frontend/src/App.tsx` to manage authentication state and conditionally render login/register forms or main application content, and to integrate WorkspaceList, WorkspaceForm, GoalList, GoalForm, TaskList, and TaskForm.
+*   Updated translation files (`frontend/public/locales/en/translation.json`, `ar/translation.json`, `fa/translation.json`) with new authentication-related, workspace-related, goal-related, and task-related keys.
 *   Created `frontend/src/api/workspace.ts` for workspace CRUD operations.
 *   Created `frontend/src/config.ts` for `API_BASE_URL`.
 *   Created `frontend/src/components/workspace/WorkspaceList.tsx` to display workspaces.
 *   Created `frontend/src/components/workspace/WorkspaceForm.tsx` for creating/editing workspaces.
-*   Resolved TypeScript module resolution issues by changing `moduleResolution` to `node` in `frontend/tsconfig.app.json`.
+*   Created `frontend/src/api/goal.ts` for goal CRUD operations.
+*   Created `frontend/src/components/goal/GoalList.tsx` to display goals.
+*   Created `frontend/src/components/goal/GoalForm.tsx` for creating/editing goals.
+*   Created `frontend/src/api/task.ts` for task CRUD operations and copying tasks.
+*   Created `frontend/src/components/task/TaskList.tsx` to display tasks.
+*   Created `frontend/src/components/task/TaskForm.tsx` for creating/editing tasks.
+*   Resolved TypeScript module resolution issues by changing `moduleResolution` to `node` in `frontend/tsconfig.app.json` and `frontend/tsconfig.node.json`.
 *   Resolved implicit `any` type errors in frontend components.
+*   Resolved `tsconfig` project reference errors by adding `composite: true` and `emitDeclarationOnly: true` to referenced `tsconfig` files.
+*   Implemented a `LanguageSwitcher` component and integrated it into `App.tsx` for multi-language support.
+*   Implemented `ThemeProvider` and `ThemeToggle` components for light/dark mode theming and integrated them into `main.tsx` and `App.tsx` respectively.
 
 ## Next Steps
 
-1.  Implement frontend Goal management features.
+1.  Comprehensive error handling.
+2.  Unit and integration tests for both backend and frontend.
+3.  Deployment pipeline setup.
+4.  Performance optimizations.
 
 ## Active Decisions and Considerations
 

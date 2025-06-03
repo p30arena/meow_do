@@ -45,5 +45,43 @@
     "saving": "جارٍ الحفظ...",
     "saveChanges": "حفظ التغييرات",
     "create": "إنشاء"
-  }
+  },
+  "goalsFor": "أهداف لـ",
+  "backToWorkspaces": "العودة إلى مساحات العمل",
+  "loadingGoals": "جارٍ تحميل الأهداف...",
+  "goals": "الأهداف",
+  "noGoalsYet": "لا توجد أهداف بعد. أنشئ أول هدف لك!",
+  "status": "الحالة",
+  "goalStatus": {
+    "pending": "معلق",
+    "reached": "تم الوصول إليه"
+  },
+  "deadline": "الموعد النهائي",
+  "createGoal": "إنشاء هدف جديد",
+  "editGoal": "تعديل الهدف",
+  "goalName": "اسم الهدف",
+  "goalDescription": "وصف الهدف",
+  "selectStatus": "اختر حالة",
+  "tasksFor": "مهام لـ",
+  "backToGoals": "العودة إلى الأهداف",
+  "loadingTasks": "جارٍ تحميل المهام...",
+  "tasks": "المهام",
+  "timeBudgetWarning": "تحذير: إجمالي ميزانية الوقت ({hours} ساعة {minutes} دقيقة) يتجاوز 24 ساعة!",
+  "totalTimeBudget": "إجمالي ميزانية الوقت",
+  "noTasksYet": "لا توجد مهام بعد. أنشئ أول مهمة لك!",
+  "minutes": "دقيقة",
+  "taskStatus": {
+    "pending": "معلق",
+    "started": "بدأ",
+    "failed": "فشل",
+    "done": "تم"
+  },
+  "recurring": "متكرر",
+  "copyToNextDay": "نسخ إلى اليوم التالي",
+  "createTask": "إنشاء مهمة جديدة",
+  "editTask": "تعديل المهمة",
+  "taskName": "اسم المهمة",
+  "taskDescription": "وصف المهمة",
+  "recurringTask": "مهمة متكررة",
+  "taskForm.invalidTimeBudget": "يجب أن تكون ميزانية الوقت رقمًا موجبًا."
 }

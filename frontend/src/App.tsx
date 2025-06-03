@@ -4,20 +4,36 @@ import LoginForm from "./components/auth/LoginForm";
 import RegisterForm from "./components/auth/RegisterForm";
 import WorkspaceList from "./components/workspace/WorkspaceList";
 import WorkspaceForm from "./components/workspace/WorkspaceForm";
+import GoalList from "./components/goal/GoalList";
+import GoalForm from "./components/goal/GoalForm";
+import TaskList from "./components/task/TaskList";
+import TaskForm from "./components/task/TaskForm";
 import { setAuthToken, getAuthToken } from "./api/auth";
+import { type Workspace } from "./api/workspace";
+import { type Goal } from "./api/goal";
+import { type Task } from "./api/task";
 import { Button } from "./components/ui/button";
+import LanguageSwitcher from "./components/LanguageSwitcher";
+import ThemeToggle from "./components/ThemeToggle";
 
 function App() {
   const { t } = useTranslation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
+    null
+  );
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+  const [showGoalForm, setShowGoalForm] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
 
   useEffect(() => {
     const token = getAuthToken();
     if (token) {
       setIsLoggedIn(true);
-      // setAuthToken(token); // Already set by login/register success
     }
   }, []);
 
@@ -29,14 +45,20 @@ function App() {
 
   const handleRegisterSuccess = (token: string) => {
     setAuthToken(token);
-    setIsLoggedIn(true); // Auto-login after successful registration
+    setIsLoggedIn(true);
     setShowRegister(false);
   };
 
   const handleLogout = () => {
     setAuthToken(null);
     setIsLoggedIn(false);
-    setShowWorkspaceForm(false); // Reset workspace form visibility on logout
+    setShowWorkspaceForm(false);
+    setSelectedWorkspace(null);
+    setSelectedGoal(null);
+    setShowGoalForm(false);
+    setEditingGoal(undefined);
+    setShowTaskForm(false);
+    setEditingTask(undefined);
   };
 
   const handleCreateWorkspaceClick = () => {
@@ -45,11 +67,80 @@ function App() {
 
   const handleWorkspaceFormSuccess = () => {
     setShowWorkspaceForm(false);
-    // Optionally refresh workspace list if needed, WorkspaceList component handles its own fetch
   };
 
   const handleWorkspaceFormCancel = () => {
     setShowWorkspaceForm(false);
+  };
+
+  const handleSelectWorkspace = (workspace: Workspace) => {
+    setSelectedWorkspace(workspace);
+    setSelectedGoal(null);
+    setShowGoalForm(false);
+    setEditingGoal(undefined);
+    setShowTaskForm(false);
+    setEditingTask(undefined);
+  };
+
+  const handleBackToWorkspaces = () => {
+    setSelectedWorkspace(null);
+    setSelectedGoal(null);
+    setShowGoalForm(false);
+    setEditingGoal(undefined);
+    setShowTaskForm(false);
+    setEditingTask(undefined);
+  };
+
+  const handleCreateGoalClick = () => {
+    setShowGoalForm(true);
+    setEditingGoal(undefined);
+  };
+
+  const handleEditGoalClick = (goal: Goal) => {
+    setShowGoalForm(true);
+    setEditingGoal(goal);
+  };
+
+  const handleGoalFormSuccess = () => {
+    setShowGoalForm(false);
+    setEditingGoal(undefined);
+  };
+
+  const handleGoalFormCancel = () => {
+    setShowGoalForm(false);
+    setEditingGoal(undefined);
+  };
+
+  const handleSelectGoal = (goal: Goal) => {
+    setSelectedGoal(goal);
+    setShowTaskForm(false);
+    setEditingTask(undefined);
+  };
+
+  const handleBackToGoals = () => {
+    setSelectedGoal(null);
+    setShowTaskForm(false);
+    setEditingTask(undefined);
+  };
+
+  const handleCreateTaskClick = () => {
+    setShowTaskForm(true);
+    setEditingTask(undefined);
+  };
+
+  const handleEditTaskClick = (task: Task) => {
+    setShowTaskForm(true);
+    setEditingTask(task);
+  };
+
+  const handleTaskFormSuccess = () => {
+    setShowTaskForm(false);
+    setEditingTask(undefined);
+  };
+
+  const handleTaskFormCancel = () => {
+    setShowTaskForm(false);
+    setEditingTask(undefined);
   };
 
   return (
@@ -71,16 +162,76 @@ function App() {
         <div className="container mx-auto p-4">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl font-bold">{t("welcome_message")}</h1>
-            <Button onClick={handleLogout}>{t("auth.logout")}</Button>
+            <div className="flex items-center space-x-4">
+              <LanguageSwitcher />
+              <ThemeToggle />
+              <Button onClick={handleLogout}>{t("auth.logout")}</Button>
+            </div>
           </div>
 
-          {showWorkspaceForm ? (
+          {selectedWorkspace ? (
+            selectedGoal ? (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">
+                    {t("tasksFor")}: {selectedGoal.name}
+                  </h2>
+                  <Button onClick={handleBackToGoals}>
+                    {t("backToGoals")}
+                  </Button>
+                </div>
+                {showTaskForm ? (
+                  <TaskForm
+                    goalId={selectedGoal.id}
+                    task={editingTask}
+                    onSuccess={handleTaskFormSuccess}
+                    onCancel={handleTaskFormCancel}
+                  />
+                ) : (
+                  <TaskList
+                    goalId={selectedGoal.id}
+                    onCreateNew={handleCreateTaskClick}
+                    onEditTask={handleEditTaskClick}
+                  />
+                )}
+              </div>
+            ) : (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">
+                    {t("goalsFor")}: {selectedWorkspace.name}
+                  </h2>
+                  <Button onClick={handleBackToWorkspaces}>
+                    {t("backToWorkspaces")}
+                  </Button>
+                </div>
+                {showGoalForm ? (
+                  <GoalForm
+                    workspaceId={selectedWorkspace.id}
+                    goal={editingGoal}
+                    onSuccess={handleGoalFormSuccess}
+                    onCancel={handleGoalFormCancel}
+                  />
+                ) : (
+                  <GoalList
+                    workspaceId={selectedWorkspace.id}
+                    onCreateNew={handleCreateGoalClick}
+                    onEditGoal={handleEditGoalClick}
+                    onSelectGoal={handleSelectGoal}
+                  />
+                )}
+              </div>
+            )
+          ) : showWorkspaceForm ? (
             <WorkspaceForm
               onSuccess={handleWorkspaceFormSuccess}
               onCancel={handleWorkspaceFormCancel}
             />
           ) : (
-            <WorkspaceList onCreateNew={handleCreateWorkspaceClick} />
+            <WorkspaceList
+              onCreateNew={handleCreateWorkspaceClick}
+              onSelectWorkspace={handleSelectWorkspace}
+            />
           )}
         </div>
       )}
