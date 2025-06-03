@@ -10,17 +10,18 @@
 *   Task management (CRUD, time budget, status, deadline, recurring tasks) backend API endpoints are implemented.
 *   Daily time budget calculation and 24h warning logic is implemented.
 *   User authentication and authorization is implemented.
+*   Frontend project setup (Vite, React, TypeScript, TailwindCSS, ShadcnUI, Lucide Icons) is complete.
+*   Frontend authentication components (`LoginForm`, `RegisterForm`) and API integration (`auth.ts` using `fetch`) are implemented.
+*   Multi-language support (i18n) for authentication messages (English, Arabic, Farsi) is configured.
 
 ## What's left to build
 
 ### Project Initialization:
-*   Frontend project setup (Vite, React, TypeScript, TailwindCSS, ShadcnUI, Lucide Icons).
-*   Database connection and initial schema definition using Drizzle.
-*   Basic API endpoints for initial testing.
-*   Basic frontend components and routing.
-*   Configuration for multi-language support (i18n) including RTL/LTR.
+*   Database connection and initial schema definition using Drizzle. (This is a backend task, already done, will remove in next update)
+*   Basic API endpoints for initial testing. (Backend, already done, will remove in next update)
+*   Basic frontend components and routing. (Partially done, authentication components are in place)
+*   Configuration for multi-language support (i18n) including RTL/LTR. (Authentication translations done, general RTL/LTR setup still needed)
 *   Configuration for light/dark mode theming.
-*   Initial setup for multi-user authentication (JWT).
 
 ### Core Features:
 
@@ -32,7 +33,7 @@
 
 ## Current status
 
-The project has completed its initial setup phase. All core backend features, including Workspace, Goal, Task CRUD operations, daily time budget calculation, and user authentication/authorization, are complete. The foundational documentation is in place, providing a clear roadmap for further development.
+The project has completed its initial setup phase and made significant progress on the frontend. All core backend features are complete. Frontend authentication components (Login and Register forms) are implemented, integrated with the backend API using `fetch`, and multi-language support for these components is in place. The foundational documentation is updated, providing a clear roadmap for further development.
 
 ## Known issues
 

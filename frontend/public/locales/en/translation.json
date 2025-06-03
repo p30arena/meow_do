@@ -1,3 +1,32 @@
 {
-  "welcome_message": "Welcome to MeowDo!"
+  "welcome_message": "Welcome to MeowDo!",
+  "login": {
+    "title": "Login",
+    "description": "Enter your email below to login to your account",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "loggingIn": "Logging In...",
+    "invalidCredentials": "Invalid email or password.",
+    "errorOccurred": "An error occurred during login."
+  },
+  "register": {
+    "title": "Register",
+    "description": "Enter your details below to create a new account",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "signUp": "Sign Up",
+    "registering": "Registering...",
+    "passwordsMismatch": "Passwords do not match.",
+    "registrationFailed": "Registration failed.",
+    "errorOccurred": "An error occurred during registration."
+  },
+  "auth": {
+    "alreadyHaveAccount": "Already have an account? Sign In",
+    "dontHaveAccount": "Don't have an account? Sign Up",
+    "loggedInMessage": "You are logged in!",
+    "logout": "Logout"
+  }
 }

@@ -1,3 +1,32 @@
 {
-  "welcome_message": "مرحباً بك في مياو دو!"
+  "welcome_message": "مرحباً بك في مياو دو!",
+  "login": {
+    "title": "تسجيل الدخول",
+    "description": "أدخل بريدك الإلكتروني أدناه لتسجيل الدخول إلى حسابك",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "signIn": "تسجيل الدخول",
+    "loggingIn": "جارٍ تسجيل الدخول...",
+    "invalidCredentials": "بريد إلكتروني أو كلمة مرور غير صالحة.",
+    "errorOccurred": "حدث خطأ أثناء تسجيل الدخول."
+  },
+  "register": {
+    "title": "التسجيل",
+    "description": "أدخل تفاصيلك أدناه لإنشاء حساب جديد",
+    "username": "اسم المستخدم",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "signUp": "إنشاء حساب",
+    "registering": "جارٍ التسجيل...",
+    "passwordsMismatch": "كلمات المرور غير متطابقة.",
+    "registrationFailed": "فشل التسجيل.",
+    "errorOccurred": "حدث خطأ أثناء التسجيل."
+  },
+  "auth": {
+    "alreadyHaveAccount": "هل لديك حساب بالفعل؟ تسجيل الدخول",
+    "dontHaveAccount": "ليس لديك حساب؟ إنشاء حساب",
+    "loggedInMessage": "لقد قمت بتسجيل الدخول!",
+    "logout": "تسجيل الخروج"
+  }
 }
