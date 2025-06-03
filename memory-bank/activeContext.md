@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-The current focus is on implementing the remaining core features for the MeowDo application. The backend infrastructure for Workspace, Goal, and Task management (CRUD) has been successfully implemented. The next step is to proceed with the implementation of Daily time budget calculation and 24h warning logic.
+The current focus is on beginning frontend development for the MeowDo application. All core backend features, including Workspace, Goal, and Task management (CRUD), daily time budget calculation and 24h warning logic, and user authentication/authorization, have been successfully implemented.
 
 ## Recent Changes
 
@@ -14,14 +14,14 @@ The current focus is on implementing the remaining core features for the MeowDo 
 *   Implemented backend CRUD operations for Workspaces, including Drizzle schema, Zod validation, controllers, and routes.
 *   Implemented backend CRUD operations for Goals, including Drizzle schema, Zod validation, controllers, and routes.
 *   Implemented backend CRUD operations for Tasks, including Drizzle schema, Zod validation, controllers, and routes.
+*   Implemented Daily time budget calculation and 24h warning logic.
+*   Implemented User authentication and authorization, including user registration, login, JWT token generation, and authentication middleware.
 *   Resolved persistent TypeScript errors related to Express Router by implementing a `catchAsync` utility.
 *   Resolved Drizzle `Date` type incompatibility with Zod `datetime` strings by transforming the string to a `Date` object in Zod schemas.
 
 ## Next Steps
 
-1.  Implement Daily time budget calculation and 24h warning logic.
-2.  Implement User authentication and authorization.
-3.  Begin frontend development for all implemented backend features.
+1.  Begin frontend development for all implemented backend features.
 
 ## Active Decisions and Considerations
 

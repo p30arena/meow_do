@@ -8,6 +8,8 @@
 *   Workspace management (CRUD) backend API endpoints are implemented.
 *   Goal management (CRUD, status, deadline) backend API endpoints are implemented.
 *   Task management (CRUD, time budget, status, deadline, recurring tasks) backend API endpoints are implemented.
+*   Daily time budget calculation and 24h warning logic is implemented.
+*   User authentication and authorization is implemented.
 
 ## What's left to build
 
@@ -21,8 +23,6 @@
 *   Initial setup for multi-user authentication (JWT).
 
 ### Core Features:
-*   Daily time budget calculation and 24h warning logic.
-*   User authentication and authorization.
 
 ### Enhancements:
 *   Comprehensive error handling.
@@ -32,7 +32,7 @@
 
 ## Current status
 
-The project has completed its initial setup phase. Backend development for Workspace, Goal, and Task CRUD operations is complete. The foundational documentation is in place, providing a clear roadmap for further development.
+The project has completed its initial setup phase. All core backend features, including Workspace, Goal, Task CRUD operations, daily time budget calculation, and user authentication/authorization, are complete. The foundational documentation is in place, providing a clear roadmap for further development.
 
 ## Known issues
 

@@ -49,3 +49,20 @@ export const deleteTask = catchAsync(async (req: Request, res: Response) => {
   }
   res.status(204).send(); // No content for successful deletion
 });
+
+export const getDailyTimeBudgetForGoal = catchAsync(async (req: Request, res: Response) => {
+  const { goalId } = req.params; // Assuming goalId comes from params for a specific goal's daily budget
+  const tasksForGoal = await db.select({ timeBudget: tasks.timeBudget }).from(tasks).where(eq(tasks.goalId, goalId));
+
+  const totalTimeBudgetMinutes = tasksForGoal.reduce((sum, task) => sum + task.timeBudget, 0);
+  const totalTimeBudgetHours = totalTimeBudgetMinutes / 60;
+
+  const warning = totalTimeBudgetHours > 24 ? 'Warning: Total time budget exceeds 24 hours for this goal.' : undefined;
+
+  res.status(200).json({
+    goalId,
+    totalTimeBudgetMinutes,
+    totalTimeBudgetHours,
+    warning,
+  });
+});
