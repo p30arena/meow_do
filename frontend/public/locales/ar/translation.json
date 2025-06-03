@@ -28,5 +28,22 @@
     "dontHaveAccount": "ليس لديك حساب؟ إنشاء حساب",
     "loggedInMessage": "لقد قمت بتسجيل الدخول!",
     "logout": "تسجيل الخروج"
+  },
+  "workspace": {
+    "loadingWorkspaces": "جارٍ تحميل مساحات العمل...",
+    "error": "خطأ",
+    "workspaces": "مساحات العمل",
+    "noWorkspacesYet": "لا توجد مساحات عمل بعد. أنشئ أول مساحة عمل لك!",
+    "noDescription": "لا يوجد وصف.",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "createWorkspace": "إنشاء مساحة عمل جديدة",
+    "editWorkspace": "تعديل مساحة العمل",
+    "workspaceName": "اسم مساحة العمل",
+    "workspaceDescription": "وصف مساحة العمل",
+    "cancel": "إلغاء",
+    "saving": "جارٍ الحفظ...",
+    "saveChanges": "حفظ التغييرات",
+    "create": "إنشاء"
   }
 }

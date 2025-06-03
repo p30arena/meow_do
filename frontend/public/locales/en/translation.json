@@ -28,5 +28,22 @@
     "dontHaveAccount": "Don't have an account? Sign Up",
     "loggedInMessage": "You are logged in!",
     "logout": "Logout"
+  },
+  "workspace": {
+    "loadingWorkspaces": "Loading workspaces...",
+    "error": "Error",
+    "workspaces": "Workspaces",
+    "noWorkspacesYet": "No workspaces yet. Create your first one!",
+    "noDescription": "No description provided.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "createWorkspace": "Create New Workspace",
+    "editWorkspace": "Edit Workspace",
+    "workspaceName": "Workspace Name",
+    "workspaceDescription": "Workspace Description",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "saveChanges": "Save Changes",
+    "create": "Create"
   }
 }

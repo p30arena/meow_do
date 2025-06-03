@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/api/v1';
+import { API_BASE_URL } from '../config';
 
 interface LoginResponse {
   token: string;
@@ -11,7 +11,7 @@ interface LoginResponse {
 
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
   try {
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
 
 export const register = async (username: string, email: string, password: string): Promise<LoginResponse> => {
   try {
-    const response = await fetch(`${API_URL}/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

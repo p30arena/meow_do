@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-The current focus is on frontend development, specifically implementing user authentication. All core backend features, including Workspace, Goal, and Task management (CRUD), daily time budget calculation and 24h warning logic, and user authentication/authorization, have been successfully implemented.
+The current focus is on frontend development. User authentication and Workspace management features have been successfully implemented. All core backend features, including Workspace, Goal, and Task management (CRUD), daily time budget calculation and 24h warning logic, and user authentication/authorization, have been successfully implemented.
 
 ## Recent Changes
 
@@ -20,13 +20,19 @@ The current focus is on frontend development, specifically implementing user aut
 *   Resolved Drizzle `Date` type incompatibility with Zod `datetime` strings by transforming the string to a `Date` object in Zod schemas.
 *   Created `frontend/src/components/auth/LoginForm.tsx` and `frontend/src/components/auth/RegisterForm.tsx` for user authentication.
 *   Created `frontend/src/api/auth.ts` to handle authentication API calls using the native `fetch` API (switched from `axios` as per user's request).
-*   Installed required Shadcn UI components (`button`, `input`, `label`, `card`) in the frontend.
-*   Updated `frontend/src/App.tsx` to manage authentication state and conditionally render login/register forms or main application content.
-*   Updated translation files (`frontend/public/locales/en/translation.json`, `ar/translation.json`, `fa/translation.json`) with new authentication-related keys.
+*   Installed required Shadcn UI components (`button`, `input`, `label`, `card`, `textarea`) in the frontend.
+*   Updated `frontend/src/App.tsx` to manage authentication state and conditionally render login/register forms or main application content, and to integrate WorkspaceList and WorkspaceForm.
+*   Updated translation files (`frontend/public/locales/en/translation.json`, `ar/translation.json`, `fa/translation.json`) with new authentication-related and workspace-related keys.
+*   Created `frontend/src/api/workspace.ts` for workspace CRUD operations.
+*   Created `frontend/src/config.ts` for `API_BASE_URL`.
+*   Created `frontend/src/components/workspace/WorkspaceList.tsx` to display workspaces.
+*   Created `frontend/src/components/workspace/WorkspaceForm.tsx` for creating/editing workspaces.
+*   Resolved TypeScript module resolution issues by changing `moduleResolution` to `node` in `frontend/tsconfig.app.json`.
+*   Resolved implicit `any` type errors in frontend components.
 
 ## Next Steps
 
-1.  Continue frontend development for other core features (e.g., Workspaces, Goals, Tasks).
+1.  Implement frontend Goal management features.
 
 ## Active Decisions and Considerations
 

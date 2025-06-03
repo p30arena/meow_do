@@ -28,5 +28,22 @@
     "dontHaveAccount": "حساب کاربری ندارید؟ ثبت نام کنید",
     "loggedInMessage": "شما وارد شده اید!",
     "logout": "خروج"
+  },
+  "workspace": {
+    "loadingWorkspaces": "در حال بارگذاری فضاهای کاری...",
+    "error": "خطا",
+    "workspaces": "فضاهای کاری",
+    "noWorkspacesYet": "هنوز فضای کاری وجود ندارد. اولین فضای کاری خود را ایجاد کنید!",
+    "noDescription": "توضیحی ارائه نشده است.",
+    "edit": "ویرایش",
+    "delete": "حذف",
+    "createWorkspace": "ایجاد فضای کاری جدید",
+    "editWorkspace": "ویرایش فضای کاری",
+    "workspaceName": "نام فضای کاری",
+    "workspaceDescription": "توضیحات فضای کاری",
+    "cancel": "لغو",
+    "saving": "در حال ذخیره...",
+    "saveChanges": "ذخیره تغییرات",
+    "create": "ایجاد"
   }
 }

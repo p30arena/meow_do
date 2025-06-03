@@ -1,38 +1,55 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import LoginForm from "./components/auth/LoginForm";
 import RegisterForm from "./components/auth/RegisterForm";
+import WorkspaceList from "./components/workspace/WorkspaceList";
+import WorkspaceForm from "./components/workspace/WorkspaceForm";
 import { setAuthToken, getAuthToken } from "./api/auth";
-import { Button } from "./components/ui/button"; // Assuming button is available after shadcn install
+import { Button } from "./components/ui/button";
 
 function App() {
   const { t } = useTranslation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
 
   useEffect(() => {
     const token = getAuthToken();
     if (token) {
       setIsLoggedIn(true);
-      setAuthToken(token); // Set token for future requests
+      // setAuthToken(token); // Already set by login/register success
     }
   }, []);
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = (token: string) => {
+    setAuthToken(token);
     setIsLoggedIn(true);
-    setShowRegister(false); // Hide register form if user logs in after being on register page
+    setShowRegister(false);
   };
 
-  const handleRegisterSuccess = () => {
-    // After successful registration, automatically log in or redirect to login
-    // For now, we'll just switch to the login form
+  const handleRegisterSuccess = (token: string) => {
+    setAuthToken(token);
+    setIsLoggedIn(true); // Auto-login after successful registration
     setShowRegister(false);
-    // Optionally, you could auto-login the user here if the register API returns a token
   };
 
   const handleLogout = () => {
-    setAuthToken(null); // Clear token from localStorage
+    setAuthToken(null);
     setIsLoggedIn(false);
+    setShowWorkspaceForm(false); // Reset workspace form visibility on logout
+  };
+
+  const handleCreateWorkspaceClick = () => {
+    setShowWorkspaceForm(true);
+  };
+
+  const handleWorkspaceFormSuccess = () => {
+    setShowWorkspaceForm(false);
+    // Optionally refresh workspace list if needed, WorkspaceList component handles its own fetch
+  };
+
+  const handleWorkspaceFormCancel = () => {
+    setShowWorkspaceForm(false);
   };
 
   return (
@@ -51,12 +68,20 @@ function App() {
           </Button>
         </div>
       ) : (
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">{t("welcome_message")}</h1>
-          <p className="text-lg">{t("auth.loggedInMessage")}</p>
-          <Button onClick={handleLogout} className="mt-4">
-            {t("auth.logout")}
-          </Button>
+        <div className="container mx-auto p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-3xl font-bold">{t("welcome_message")}</h1>
+            <Button onClick={handleLogout}>{t("auth.logout")}</Button>
+          </div>
+
+          {showWorkspaceForm ? (
+            <WorkspaceForm
+              onSuccess={handleWorkspaceFormSuccess}
+              onCancel={handleWorkspaceFormCancel}
+            />
+          ) : (
+            <WorkspaceList onCreateNew={handleCreateWorkspaceClick} />
+          )}
         </div>
       )}
     </div>

@@ -13,14 +13,13 @@
 *   Frontend project setup (Vite, React, TypeScript, TailwindCSS, ShadcnUI, Lucide Icons) is complete.
 *   Frontend authentication components (`LoginForm`, `RegisterForm`) and API integration (`auth.ts` using `fetch`) are implemented.
 *   Multi-language support (i18n) for authentication messages (English, Arabic, Farsi) is configured.
+*   Frontend workspace management (CRUD) components (`WorkspaceList`, `WorkspaceForm`) and API integration are implemented.
+*   Multi-language support for workspace features (English, Arabic, Farsi) is configured.
 
 ## What's left to build
 
 ### Project Initialization:
-*   Database connection and initial schema definition using Drizzle. (This is a backend task, already done, will remove in next update)
-*   Basic API endpoints for initial testing. (Backend, already done, will remove in next update)
-*   Basic frontend components and routing. (Partially done, authentication components are in place)
-*   Configuration for multi-language support (i18n) including RTL/LTR. (Authentication translations done, general RTL/LTR setup still needed)
+*   Configuration for multi-language support (i18n) including RTL/LTR. (Authentication and Workspace translations done, general RTL/LTR setup still needed)
 *   Configuration for light/dark mode theming.
 
 ### Core Features:
@@ -33,7 +32,7 @@
 
 ## Current status
 
-The project has completed its initial setup phase and made significant progress on the frontend. All core backend features are complete. Frontend authentication components (Login and Register forms) are implemented, integrated with the backend API using `fetch`, and multi-language support for these components is in place. The foundational documentation is updated, providing a clear roadmap for further development.
+The project has completed its initial setup phase and made significant progress on the frontend. All core backend features are complete. Frontend authentication components (Login and Register forms) and workspace management components (list and form) are implemented, integrated with the backend API using `fetch`, and multi-language support for these components is in place. The foundational documentation is updated, providing a clear roadmap for further development.
 
 ## Known issues
 

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface RegisterFormProps {
-  onRegisterSuccess: () => void;
+  onRegisterSuccess: (token: string) => void;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
@@ -33,9 +33,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
       // TODO: Implement actual registration API call
       console.log('Attempting registration with:', { username, email, password });
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // TODO: Replace with actual API call
+      const dummyToken = 'dummy-jwt-token';
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
       if (username && email && password) { // Basic validation
-        onRegisterSuccess();
+        onRegisterSuccess(dummyToken); // Pass a dummy token
       } else {
         setError(t('register.registrationFailed'));
       }

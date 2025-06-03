@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface LoginFormProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: (token: string) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
@@ -25,9 +25,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       // TODO: Implement actual login API call
       console.log('Attempting login with:', { email, password });
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // TODO: Replace with actual API call
+      const dummyToken = 'dummy-jwt-token';
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
       if (email === 'test@example.com' && password === 'password') {
-        onLoginSuccess();
+        onLoginSuccess(dummyToken); // Pass a dummy token
       } else {
         setError(t('login.invalidCredentials'));
       }
