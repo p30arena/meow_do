@@ -38,6 +38,7 @@ The current focus is on frontend development. All core features (User authentica
 *   Resolved `tsconfig` project reference errors by adding `composite: true` and `emitDeclarationOnly: true` to referenced `tsconfig` files.
 *   Implemented a `LanguageSwitcher` component and integrated it into `App.tsx` for multi-language support.
 *   Implemented `ThemeProvider` and `ThemeToggle` components for light/dark mode theming and integrated them into `main.tsx` and `App.tsx` respectively.
+*   Configured both backend and frontend projects to build successfully to their respective `dist` folders, and resolved issues preventing the frontend from generating unwanted `.d.ts` files.
 
 ## Next Steps
 
