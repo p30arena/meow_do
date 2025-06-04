@@ -152,5 +152,8 @@
   "theme": {
     "toggleLightDarkMode": "تبديل الوضع الفاتح/الداكن",
     "selectBaseTheme": "اختر السمة الأساسية"
+  },
+  "pwa": {
+    "installApp": "تثبيت التطبيق"
   }
 }

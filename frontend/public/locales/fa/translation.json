@@ -152,5 +152,8 @@
   "theme": {
     "toggleLightDarkMode": "تغییر حالت روشن/تاریک",
     "selectBaseTheme": "انتخاب تم پایه"
+  },
+  "pwa": {
+    "installApp": "نصب برنامه"
   }
 }

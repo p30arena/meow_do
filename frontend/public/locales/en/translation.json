@@ -152,5 +152,8 @@
   "theme": {
     "toggleLightDarkMode": "Toggle light/dark mode",
     "selectBaseTheme": "Select base theme"
+  },
+  "pwa": {
+    "installApp": "Install App"
   }
 }

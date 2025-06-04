@@ -19,6 +19,7 @@ import { Menu, Settings } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
 import TimezoneSelector from "./settings/TimezoneSelector"; // Import TimezoneSelector
+import InstallPWAButton from "./InstallPWAButton"; // Import InstallPWAButton
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation(); // Destructure i18n
@@ -33,24 +34,25 @@ export const Navbar: React.FC = () => {
         MeowDo
       </Link>
 
-      {/* Mobile Navigation */}
-      <div className="md:hidden">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side={isRtl ? "left" : "right"}
-            className="w-[200px] sm:w-[250px] p-4"
-          >
-            {" "}
-            {/* Dynamic side */}
-            <SheetTitle className="sr-only">Main Navigation</SheetTitle>
-            <div className="flex flex-col space-y-4">
-              <LanguageSwitcher />
-              <ThemeToggle />
+            {/* Mobile Navigation */}
+            <div className="md:hidden">
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Menu className="h-6 w-6" />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent
+                        side={isRtl ? "left" : "right"}
+                        className="w-[200px] sm:w-[250px] p-4"
+                    >
+                        {" "}
+                        {/* Dynamic side */}
+                        <SheetTitle className="sr-only">Main Navigation</SheetTitle>
+                        <div className="flex flex-col space-y-4">
+                            <InstallPWAButton />
+                            <LanguageSwitcher />
+                            <ThemeToggle />
               {/* Settings Button for Mobile */}
               <Sheet>
                 <SheetTrigger asChild>
@@ -103,10 +105,11 @@ export const Navbar: React.FC = () => {
         </Sheet>
       </div>
 
-      {/* Desktop Navigation */}
-      <div className="hidden md:flex items-center gap-4">
-        <LanguageSwitcher />
-        <ThemeToggle />
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-4">
+                <InstallPWAButton />
+                <LanguageSwitcher />
+                <ThemeToggle />
         {/* Settings Button for Desktop */}
         <Sheet>
           <SheetTrigger asChild>
