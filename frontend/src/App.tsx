@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import i18n from "i18next";
 import LoginForm from "./components/auth/LoginForm";
 import RegisterForm from "./components/auth/RegisterForm";
 import WorkspaceList from "./components/workspace/WorkspaceList";
@@ -18,7 +19,28 @@ import { Navbar } from "./components/Navbar"; // Import the new Navbar component
 
 function App() {
   const { t } = useTranslation();
-  const { user, setToken, setUser, isAuthReady } = useAuth(); // Removed logout
+  const { user, setToken, setUser, isAuthReady } = useAuth();
+
+  useEffect(() => {
+    const updateHtmlLangAndDir = () => {
+      const currentLanguage = i18n.language || "en";
+      document.documentElement.lang = currentLanguage;
+      document.documentElement.dir =
+        currentLanguage === "ar" || currentLanguage === "fa" ? "rtl" : "ltr";
+    };
+
+    // Set initial language and direction
+    updateHtmlLangAndDir();
+
+    // Listen for language changes
+    i18n.on("languageChanged", updateHtmlLangAndDir);
+
+    // Cleanup on component unmount
+    return () => {
+      i18n.off("languageChanged", updateHtmlLangAndDir);
+    };
+  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
+
   const [showRegister, setShowRegister] = useState(false);
   const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
