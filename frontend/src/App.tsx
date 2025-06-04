@@ -9,9 +9,9 @@ import GoalForm from "./components/goal/GoalForm";
 import TaskList from "./components/task/TaskList";
 import TaskForm from "./components/task/TaskForm";
 import { setAuthToken, getAuthToken } from "./api/auth";
+import { deleteGoal, type Goal } from "./api/goal";
+import { deleteTask, type Task } from "./api/task";
 import { type Workspace } from "./api/workspace";
-import { type Goal } from "./api/goal";
-import { type Task } from "./api/task";
 import { Button } from "./components/ui/button";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 import ThemeToggle from "./components/ThemeToggle";
@@ -151,6 +151,26 @@ function App() {
     setEditingTask(undefined);
   };
 
+  const handleDeleteGoal = async (goalId: string) => {
+    try {
+      await deleteGoal(goalId);
+      // No need to re-fetch goals here, GoalList will handle it
+    } catch (err: any) {
+      console.error("Failed to delete goal:", err);
+      // Optionally, show an error message to the user
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      await deleteTask(taskId);
+      // No need to re-fetch tasks here, TaskList will handle it
+    } catch (err: any) {
+      console.error("Failed to delete task:", err);
+      // Optionally, show an error message to the user
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
       {!isLoggedIn ? (
@@ -200,6 +220,7 @@ function App() {
                     goalId={selectedGoal.id}
                     onCreateNew={handleCreateTaskClick}
                     onEditTask={handleEditTaskClick}
+                    onDeleteTask={handleDeleteTask}
                   />
                 )}
               </div>
@@ -226,6 +247,7 @@ function App() {
                     onCreateNew={handleCreateGoalClick}
                     onEditGoal={handleEditGoalClick}
                     onSelectGoal={handleSelectGoal}
+                    onDeleteGoal={handleDeleteGoal}
                   />
                 )}
               </div>

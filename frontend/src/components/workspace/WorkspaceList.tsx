@@ -36,7 +36,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
   }
 
   if (error) {
-    return <div>{t('error')}: {error}</div>;
+    return <div>{t('workspace.error')}: {error}</div>;
   }
 
   return (

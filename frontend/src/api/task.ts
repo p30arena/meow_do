@@ -51,7 +51,7 @@ export const createTask = async (payload: CreateTaskPayload): Promise<Task> => {
 
 export const getTasksByGoalId = async (goalId: string): Promise<Task[]> => {
   const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/goals/${goalId}/tasks`, {
+  const response = await fetch(`${API_BASE_URL}/tasks?goalId=${goalId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

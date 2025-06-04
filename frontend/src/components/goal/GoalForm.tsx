@@ -114,10 +114,10 @@ const GoalForm: React.FC<GoalFormProps> = ({ workspaceId, goal, onSuccess, onCan
           {error && <p className="text-red-500 text-sm">{t('error')}: {error}</p>}
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-              {t('cancel')}
+              {t('workspace.cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? t('saving') : (goal ? t('saveChanges') : t('create'))}
+              {loading ? t('workspace.saving') : (goal ? t('workspace.saveChanges') : t('workspace.create'))}
             </Button>
           </div>
         </form>

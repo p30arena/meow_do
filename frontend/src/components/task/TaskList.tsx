@@ -9,31 +9,47 @@ interface TaskListProps {
   goalId: string;
   onCreateNew: () => void;
   onEditTask: (task: Task) => void;
+  onDeleteTask: (taskId: string) => void;
 }
 
-const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask }) => {
+const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, onDeleteTask }) => {
   const { t } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalTimeBudget, setTotalTimeBudget] = useState(0);
 
+  const fetchTasks = async () => {
+    try {
+      const data = await getTasksByGoalId(goalId);
+      setTasks(data);
+      const sum = data.reduce((acc, task) => acc + task.timeBudget, 0);
+      setTotalTimeBudget(sum);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTasks = async () => {
+    fetchTasks();
+  }, [goalId]);
+
+  const handleDeleteTask = async (task: Task) => {
+    if (window.confirm(t('task.confirmDelete', { taskName: task.name }))) {
+      setLoading(true);
+      setError(null);
       try {
-        const data = await getTasksByGoalId(goalId);
-        setTasks(data);
-        const sum = data.reduce((acc, task) => acc + task.timeBudget, 0);
-        setTotalTimeBudget(sum);
+        await onDeleteTask(task.id);
+        fetchTasks(); // Re-fetch tasks after deletion
       } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchTasks();
-  }, [goalId]);
+    }
+  };
 
   const isOver24Hours = totalTimeBudget > 24 * 60; // Convert 24 hours to minutes
 
@@ -42,22 +58,22 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask }) 
   }
 
   if (error) {
-    return <div>{t('error')}: {error}</div>;
+    return <div>{t('workspace.error')}: {error}</div>;
   }
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">{t('tasks')}</h2>
+      <h2 className="text-2xl font-bold mb-4">{t('tasks.title')}</h2>
       {isOver24Hours && (
         <p className="text-red-500 mb-4">
-          {t('timeBudgetWarning', { hours: Math.floor(totalTimeBudget / 60), minutes: totalTimeBudget % 60 })}
+          {t('tasks.timeBudgetWarning', { hours: Math.floor(totalTimeBudget / 60), minutes: totalTimeBudget % 60 })}
         </p>
       )}
       <p className="mb-4">
-        {t('totalTimeBudget')}: {Math.floor(totalTimeBudget / 60)}h {totalTimeBudget % 60}m
+        {t('tasks.totalTimeBudget')}: {Math.floor(totalTimeBudget / 60)}h {totalTimeBudget % 60}m
       </p>
       {tasks.length === 0 ? (
-        <p>{t('noTasksYet')}</p>
+        <p>{t('tasks.noTasksYet')}</p>
       ) : (
         <div className="grid gap-4">
           {tasks.map((task) => (
@@ -75,9 +91,9 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask }) 
                   <Checkbox checked={task.isRecurring} disabled />
                 </p>
                 <div className="mt-4 flex justify-end space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => onEditTask(task)}>{t('edit')}</Button>
+                  <Button variant="outline" size="sm" onClick={() => onEditTask(task)}>{t('workspace.edit')}</Button>
                   <Button variant="secondary" size="sm">{t('copyToNextDay')}</Button>
-                  <Button variant="destructive" size="sm">{t('delete')}</Button>
+                  <Button variant="destructive" size="sm" onClick={() => handleDeleteTask(task)}>{t('workspace.delete')}</Button>
                 </div>
               </CardContent>
             </Card>

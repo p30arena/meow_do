@@ -50,8 +50,11 @@
   "goalsFor": "Goals for",
   "backToWorkspaces": "Back to Workspaces",
   "loadingGoals": "Loading goals...",
-  "goals": "Goals",
-  "noGoalsYet": "No goals yet. Create your first one!",
+  "goals": {
+    "title": "Goals",
+    "noGoalsYet": "No goals yet. Create your first one!",
+    "confirmDelete": "Are you sure you want to delete goal \"{{goalName}}\"?"
+  },
   "status": "Status",
   "goalStatus": {
     "pending": "Pending",
@@ -66,10 +69,13 @@
   "tasksFor": "Tasks for",
   "backToGoals": "Back to Goals",
   "loadingTasks": "Loading tasks...",
-  "tasks": "Tasks",
-  "timeBudgetWarning": "Warning: Total time budget ({hours}h {minutes}m) exceeds 24 hours!",
-  "totalTimeBudget": "Total Time Budget",
-  "noTasksYet": "No tasks yet. Create your first one!",
+  "tasks": {
+    "title": "Tasks",
+    "timeBudgetWarning": "Warning: Total time budget ({hours}h {minutes}m) exceeds 24 hours!",
+    "totalTimeBudget": "Total Time Budget",
+    "noTasksYet": "No tasks yet. Create your first one!",
+    "confirmDelete": "Are you sure you want to delete task \"{{taskName}}\"?"
+  },
   "minutes": "minutes",
   "taskStatus": {
     "pending": "Pending",

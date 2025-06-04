@@ -50,8 +50,11 @@
   "goalsFor": "أهداف لـ",
   "backToWorkspaces": "العودة إلى مساحات العمل",
   "loadingGoals": "جارٍ تحميل الأهداف...",
-  "goals": "الأهداف",
-  "noGoalsYet": "لا توجد أهداف بعد. أنشئ أول هدف لك!",
+  "goals": {
+    "title": "الأهداف",
+    "noGoalsYet": "لا توجد أهداف بعد. أنشئ أول هدف لك!",
+    "confirmDelete": "هل أنت متأكد أنك تريد حذف الهدف \"{{goalName}}\"؟"
+  },
   "status": "الحالة",
   "goalStatus": {
     "pending": "معلق",
@@ -66,10 +69,13 @@
   "tasksFor": "مهام لـ",
   "backToGoals": "العودة إلى الأهداف",
   "loadingTasks": "جارٍ تحميل المهام...",
-  "tasks": "المهام",
-  "timeBudgetWarning": "تحذير: إجمالي ميزانية الوقت ({hours} ساعة {minutes} دقيقة) يتجاوز 24 ساعة!",
-  "totalTimeBudget": "إجمالي ميزانية الوقت",
-  "noTasksYet": "لا توجد مهام بعد. أنشئ أول مهمة لك!",
+  "tasks": {
+    "title": "المهام",
+    "timeBudgetWarning": "تحذير: إجمالي ميزانية الوقت ({hours} ساعة {minutes} دقيقة) يتجاوز 24 ساعة!",
+    "totalTimeBudget": "إجمالي ميزانية الوقت",
+    "noTasksYet": "لا توجد مهام بعد. أنشئ أول مهمة لك!",
+    "confirmDelete": "هل أنت متأكد أنك تريد حذف المهمة \"{{taskName}}\"؟"
+  },
   "minutes": "دقيقة",
   "taskStatus": {
     "pending": "معلق",
