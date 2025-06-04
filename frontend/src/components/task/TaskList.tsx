@@ -37,7 +37,7 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
   }, [goalId]);
 
   const handleDeleteTask = async (task: Task) => {
-    if (window.confirm(t('task.confirmDelete', { taskName: task.name }))) {
+    if (window.confirm(t('tasks.confirmDelete', { taskName: task.name }))) {
       setLoading(true);
       setError(null);
       try {
@@ -83,11 +83,11 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
               </CardHeader>
               <CardContent>
                 <p>{task.description || t('noDescription')}</p>
-                <p><strong>{t('timeBudget')}:</strong> {task.timeBudget} {t('minutes')}</p>
-                <p><strong>{t('status')}:</strong> {t(`taskStatus.${task.status}`)}</p>
-                {task.deadline && <p><strong>{t('deadline')}:</strong> {new Date(task.deadline).toLocaleDateString()}</p>}
+                <p><strong>{t('tasks.timeBudget')}:</strong> {task.timeBudget} {t('tasks.minutes')}</p>
+                <p><strong>{t('tasks.status')}:</strong> {t(`tasks.taskStatus.${task.status}`)}</p>
+                {task.deadline && <p><strong>{t('tasks.deadline')}:</strong> {new Date(task.deadline).toLocaleDateString()}</p>}
                 <p>
-                  <strong>{t('recurring')}:</strong>{' '}
+                  <strong>{t('tasks.recurringTask')}:</strong>{' '}
                   <Checkbox checked={task.isRecurring} disabled />
                 </p>
                 <div className="mt-4 flex justify-end space-x-2">
@@ -100,7 +100,7 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
           ))}
         </div>
       )}
-      <Button className="mt-4" onClick={onCreateNew}>{t('createTask')}</Button>
+      <Button className="mt-4" onClick={onCreateNew}>{t('tasks.createTask')}</Button>
     </div>
   );
 };

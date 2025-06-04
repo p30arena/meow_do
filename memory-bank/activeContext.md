@@ -57,6 +57,8 @@ The current focus is on frontend development. All core features (User authentica
 *   Corrected the structure of `frontend/public/locales/en/translation.json`, `frontend/public/locales/ar/translation.json`, and `frontend/public/locales/fa/translation.json` by moving task-related top-level keys into the `tasks` object.
 *   Implemented `handleUnauthorized` utility in `frontend/src/lib/utils.ts` to clear local storage token and redirect to login on 401 Unauthorized responses.
 *   Integrated `handleUnauthorized` into `frontend/src/api/workspace.ts`, `frontend/src/api/goal.ts`, and `frontend/src/api/task.ts` to handle 401 errors.
+*   Corrected i18n key usage in `frontend/src/components/task/TaskList.tsx` to use nested keys (e.g., `tasks.createTask`, `tasks.timeBudget`, `tasks.minutes`, `tasks.status`, `tasks.deadline`, `tasks.recurringTask`, `tasks.confirmDelete`), resolving `missingKey` errors.
+*   Created `.clinerules/i18n-preferences.md` to document guidelines for internationalization translations.
 
 ## Next Steps
 
