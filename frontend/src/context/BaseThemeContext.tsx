@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, type ReactNode } from 'react';
 
-type ThemeName = 'default' | 'amber-minimal' | 'amethyst-haze' | 'bold-tech' | 'bubble-gum' | 'caffeine'; // Define ThemeName as a union of string literals
+type ThemeName = 'default' | 'amber-minimal' | 'amethyst-haze' | 'bold-tech' | 'bubble-gum' | 'caffeine' | 'nature' | 'twitter' | 'vercel' | 'mono'; // Define ThemeName as a union of string literals
 
 interface BaseThemeContextType {
   baseTheme: ThemeName;

@@ -147,5 +147,9 @@
   },
   "settings": {
     "title": "الإعدادات"
+  },
+  "theme": {
+    "toggleLightDarkMode": "تبديل الوضع الفاتح/الداكن",
+    "selectBaseTheme": "اختر السمة الأساسية"
   }
 }

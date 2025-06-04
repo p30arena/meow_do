@@ -147,5 +147,9 @@
   },
   "settings": {
     "title": "Settings"
+  },
+  "theme": {
+    "toggleLightDarkMode": "Toggle light/dark mode",
+    "selectBaseTheme": "Select base theme"
   }
 }

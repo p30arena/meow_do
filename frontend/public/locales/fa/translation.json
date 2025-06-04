@@ -147,5 +147,9 @@
   },
   "settings": {
     "title": "تنظیمات"
+  },
+  "theme": {
+    "toggleLightDarkMode": "تغییر حالت روشن/تاریک",
+    "selectBaseTheme": "انتخاب تم پایه"
   }
 }

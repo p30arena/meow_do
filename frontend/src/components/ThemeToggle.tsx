@@ -65,6 +65,18 @@ const ThemeToggle: React.FC = () => {
           <DropdownMenuItem onClick={() => setBaseTheme('caffeine')}>
             Caffeine
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setBaseTheme('nature')}>
+            Nature
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setBaseTheme('twitter')}>
+            Twitter
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setBaseTheme('vercel')}>
+            Vercel
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setBaseTheme('mono')}>
+            Mono
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
