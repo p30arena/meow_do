@@ -6,6 +6,8 @@ The current focus is on implementing new features: user timezone preference, tas
 
 ## Recent Changes
 
+*   **Updated `docker-compose.yml` to use environment variables (`BACKEND_PORT`, `FRONTEND_PORT`, `VITE_API_BASE_URL`) for host port mappings and API base URL for backend and frontend services, ensuring ports and API URL are not hardcoded.**
+*   **Created `.env.example` file with default values for `BACKEND_PORT` (9818), `FRONTEND_PORT` (9819), and `VITE_API_BASE_URL` (`https://meowdo.donusoft.com/api`) for deployment configuration.**
 *   **Implemented backend Zod validation schema (`createManualTaskRecordSchema`) for manual task time records.**
 *   **Implemented backend controller function (`createManualTaskRecord`) to handle insertion of manual task time records into `taskTrackingRecords` table (with `startTime` defaulting to insertion time as per schema constraint).**
 *   **Added new backend route (`POST /api/v1/tasks/:taskId/manual-record`) for creating manual task time records.**
@@ -86,6 +88,5 @@ The current focus is on implementing new features: user timezone preference, tas
 *   **Fixed RTL Grid Alignment (Phase 1 - Spacing & Label):** Removed explicit `ltr:` and `rtl:` prefixes for spacing in `WorkspaceList.tsx`, `GoalList.tsx`, and `TaskList.tsx` components, and used `text-end` for label alignment in `TaskList.tsx` to ensure directionality-agnostic alignment of elements within cards.
 *   **Fixed RTL Grid Alignment (Phase 2 - Grid Item Flow - Attempt 1: `place-items-start`):** Attempted to fix grid item flow by adding `place-items-start` to the grid containers. This was found to be insufficient.
 *   **Fixed RTL Grid Alignment (Phase 3 - Grid Item Flow - Attempt 2: Flexbox Refactor):** Refactored grid containers in `WorkspaceList.tsx`, `GoalList.tsx`, and `TaskList.tsx` to use `flex` and `flex-wrap`, along with responsive width classes on `Card` components (`w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.33%-0.66rem)]`). This leverages the browser's default flexbox behavior with `direction: rtl` inherited from the parent `div` to ensure items flow from right to left in RTL mode, and from left to right in LTR mode, in a directionality-agnostic manner.
-*   **Fixed RTL Grid Alignment (Phase 4 - Flexbox Justification):** Added `justify-start` to the flex containers in `WorkspaceList.tsx`, `GoalList.tsx`, and `TaskList.tsx`. This aligns flex items to the start of the main axis, which correctly maps to right in RTL and left in LTR, ensuring the grid items start from the correct side in a directionality-agnostic manner.
 *   **Fixed RTL Button Spacing:** Replaced all instances of `space-x-*` with `gap-*` across relevant components (e.g., `WorkspaceList.tsx`, `GoalList.tsx`, `TaskList.tsx`) to ensure consistent spacing between elements in both LTR and RTL layouts.
 *   **Fixed Task Card Button Overflow:** Added `flex-shrink` to individual `Button` components within the task cards in `frontend/src/components/task/TaskList.tsx` to allow them to shrink and prevent overflow, ensuring they remain within the card boundaries in both LTR and RTL layouts.
