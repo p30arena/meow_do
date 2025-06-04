@@ -15,6 +15,7 @@ The current focus is on implementing new features: user timezone preference, tas
 *   **Added new internationalization keys for manual time record feature in `frontend/public/locales/en/translation.json`, `ar/translation.json`, and `fa/translation.json`.**
 *   **Addressed the user's constraint regarding "no schema changes" by implementing manual record functionality within the existing `taskTrackingRecords` schema, with the understanding that the `startTime` in the database will reflect the time of API call, not the user's manually entered past start time.**
 *   **Included the logo 'frontend/public/logo.png' in the Navbar near the title, with a circular shape.**
+*   **Implemented persistence for the base theme preference (e.g., 'default', 'amber-minimal') using `localStorage` in `frontend/src/context/BaseThemeContext.tsx`. The selected theme is now saved and loaded across sessions.**
 
 *   Successfully initialized the backend project with Express, Zod, Drizzle, and TypeScript.
 *   Successfully initialized the frontend project with Vite, React, TypeScript, TailwindCSS, ShadcnUI, and Lucide Icons.

@@ -18,7 +18,7 @@
 *   **Icons:** Lucide Icons
 *   **Language:** TypeScript
 *   **Internationalization:** `react-i18next` (or similar) - will need to support RTL/LTR.
-*   **State Management:** (To be selected, e.g., Zustand, Jotai, React Context)
+*   **State Management:** React Context (for base theme), `localStorage` (for theme persistence)
 *   **Charting:** Recharts
 *   **Timezone Handling:** (To be selected, e.g., `luxon`, `date-fns-tz`, or `moment-timezone`)
 

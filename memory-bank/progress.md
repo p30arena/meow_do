@@ -72,6 +72,7 @@
 *   Task time spent summary and display using Recharts (backend API, frontend UI) - **Completed**.
 *   **Manual task time record entry (backend API, frontend UI) - Completed (with `startTime` in DB reflecting insertion time due to schema constraint).**
 *   **Logo 'frontend/public/logo.png' included in the Navbar near the title with a circular shape.**
+*   **Theme preference storage (using `localStorage`) - Completed.**
 
 ### Enhancements:
 *   Comprehensive error handling.

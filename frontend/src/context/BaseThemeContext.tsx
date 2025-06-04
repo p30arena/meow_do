@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-type ThemeName = 'default' | 'amber-minimal' | 'amethyst-haze' | 'bold-tech' | 'bubble-gum' | 'caffeine' | 'nature' | 'twitter' | 'vercel' | 'mono'; // Define ThemeName as a union of string literals
+type ThemeName = 'default' | 'amber-minimal' | 'amethyst-haze' | 'bold-tech' | 'bubble-gum' | 'caffeine' | 'nature' | 'twitter' | 'vercel' | 'mono';
 
 interface BaseThemeContextType {
   baseTheme: ThemeName;
@@ -18,7 +18,26 @@ export const useBaseTheme = () => {
 };
 
 export const BaseThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [baseTheme, setBaseTheme] = useState<ThemeName>('default');
+  // Initialize state with value from localStorage or 'default'
+  const [baseTheme, setBaseThemeState] = useState<ThemeName>(() => {
+    if (typeof window !== 'undefined') {
+      const storedTheme = localStorage.getItem('base-theme');
+      return (storedTheme as ThemeName) || 'default';
+    }
+    return 'default';
+  });
+
+  // Update localStorage whenever baseTheme changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('base-theme', baseTheme);
+    }
+  }, [baseTheme]);
+
+  // Wrapper function to update state and localStorage
+  const setBaseTheme = (theme: ThemeName) => {
+    setBaseThemeState(theme);
+  };
 
   return (
     <BaseThemeContext.Provider value={{ baseTheme, setBaseTheme }}>
