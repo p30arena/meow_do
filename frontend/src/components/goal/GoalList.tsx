@@ -89,7 +89,7 @@ const GoalList: React.FC<GoalListProps> = ({ workspaceId, onCreateNew, onEditGoa
                 <p>{goal.description || t('noDescription')}</p>
                 <p><strong>{t('status')}:</strong> {t(`goalStatus.${goal.status}`)}</p>
                 {goal.deadline && <p><strong>{t('deadline')}:</strong> {new Date(goal.deadline).toLocaleDateString()}</p>}
-                <div className="mt-4 flex justify-end ltr:space-x-2 rtl:space-x-reverse">
+                <div className="mt-4 flex justify-end space-x-2">
                   <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onEditGoal(goal); }}>{t('workspace.edit')}</Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>

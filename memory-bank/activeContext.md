@@ -61,42 +61,15 @@ The current focus is on implementing new features: user timezone preference, tas
 *   **Configured build-time versioning for translation files by adding `__APP_VERSION__` to `frontend/vite.config.ts` and using it in `frontend/src/main.tsx`.**
 *   **Declared `__APP_VERSION__` as a global variable in `frontend/src/vite-env.d.ts` to resolve TypeScript errors.**
 *   **Docker Setup:** Successfully set up Docker Compose and Dockerfiles for containerizing the backend, frontend, and PostgreSQL database, including Nginx configuration for the frontend and addressing PostgreSQL port exposure.
-
-## Next Steps
-
-1.  Implement user timezone preference (backend schema, API, frontend UI) - **Completed**.
-2.  Implement task priority (backend schema, API, frontend UI) - **Completed**.
-3.  Implement task start/stop tracking (backend schema, API, frontend UI) - **Completed**.
-4.  Implement task time spent summary and display using Recharts (backend API, frontend UI) - **Completed**.
-5.  Comprehensive error handling.
-6.  Unit and integration tests for both backend and frontend.
-7.  Deployment pipeline setup.
-8.  Performance optimizations.
-
-## Active Decisions and Considerations
-
-*   **Mobile-First Design:** Emphasizing responsiveness from the outset for all UI components.
-*   **Modular Architecture:** Planning for a clear separation between backend (Express Zod API, Drizzle) and frontend (Vite + React) to facilitate independent development and scalability.
-*   **Internationalization (i18n):** Integrating multi-lingual support (En, Ar, Fa) early in the frontend setup, including full support for RTL/LTR layouts. The previous RTL punctuation display issue has been addressed and is no longer a concern.
-*   **Theming:** Implementing Light Mode and Dark Mode capabilities for user preference.
-*   **Multi-user & Authentication:** Implementing JWT-based authentication for multi-user support, with tokens passed via `localStorage` and included in `fetch` headers.
-*   **Timezone Preference:** Allowing users to set their preferred timezone for accurate time display and calculations.
-*   **Task Prioritization:** Adding a priority field to tasks to help users organize their work.
-*   **Detailed Task Tracking:** Implementing start/stop functionality and time aggregation for tasks to provide better insights into time spent.
-*   **Charting:** Using Recharts for clear visual representation of time spent on tasks.
-
-## Important Patterns and Preferences
-
-*   **Clean Code:** Adherence to best practices for readability, maintainability, and scalability.
-*   **Component-Based UI:** Utilizing React components and ShadcnUI for a modular and reusable frontend.
-*   **Type Safety:** Leveraging Zod for API schema validation and TypeScript throughout the project for robust type checking.
-*   **API Communication:** Using native `fetch` API for all frontend-to-backend communication.
-
-## Learnings and Project Insights
-
-*   The project's success heavily relies on a strong mobile user experience.
-*   Clear definition of goal and task statuses is crucial for effective tracking.
-*   The 24-hour time budget warning is a critical feature for realistic daily planning.
-*   Multi-user support with robust authentication is a core requirement, necessitating careful JWT implementation.
-*   RTL/LTR layout support is essential for the target user base. The previous punctuation display issue has been addressed and is no longer a concern.
-*   User preference for `fetch` over `axios` for API calls has been noted and implemented.
+*   **Fixed Task Tracking Timer Display:** The "Tracking" timer now correctly starts from the task's actual start time when a task is already in progress, instead of resetting to 00:00:00.
+*   **Fixed Stop Task Tracking API Call:** Corrected the API endpoint for stopping task tracking in `frontend/src/api/task.ts` to match the backend route, resolving the 404 error.
+*   **Fixed Stop Time Datetime Format:** Converted the `stopTime` to an ISO 8601 string in `frontend/src/components/task/TaskList.tsx` before sending it to the backend, resolving the `ZodError: Invalid datetime` validation error.
+*   **Fixed Backend Duration Calculation (Stop Task):** Corrected the SQL `EXTRACT` function usage in `backend/src/controllers/task.controller.ts` to correctly reference the `startTime` column when calculating duration for other active tracking records in the `stopTask` controller.
+*   **Fixed Backend Duration Calculation (Start Task):** Corrected the SQL `EXTRACT` function usage in `backend/src/controllers/task.controller.ts` to correctly reference the `startTime` column when calculating duration for existing active tracking records in the `startTask` controller.
+*   **Fixed Task Tracking Summary Route:** Reordered routes in `backend/src/routes/task.routes.ts` to ensure the `/summary` endpoint is matched correctly before the dynamic `/:id` route, resolving the 500 error when fetching task tracking summary.
+*   **Task Tracking Chart Placement and Filtering:**
+    *   The `TaskTrackingChart` component has been moved from the "Settings" view.
+    *   It is now rendered within the "Goals" view (when a workspace is selected) and the "Tasks" view (when a goal is selected).
+    *   The chart now accepts `workspaceId` and `goalId` as props, allowing it to filter the task tracking summary data based on the currently selected workspace or goal.
+    *   The backend `getTaskTrackingSummary` API has been updated to support filtering by `workspaceId` and `goalId`.
+*   **Fixed RTL Grid Alignment:** Removed explicit `ltr:` and `rtl:` prefixes for spacing in `WorkspaceList.tsx`, `GoalList.tsx`, and `TaskList.tsx` components, and used `text-end` for label alignment in `TaskList.tsx` to ensure directionality-agnostic alignment of grids and elements.
