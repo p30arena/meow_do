@@ -4,12 +4,15 @@ import {
   getTasksByGoalId,
   startTaskTracking,
   stopTaskTracking,
+  getTaskTrackingSummary, // Import getTaskTrackingSummary
   type Task,
+  type TaskTrackingSummary, // Import TaskTrackingSummary
 } from "../../api/task";
 import { ManualTimeRecordForm } from "./ManualTimeRecordForm"; // Import the new component
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
+import { Progress } from "../ui/progress"; // Import Progress component
 import {
   Dialog,
   DialogContent,
@@ -34,6 +37,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 
 interface TaskListProps {
+  workspaceId: string; // Add workspaceId to props
   goalId: string;
   onCreateNew: () => void;
   onEditTask: (task: Task) => void;
@@ -41,6 +45,7 @@ interface TaskListProps {
 }
 
 const TaskList: React.FC<TaskListProps> = ({
+  workspaceId, // Destructure workspaceId
   goalId,
   onCreateNew,
   onEditTask,
@@ -51,6 +56,8 @@ const TaskList: React.FC<TaskListProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalTimeBudget, setTotalTimeBudget] = useState(0);
+  const [totalTimeSpentToday, setTotalTimeSpentToday] = useState(0); // New state for total time spent today
+  const [taskSummaries, setTaskSummaries] = useState<TaskTrackingSummary[]>([]); // New state for individual task summaries
   const [activeTrackingTaskId, setActiveTrackingTaskId] = useState<
     string | null
   >(null);
@@ -73,6 +80,15 @@ const TaskList: React.FC<TaskListProps> = ({
       setTasks(data);
       const sum = data.reduce((acc, task) => acc + task.timeBudget, 0);
       setTotalTimeBudget(sum);
+
+      // Fetch daily task tracking summary
+      const summary = await getTaskTrackingSummary("day", workspaceId, goalId);
+      setTaskSummaries(summary); // Store individual task summaries
+      const totalSpentSeconds = summary.reduce(
+        (acc, record) => acc + record.totalDurationSeconds,
+        0
+      );
+      setTotalTimeSpentToday(Math.floor(totalSpentSeconds / 60)); // Convert seconds to minutes
 
       // Find if any task has an active tracking record
       const activeTask = data.find(
@@ -102,7 +118,7 @@ const TaskList: React.FC<TaskListProps> = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [goalId]);
+  }, [goalId, workspaceId]); // Add workspaceId to dependency array
 
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -265,6 +281,30 @@ const TaskList: React.FC<TaskListProps> = ({
         {t("tasks.totalTimeBudget")}: {Math.floor(totalTimeBudget / 60)}h{" "}
         {totalTimeBudget % 60}m
       </p>
+
+      {/* Progress Bar for Daily Budget */}
+      {totalTimeBudget > 0 && (
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-sm font-medium">
+              {t("tasks.dailyProgress")}:
+            </span>
+            <span className="text-sm font-medium">
+              {totalTimeSpentToday} {t("tasks.minutes")} / {totalTimeBudget}{" "}
+              {t("tasks.minutes")} (
+              {((totalTimeSpentToday / totalTimeBudget) * 100).toFixed(0)}%)
+            </span>
+          </div>
+          <Progress
+            value={Math.min(
+              100,
+              (totalTimeSpentToday / totalTimeBudget) * 100
+            )}
+            className="h-2"
+          />
+        </div>
+      )}
+
       {tasks.length === 0 ? (
         <p>{t("tasks.noTasksYet")}</p>
       ) : (
@@ -283,6 +323,38 @@ const TaskList: React.FC<TaskListProps> = ({
                   <strong>{t("tasks.timeBudget")}:</strong> {task.timeBudget}{" "}
                   {t("tasks.minutes")}
                 </p>
+                {/* Individual Task Progress Bar */}
+                {(() => {
+                  const taskSummary = taskSummaries.find(
+                    (s) => s.taskName === task.name
+                  );
+                  const individualTimeSpent = taskSummary
+                    ? Math.floor(taskSummary.totalDurationSeconds / 60)
+                    : 0;
+                  const individualPercentage =
+                    task.timeBudget > 0
+                      ? (individualTimeSpent / task.timeBudget) * 100
+                      : 0;
+
+                  return (
+                    <div className="mb-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium">
+                          {t("tasks.taskProgress")}:
+                        </span>
+                        <span className="text-sm font-medium">
+                          {individualTimeSpent} {t("tasks.minutes")} /{" "}
+                          {task.timeBudget} {t("tasks.minutes")} (
+                          {individualPercentage.toFixed(0)}%)
+                        </span>
+                      </div>
+                      <Progress
+                        value={Math.min(100, individualPercentage)}
+                        className="h-2"
+                      />
+                    </div>
+                  );
+                })()}
                 <p>
                   <strong>{t("tasks.status")}:</strong>{" "}
                   {t(`tasks.taskStatus.${task.status}`)}

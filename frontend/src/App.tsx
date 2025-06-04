@@ -220,6 +220,7 @@ function App() {
                     />
                   ) : (
                     <TaskList
+                      workspaceId={selectedWorkspace.id} // Pass workspaceId
                       goalId={selectedGoal.id}
                       onCreateNew={handleCreateTaskClick}
                       onEditTask={handleEditTaskClick}
