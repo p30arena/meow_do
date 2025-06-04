@@ -10,16 +10,18 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  setToken: React.Dispatch<React.SetStateAction<string | null>>;
+  setUser: (user: User | null) => void;
+  setToken: (token: string | null) => void;
   logout: () => void;
+  isAuthReady: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [userState, setUserState] = useState<User | null>(null);
+  const [tokenState, setTokenState] = useState<string | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -27,34 +29,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     if (storedUser && storedToken) {
       try {
-        setUser(JSON.parse(storedUser));
-        setToken(storedToken);
+        setUserState(JSON.parse(storedUser));
+        setTokenState(storedToken);
       } catch (error) {
         console.error('Failed to parse stored user or token:', error);
         localStorage.removeItem('user');
         localStorage.removeItem('token');
       }
     }
+    setIsAuthReady(true); // Set ready after initial load attempt
   }, []);
 
-  useEffect(() => {
-    if (user && token) {
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
+  const setAuthUser = (newUser: User | null) => {
+    setUserState(newUser);
+    if (newUser) {
+      localStorage.setItem('user', JSON.stringify(newUser));
     } else {
       localStorage.removeItem('user');
+    }
+  };
+
+  const setAuthToken = (newToken: string | null) => {
+    setTokenState(newToken);
+    if (newToken) {
+      localStorage.setItem('token', newToken);
+    } else {
       localStorage.removeItem('token');
     }
-  }, [user, token]);
+  };
 
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    // handleUnauthorized will also clear local storage and redirect
+    setUserState(null);
+    setTokenState(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, setUser, setToken, logout }}>
+    <AuthContext.Provider value={{ user: userState, token: tokenState, setUser: setAuthUser, setToken: setAuthToken, logout, isAuthReady }}>
       {children}
     </AuthContext.Provider>
   );

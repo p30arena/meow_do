@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getWorkspaces, deleteWorkspace, type Workspace } from '../../api/workspace';
+import { useAuth } from '../../context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 
@@ -12,6 +13,7 @@ interface WorkspaceListProps {
 
 const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWorkspace, onEditWorkspace }) => {
   const { t } = useTranslation();
+  const { token } = useAuth(); // Get token from useAuth
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,8 +30,10 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
   };
 
   useEffect(() => {
-    fetchWorkspaces();
-  }, []);
+    if (token) { // Only fetch if token is available
+      fetchWorkspaces();
+    }
+  }, [token]); // Re-run when token changes
 
   if (loading) {
     return <div>{t('workspace.loadingWorkspaces')}</div>;

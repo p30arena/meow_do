@@ -20,3 +20,13 @@ export const updateTaskSchema = z.object({
   priority: z.number().int().min(1).max(10).optional(), // Priority from 1 to 10
   isRecurring: z.boolean().optional(),
 });
+
+export const startTaskTrackingSchema = z.object({
+  taskId: z.string().uuid('Invalid task ID format'),
+  userId: z.string().uuid('Invalid user ID format'),
+});
+
+export const stopTaskTrackingSchema = z.object({
+  trackingId: z.string().uuid('Invalid tracking ID format'),
+  stopTime: z.string().datetime().optional().transform((str) => (str ? new Date(str) : undefined)), // ISO 8601 string to Date object
+});

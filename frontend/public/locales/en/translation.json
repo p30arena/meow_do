@@ -109,8 +109,17 @@
     },
     "noTrackingData": "No tracking data available for the selected period.",
     "totalTime": "Total Time",
-    "timeSpent": "Time Spent"
+    "timeSpent": "Time Spent",
+    "noActiveTrackingRecord": "No active tracking record found for this task.",
+    "missingStopTimeInfo": "Missing tracking record ID or stop time information.",
+    "invalidStopDateTimeFormat": "Invalid stop date/time format.",
+    "stopTimeBeforeStartTime": "Stop time cannot be before start time.",
+    "stopTrackingTitle": "Stop Task Tracking",
+    "stopTrackingDescription": "Enter the exact date and time when you stopped working on this task.",
+    "stopTime": "Stop Time"
   },
+  "cancel": "Cancel",
+  "confirm": "Confirm",
   "timezone": {
     "label": "Select your Timezone",
     "selectPlaceholder": "Select a timezone",

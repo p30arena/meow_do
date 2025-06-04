@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { register } from '../../api/auth';
+import { register, type LoginResponse } from '../../api/auth';
 
 interface RegisterFormProps {
-  onRegisterSuccess: (token: string) => void;
+  onRegisterSuccess: (data: LoginResponse) => void;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
@@ -33,7 +33,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
     try {
       console.log('Attempting registration with:', { username, email, password });
       const data = await register(username, email, password);
-      onRegisterSuccess(data.token);
+      onRegisterSuccess(data);
     } catch (err: any) {
       setError(err.message || t('register.errorOccurred'));
       console.error('Registration error:', err);

@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { login } from '../../api/auth';
+import { login, type LoginResponse } from '../../api/auth';
 
 interface LoginFormProps {
-  onLoginSuccess: (token: string) => void;
+  onLoginSuccess: (data: LoginResponse) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
@@ -25,7 +25,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     try {
       console.log('Attempting login with:', { email, password });
       const data = await login(email, password);
-      onLoginSuccess(data.token);
+      onLoginSuccess(data);
     } catch (err: any) {
       setError(err.message || t('login.errorOccurred'));
       console.error('Login error:', err);

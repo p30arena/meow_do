@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import LoginForm from "./components/auth/LoginForm";
 import RegisterForm from "./components/auth/RegisterForm";
@@ -8,11 +8,11 @@ import GoalList from "./components/goal/GoalList";
 import GoalForm from "./components/goal/GoalForm";
 import TaskList from "./components/task/TaskList";
 import TaskForm from "./components/task/TaskForm";
-import { setAuthToken, getAuthToken } from "./api/auth";
 import { deleteGoal, type Goal } from "./api/goal";
 import { deleteTask, type Task } from "./api/task";
 import { type Workspace } from "./api/workspace";
 import { Button } from "./components/ui/button";
+import { useAuth } from "./context/AuthContext";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 import ThemeToggle from "./components/ThemeToggle";
 import TimezoneSelector from "./components/settings/TimezoneSelector";
@@ -20,7 +20,7 @@ import TaskTrackingChart from "./components/task/TaskTrackingChart";
 
 function App() {
   const { t } = useTranslation();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, setToken, setUser, logout, isAuthReady } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
   const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
@@ -34,32 +34,24 @@ function App() {
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
   const [showSettings, setShowSettings] = useState(false); // New state for settings view
 
-  useEffect(() => {
-    const token = getAuthToken();
-    if (token) {
-      setIsLoggedIn(true);
-    }
-  }, []);
-
   const handleToggleSettings = () => {
     setShowSettings(prev => !prev);
   };
 
-  const handleLoginSuccess = (token: string) => {
-    setAuthToken(token);
-    setIsLoggedIn(true);
+  const handleLoginSuccess = (data: { token: string; user: any }) => { // Type will be more specific later
+    setToken(data.token);
+    setUser(data.user);
     setShowRegister(false);
   };
 
-  const handleRegisterSuccess = (token: string) => {
-    setAuthToken(token);
-    setIsLoggedIn(true);
+  const handleRegisterSuccess = (data: { token: string; user: any }) => { // Type will be more specific later
+    setToken(data.token);
+    setUser(data.user);
     setShowRegister(false);
   };
 
   const handleLogout = () => {
-    setAuthToken(null);
-    setIsLoggedIn(false);
+    logout();
     setShowWorkspaceForm(false);
     setSelectedWorkspace(null);
     setSelectedGoal(null);
@@ -180,7 +172,7 @@ function App() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
-      {!isLoggedIn ? (
+      {!user || !isAuthReady ? (
         <div className="flex flex-col items-center gap-4">
           {showRegister ? (
             <RegisterForm onRegisterSuccess={handleRegisterSuccess} />

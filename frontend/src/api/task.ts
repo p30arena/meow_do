@@ -13,6 +13,7 @@ export interface Task {
   isRecurring: boolean;
   createdAt: string;
   updatedAt: string;
+  activeTracking?: TaskTrackingRecord | null; // Add activeTracking property
 }
 
 export interface CreateTaskPayload {
@@ -98,14 +99,15 @@ export const startTaskTracking = async (taskId: string): Promise<TaskTrackingRec
   return response.json();
 };
 
-export const stopTaskTracking = async (taskId: string): Promise<TaskTrackingRecord> => {
+export const stopTaskTracking = async (trackingId: string, stopTime?: string): Promise<TaskTrackingRecord> => {
   const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/stop`, {
+  const response = await fetch(`${API_BASE_URL}/tasks/tracking/${trackingId}/stop`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
+    body: JSON.stringify({ stopTime }),
   });
 
   if (response.status === 401) {
@@ -115,7 +117,7 @@ export const stopTaskTracking = async (taskId: string): Promise<TaskTrackingReco
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to stop tracking for task ID ${taskId}`);
+    throw new Error(errorData.message || `Failed to stop tracking for record ID ${trackingId}`);
   }
   return response.json();
 };

@@ -109,8 +109,17 @@
     },
     "noTrackingData": "هیچ داده ردیابی برای دوره انتخاب شده موجود نیست.",
     "totalTime": "کل زمان",
-    "timeSpent": "زمان صرف شده"
+    "timeSpent": "زمان صرف شده",
+    "noActiveTrackingRecord": "هیچ رکورد ردیابی فعالی برای این وظیفه یافت نشد.",
+    "missingStopTimeInfo": "اطلاعات شناسه رکورد ردیابی یا زمان توقف از دست رفته است.",
+    "invalidStopDateTimeFormat": "فرمت تاریخ/زمان توقف نامعتبر است.",
+    "stopTimeBeforeStartTime": "زمان توقف نمی‌تواند قبل از زمان شروع باشد.",
+    "stopTrackingTitle": "توقف ردیابی وظیفه",
+    "stopTrackingDescription": "تاریخ و زمان دقیق توقف کار بر روی این وظیفه را وارد کنید.",
+    "stopTime": "زمان توقف"
   },
+  "cancel": "لغو",
+  "confirm": "تایید",
   "timezone": {
     "label": "منطقه زمانی خود را انتخاب کنید",
     "selectPlaceholder": "یک منطقه زمانی را انتخاب کنید",

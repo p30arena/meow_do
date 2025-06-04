@@ -109,8 +109,17 @@
     },
     "noTrackingData": "لا توجد بيانات تتبع متاحة للفترة المحددة.",
     "totalTime": "إجمالي الوقت",
-    "timeSpent": "الوقت المستغرق"
+    "timeSpent": "الوقت المستغرق",
+    "noActiveTrackingRecord": "لا يوجد سجل تتبع نشط لهذه المهمة.",
+    "missingStopTimeInfo": "معلومات معرف سجل التتبع أو وقت التوقف مفقودة.",
+    "invalidStopDateTimeFormat": "تنسيق تاريخ/وقت التوقف غير صالح.",
+    "stopTimeBeforeStartTime": "وقت التوقف لا يمكن أن يكون قبل وقت البدء.",
+    "stopTrackingTitle": "إيقاف تتبع المهمة",
+    "stopTrackingDescription": "أدخل التاريخ والوقت بالضبط عندما توقفت عن العمل على هذه المهمة.",
+    "stopTime": "وقت التوقف"
   },
+  "cancel": "إلغاء",
+  "confirm": "تأكيد",
   "timezone": {
     "label": "اختر منطقتك الزمنية",
     "selectPlaceholder": "اختر منطقة زمنية",

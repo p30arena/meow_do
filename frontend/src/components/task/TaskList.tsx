@@ -4,6 +4,17 @@ import { getTasksByGoalId, startTaskTracking, stopTaskTracking, type Task } from
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '../ui/dialog';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 interface TaskListProps {
   goalId: string;
@@ -22,6 +33,10 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
   const [durationDisplay, setDurationDisplay] = useState<string>('00:00:00');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<Date | null>(null);
+  const [showStopTrackingDialog, setShowStopTrackingDialog] = useState(false);
+  const [selectedStopTime, setSelectedStopTime] = useState('');
+  const [currentTrackingRecordIdToStop, setCurrentTrackingRecordIdToStop] = useState<string | null>(null);
+  const [currentTrackingRecordStartTime, setCurrentTrackingRecordStartTime] = useState<Date | null>(null);
 
   const fetchTasks = async () => {
     try {
@@ -29,8 +44,21 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
       setTasks(data);
       const sum = data.reduce((acc, task) => acc + task.timeBudget, 0);
       setTotalTimeBudget(sum);
+
+      // Find if any task has an active tracking record
+      const activeTask = data.find(task => task.activeTracking && task.activeTracking.endTime === null);
+
+      if (activeTask && activeTask.activeTracking) {
+        setActiveTrackingTaskId(activeTask.id);
+        startTimeRef.current = new Date(activeTask.activeTracking.startTime);
+        startTimer(activeTask.id); // Restart the timer with the correct start time
+      } else {
+        stopTimer(); // No active task, ensure timer is stopped
+      }
+
     } catch (err: any) {
       setError(err.message);
+      stopTimer(); // Ensure timer is stopped on error
     } finally {
       setLoading(false);
     }
@@ -82,26 +110,58 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
     setError(null);
     try {
       await startTaskTracking(taskId);
-      startTimer(taskId);
-      // Optionally update task status to 'started' in local state or re-fetch
-      setTasks(prevTasks => prevTasks.map(task =>
-        task.id === taskId ? { ...task, status: 'started' } : task
-      ));
+      fetchTasks(); // Re-fetch tasks to update active tracking status and timer
     } catch (err: any) {
       setError(err.message);
       stopTimer(); // Stop timer if API call fails
     }
   };
 
-  const handleStopTracking = async (taskId: string) => {
+  const handleStopTracking = (task: Task) => {
     setError(null);
+    if (task.activeTracking) {
+      setCurrentTrackingRecordIdToStop(task.activeTracking.id);
+      setCurrentTrackingRecordStartTime(new Date(task.activeTracking.startTime));
+      // Pre-fill with current time, formatted for datetime-local input
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      setSelectedStopTime(`${year}-${month}-${day}T${hours}:${minutes}`);
+      setShowStopTrackingDialog(true);
+    } else {
+      setError(t('tasks.noActiveTrackingRecord'));
+    }
+  };
+
+  const handleConfirmStopTracking = async () => {
+    setError(null);
+    if (!currentTrackingRecordIdToStop || !currentTrackingRecordStartTime || !selectedStopTime) {
+      setError(t('tasks.missingStopTimeInfo'));
+      return;
+    }
+
+    const parsedStopTime = new Date(selectedStopTime);
+
+    if (isNaN(parsedStopTime.getTime())) {
+      setError(t('tasks.invalidStopDateTimeFormat'));
+      return;
+    }
+
+    if (parsedStopTime < currentTrackingRecordStartTime) {
+      setError(t('tasks.stopTimeBeforeStartTime'));
+      return;
+    }
+
     try {
-      await stopTaskTracking(taskId);
-      stopTimer();
-      // Optionally update task status to 'done' or 'pending' in local state or re-fetch
-      setTasks(prevTasks => prevTasks.map(task =>
-        task.id === taskId ? { ...task, status: 'done' } : task
-      ));
+      await stopTaskTracking(currentTrackingRecordIdToStop, selectedStopTime);
+      setShowStopTrackingDialog(false);
+      setSelectedStopTime('');
+      setCurrentTrackingRecordIdToStop(null);
+      setCurrentTrackingRecordStartTime(null);
+      fetchTasks(); // Re-fetch tasks to update active tracking status and timer
     } catch (err: any) {
       setError(err.message);
     }
@@ -169,7 +229,7 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
                 )}
                 <div className="mt-4 flex justify-end space-x-2">
                   {activeTrackingTaskId === task.id ? (
-                    <Button variant="secondary" size="sm" onClick={() => handleStopTracking(task.id)} disabled={loading}>
+                    <Button variant="secondary" size="sm" onClick={() => handleStopTracking(task)} disabled={loading}>
                       {t('tasks.stopTracking')}
                     </Button>
                   ) : (
@@ -187,6 +247,38 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
         </div>
       )}
       <Button className="mt-4" onClick={onCreateNew} disabled={loading}>{t('tasks.createTask')}</Button>
+
+      <Dialog open={showStopTrackingDialog} onOpenChange={setShowStopTrackingDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{t('tasks.stopTrackingTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('tasks.stopTrackingDescription')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="stopTime" className="text-right">
+                {t('tasks.stopTime')}
+              </Label>
+              <Input
+                id="stopTime"
+                type="datetime-local"
+                value={selectedStopTime}
+                onChange={(e) => setSelectedStopTime(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">{t('cancel')}</Button>
+            </DialogClose>
+            <Button onClick={handleConfirmStopTracking}>{t('confirm')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

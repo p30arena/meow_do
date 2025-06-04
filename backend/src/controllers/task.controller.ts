@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { db } from '../db';
 import { tasks, taskTrackingRecords, users } from '../db/schema';
 import { eq, and, sql, sum } from 'drizzle-orm';
-import { createTaskSchema, updateTaskSchema } from '../validation/task.validation';
+import { createTaskSchema, updateTaskSchema, startTaskTrackingSchema, stopTaskTrackingSchema } from '../validation/task.validation';
 import { catchAsync } from '../utils/catchAsync';
 
 export const createTask = catchAsync(async (req: Request, res: Response) => {
@@ -13,13 +13,37 @@ export const createTask = catchAsync(async (req: Request, res: Response) => {
 
 export const getTasks = catchAsync(async (req: Request, res: Response) => {
   const { goalId } = req.query;
-  let allTasks;
-  if (goalId) {
-    allTasks = await db.select().from(tasks).where(eq(tasks.goalId, goalId as string));
-  } else {
-    allTasks = await db.select().from(tasks);
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
-  res.status(200).json(allTasks);
+
+  const joinCondition = and(
+    eq(taskTrackingRecords.taskId, tasks.id),
+    eq(taskTrackingRecords.userId, userId),
+    sql`${taskTrackingRecords.endTime} IS NULL`
+  );
+
+  const mainQueryConditions = [];
+  if (goalId) {
+    mainQueryConditions.push(eq(tasks.goalId, goalId as string));
+  }
+
+  const result = await db.select({
+    task: tasks,
+    activeTracking: taskTrackingRecords,
+  })
+  .from(tasks)
+  .leftJoin(taskTrackingRecords, joinCondition)
+  .where(and(...mainQueryConditions));
+
+  const tasksWithTracking = result.map(row => ({
+    ...row.task,
+    activeTracking: row.activeTracking || null,
+  }));
+
+  res.status(200).json(tasksWithTracking);
 });
 
 export const getTaskById = catchAsync(async (req: Request, res: Response) => {
@@ -75,18 +99,17 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
 
-  // Check if there's an active tracking record for this task by this user
-  const activeRecord = await db.select()
-    .from(taskTrackingRecords)
-    .where(and(eq(taskTrackingRecords.taskId, taskId), eq(taskTrackingRecords.userId, userId), sql`${taskTrackingRecords.endTime} IS NULL`));
+  // Validate input using the new schema
+  const validatedData = startTaskTrackingSchema.parse({ taskId, userId });
 
-  if (activeRecord.length > 0) {
-    return res.status(400).json({ message: 'Task is already being tracked' });
-  }
+  // Stop any existing active tracking records for this task
+  await db.update(taskTrackingRecords)
+    .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - "startTime"))` }) // Calculate duration
+    .where(and(eq(taskTrackingRecords.taskId, validatedData.taskId), sql`${taskTrackingRecords.endTime} IS NULL`));
 
   const newTaskTrackingRecord = await db.insert(taskTrackingRecords).values({
-    taskId,
-    userId,
+    taskId: validatedData.taskId,
+    userId: validatedData.userId,
     startTime: new Date(),
   }).returning();
 
@@ -94,30 +117,52 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const stopTask = catchAsync(async (req: Request, res: Response) => {
-  const { id: taskId } = req.params;
+  const { id: trackingId } = req.params; // Changed from taskId to trackingId
   const userId = req.user?.id;
+  const { stopTime } = req.body; // Get stopTime from body
 
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
 
-  // Find the active tracking record for this task by this user
-  const activeRecord = await db.select()
-    .from(taskTrackingRecords)
-    .where(and(eq(taskTrackingRecords.taskId, taskId), eq(taskTrackingRecords.userId, userId), sql`${taskTrackingRecords.endTime} IS NULL`));
+  // Validate input using the new schema
+  const validatedData = stopTaskTrackingSchema.parse({ trackingId, stopTime });
 
-  if (activeRecord.length === 0) {
-    return res.status(400).json({ message: 'No active tracking record found for this task' });
+  // Find the specific tracking record to stop
+  const recordToStop = await db.select()
+    .from(taskTrackingRecords)
+    .where(and(eq(taskTrackingRecords.id, validatedData.trackingId), eq(taskTrackingRecords.userId, userId)));
+
+  if (recordToStop.length === 0) {
+    return res.status(404).json({ message: 'Tracking record not found' });
   }
 
-  const startTime = activeRecord[0].startTime;
-  const endTime = new Date();
-  const duration = Math.floor((endTime.getTime() - startTime.getTime()) / 1000); // Duration in seconds
+  if (recordToStop[0].endTime !== null) {
+    return res.status(400).json({ message: 'Task tracking record is already stopped' });
+  }
+
+  const startTime = recordToStop[0].startTime;
+  const actualStopTime = validatedData.stopTime || new Date();
+
+  if (actualStopTime < startTime) {
+    return res.status(400).json({ message: 'Stop time cannot be before start time' });
+  }
+
+  const duration = Math.floor((actualStopTime.getTime() - startTime.getTime()) / 1000); // Duration in seconds
 
   const updatedRecord = await db.update(taskTrackingRecords)
-    .set({ endTime, duration, updatedAt: new Date() })
-    .where(eq(taskTrackingRecords.id, activeRecord[0].id))
+    .set({ endTime: actualStopTime, duration, updatedAt: new Date() })
+    .where(eq(taskTrackingRecords.id, validatedData.trackingId))
     .returning();
+
+  // As a safety measure, stop any other active records for the same task
+  await db.update(taskTrackingRecords)
+    .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - "startTime"))` })
+    .where(and(
+      eq(taskTrackingRecords.taskId, recordToStop[0].taskId),
+      sql`${taskTrackingRecords.endTime} IS NULL`,
+      sql`${taskTrackingRecords.id} != ${validatedData.trackingId}` // Exclude the current record
+    ));
 
   res.status(200).json({ message: 'Task tracking stopped', record: updatedRecord[0] });
 });

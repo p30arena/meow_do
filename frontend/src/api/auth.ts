@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../config';
 
-interface LoginResponse {
+export interface LoginResponse {
   token: string;
   user: {
     id: string;
@@ -51,16 +51,4 @@ export const register = async (username: string, email: string, password: string
   } catch (error: any) {
     throw new Error(error.message || 'An unexpected error occurred during registration.');
   }
-};
-
-export const setAuthToken = (token: string | null) => {
-  if (token) {
-    localStorage.setItem('token', token);
-  } else {
-    localStorage.removeItem('token');
-  }
-};
-
-export const getAuthToken = (): string | null => {
-  return localStorage.getItem('token');
 };
