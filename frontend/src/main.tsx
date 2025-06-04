@@ -4,6 +4,8 @@ import { BrowserRouter } from "react-router-dom"; // Import BrowserRouter
 import "./index.css";
 import { App } from "./App"; // Changed to named import
 import i18n from "i18next";
+import { ThemeManager } from "./lib/theme-manager"; // Re-add import
+import { BaseThemeProvider } from "./context/BaseThemeContext"; // Re-add import
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import HttpBackend from "i18next-http-backend";
@@ -39,13 +41,15 @@ createRoot(rootElement).render(
       <StyleSheetManager
         stylisPlugins={isRtl ? [prefixer, rtlPlugin] : [prefixer]}
       >
-        <div>
-          <AuthProvider>
-            <BrowserRouter> {/* Wrap App with BrowserRouter */}
-              <App />
-            </BrowserRouter>
-          </AuthProvider>
-        </div>
+        <BaseThemeProvider> {/* Re-add BaseThemeProvider */}
+          <ThemeManager> {/* Re-add ThemeManager */}
+            <AuthProvider>
+              <BrowserRouter>
+                <App />
+              </BrowserRouter>
+            </AuthProvider>
+          </ThemeManager>
+        </BaseThemeProvider>
       </StyleSheetManager>
     </ThemeProvider>
   </StrictMode>
