@@ -129,6 +129,14 @@ dist
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
+# Docker
+docker-compose.override.yml
+*.env
+
+# Project Build Outputs
+backend/dist/
+frontend/dist/
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged
