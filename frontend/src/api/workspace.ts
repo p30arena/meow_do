@@ -1,4 +1,5 @@
-import { API_BASE_URL } from '../config'; // Re-enabled import
+import { API_BASE_URL } from '../config';
+import { handleUnauthorized } from '../lib/utils';
 
 export interface Workspace {
   id: string;
@@ -29,6 +30,11 @@ export const createWorkspace = async (payload: CreateWorkspacePayload): Promise<
     body: JSON.stringify(payload),
   });
 
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized'); // Throw an error to stop further execution
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to create workspace');
@@ -46,6 +52,11 @@ export const getWorkspaces = async (): Promise<Workspace[]> => {
     },
   });
 
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to fetch workspaces');
@@ -62,6 +73,11 @@ export const getWorkspaceById = async (id: string): Promise<Workspace> => {
       'Authorization': `Bearer ${token}`,
     },
   });
+
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -81,6 +97,11 @@ export const updateWorkspace = async (id: string, payload: UpdateWorkspacePayloa
     body: JSON.stringify(payload),
   });
 
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || `Failed to update workspace with ID ${id}`);
@@ -97,6 +118,11 @@ export const deleteWorkspace = async (id: string): Promise<void> => {
       'Authorization': `Bearer ${token}`,
     },
   });
+
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
 
   if (!response.ok) {
     const errorData = await response.json();

@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../config';
+import { handleUnauthorized } from '../lib/utils';
 
 export interface Task {
   id: string;
@@ -42,6 +43,11 @@ export const createTask = async (payload: CreateTaskPayload): Promise<Task> => {
     body: JSON.stringify(payload),
   });
 
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to create task');
@@ -59,6 +65,11 @@ export const getTasksByGoalId = async (goalId: string): Promise<Task[]> => {
     },
   });
 
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || `Failed to fetch tasks for goal ID ${goalId}`);
@@ -75,6 +86,11 @@ export const getTaskById = async (id: string): Promise<Task> => {
       'Authorization': `Bearer ${token}`,
     },
   });
+
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -94,6 +110,11 @@ export const updateTask = async (id: string, payload: UpdateTaskPayload): Promis
     body: JSON.stringify(payload),
   });
 
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || `Failed to update task with ID ${id}`);
@@ -111,6 +132,11 @@ export const deleteTask = async (id: string): Promise<void> => {
     },
   });
 
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || `Failed to delete task with ID ${id}`);
@@ -126,6 +152,11 @@ export const copyTaskToNextDay = async (id: string): Promise<Task> => {
       'Authorization': `Bearer ${token}`,
     },
   });
+
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
 
   if (!response.ok) {
     const errorData = await response.json();

@@ -55,6 +55,8 @@ The current focus is on frontend development. All core features (User authentica
 *   Updated `frontend/public/locales/ar/translation.json` and `frontend/public/locales/fa/translation.json` to nest `confirmDelete` under `goals` and `tasks` objects, and added `title` keys to `goals` and `tasks` objects, resolving "Duplicate object key" errors.
 *   Corrected i18n key usage in `frontend/src/components/task/TaskForm.tsx` to use nested keys (e.g., `tasks.timeBudget`, `tasks.createTask`, `workspace.cancel`), resolving `missingKey` errors.
 *   Corrected the structure of `frontend/public/locales/en/translation.json`, `frontend/public/locales/ar/translation.json`, and `frontend/public/locales/fa/translation.json` by moving task-related top-level keys into the `tasks` object.
+*   Implemented `handleUnauthorized` utility in `frontend/src/lib/utils.ts` to clear local storage token and redirect to login on 401 Unauthorized responses.
+*   Integrated `handleUnauthorized` into `frontend/src/api/workspace.ts`, `frontend/src/api/goal.ts`, and `frontend/src/api/task.ts` to handle 401 errors.
 
 ## Next Steps
 

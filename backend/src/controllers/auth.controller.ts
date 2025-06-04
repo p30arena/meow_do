@@ -9,7 +9,7 @@ import { catchAsync } from '../utils/catchAsync';
 
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET as string, {
-    expiresIn: '1h',
+    expiresIn: '90d',
   });
 };
 

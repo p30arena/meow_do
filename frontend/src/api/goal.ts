@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../config';
+import { handleUnauthorized } from '../lib/utils';
 
 export interface Goal {
   id: string;
@@ -36,6 +37,11 @@ export const createGoal = async (payload: CreateGoalPayload): Promise<Goal> => {
     body: JSON.stringify(payload),
   });
 
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to create goal');
@@ -53,6 +59,11 @@ export const getGoalsByWorkspaceId = async (workspaceId: string): Promise<Goal[]
     },
   });
 
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || `Failed to fetch goals for workspace ID ${workspaceId}`);
@@ -69,6 +80,11 @@ export const getGoalById = async (id: string): Promise<Goal> => {
       'Authorization': `Bearer ${token}`,
     },
   });
+
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -88,6 +104,11 @@ export const updateGoal = async (id: string, payload: UpdateGoalPayload): Promis
     body: JSON.stringify(payload),
   });
 
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || `Failed to update goal with ID ${id}`);
@@ -104,6 +125,11 @@ export const deleteGoal = async (id: string): Promise<void> => {
       'Authorization': `Bearer ${token}`,
     },
   });
+
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
 
   if (!response.ok) {
     const errorData = await response.json();
