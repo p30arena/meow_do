@@ -53,8 +53,8 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
               <CardContent>
                 <p>{workspace.description || t('noDescription')}</p>
                 <div className="mt-4 flex justify-end space-x-2">
-                  <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); /* handle edit */ }}>{t('edit')}</Button>
-                  <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); /* handle delete */ }}>{t('delete')}</Button>
+                  <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); /* handle edit */ }}>{t('workspace.edit')}</Button>
+                  <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); /* handle delete */ }}>{t('workspace.delete')}</Button>
                 </div>
               </CardContent>
             </Card>

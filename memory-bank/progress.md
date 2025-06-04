@@ -21,6 +21,7 @@
 *   Multi-language support for task features (English, Arabic, Farsi) is configured.
 *   Corrected i18n key usage in `frontend/src/components/workspace/WorkspaceList.tsx` to use nested keys (e.g., `workspace.loadingWorkspaces`) instead of top-level keys, resolving `missingKey` errors.
 *   Corrected i18n key usage in `frontend/src/components/workspace/WorkspaceForm.tsx` to use nested keys (e.g., `workspace.createWorkspace`) instead of top-level keys, resolving `missingKey` errors.
+*   Corrected i18n key usage for 'edit' and 'delete' in `frontend/src/components/workspace/WorkspaceList.tsx` to use nested keys (e.g., `workspace.edit`, `workspace.delete`), resolving `missingKey` errors.
 *   Both backend and frontend projects build successfully, outputting to their respective `dist` folders, and the frontend build no longer generates unwanted `.d.ts` files.
 *   The backend development server (`npm run dev`) now starts successfully after installing `ts-node`.
 *   Backend API routes have been updated to include `/v1` prefix, aligning with frontend API calls.
