@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { register } from '../../api/auth';
 
 interface RegisterFormProps {
   onRegisterSuccess: (token: string) => void;
@@ -30,19 +31,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
     }
 
     try {
-      // TODO: Implement actual registration API call
       console.log('Attempting registration with:', { username, email, password });
-      // Simulate API call
-      // TODO: Replace with actual API call
-      const dummyToken = 'dummy-jwt-token';
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      if (username && email && password) { // Basic validation
-        onRegisterSuccess(dummyToken); // Pass a dummy token
-      } else {
-        setError(t('register.registrationFailed'));
-      }
-    } catch (err) {
-      setError(t('register.errorOccurred'));
+      const data = await register(username, email, password);
+      onRegisterSuccess(data.token);
+    } catch (err: any) {
+      setError(err.message || t('register.errorOccurred'));
       console.error('Registration error:', err);
     } finally {
       setLoading(false);

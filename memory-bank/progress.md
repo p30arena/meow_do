@@ -11,7 +11,7 @@
 *   Daily time budget calculation and 24h warning logic is implemented.
 *   User authentication and authorization is implemented.
 *   Frontend project setup (Vite, React, TypeScript, TailwindCSS, ShadcnUI, Lucide Icons) is complete.
-*   Frontend authentication components (`LoginForm`, `RegisterForm`) and API integration (`auth.ts` using `fetch`) are implemented.
+*   Frontend authentication components (`LoginForm`, `RegisterForm`) now use actual backend API calls for login and registration, and API integration (`auth.ts` using `fetch`) is implemented.
 *   Multi-language support (i18n) for authentication messages (English, Arabic, Farsi) is configured.
 *   Frontend workspace management (CRUD) components (`WorkspaceList`, `WorkspaceForm`) and API integration are implemented.
 *   Multi-language support for workspace features (English, Arabic, Farsi) is configured.

@@ -18,7 +18,7 @@ The current focus is on frontend development. All core features (User authentica
 *   Implemented User authentication and authorization, including user registration, login, JWT token generation, and authentication middleware.
 *   Resolved persistent TypeScript errors related to Express Router by implementing a `catchAsync` utility.
 *   Resolved Drizzle `Date` type incompatibility with Zod `datetime` strings by transforming the string to a `Date` object in Zod schemas.
-*   Created `frontend/src/components/auth/LoginForm.tsx` and `frontend/src/components/auth/RegisterForm.tsx` for user authentication.
+*   Updated `frontend/src/components/auth/LoginForm.tsx` and `frontend/src/components/auth/RegisterForm.tsx` to use actual backend API calls for user authentication.
 *   Created `frontend/src/api/auth.ts` to handle authentication API calls using the native `fetch` API (switched from `axios` as per user's request).
 *   Installed required Shadcn UI components (`button`, `input`, `label`, `card`, `textarea`, `select`, `checkbox`, `dropdown-menu`) in the frontend.
 *   Updated `frontend/src/App.tsx` to manage authentication state and conditionally render login/register forms or main application content, and to integrate WorkspaceList, WorkspaceForm, GoalList, GoalForm, TaskList, and TaskForm.
