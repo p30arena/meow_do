@@ -90,7 +90,7 @@ export const Navbar: React.FC = () => {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                          <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
                           <AlertDialogAction onClick={logout}>
                             {t("confirm")}
                           </AlertDialogAction>
@@ -143,7 +143,7 @@ export const Navbar: React.FC = () => {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                    <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
                     <AlertDialogAction onClick={logout}>
                       {t("confirm")}
                     </AlertDialogAction>
