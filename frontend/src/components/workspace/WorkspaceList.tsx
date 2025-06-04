@@ -88,7 +88,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
                 <CardTitle>{workspace.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>{workspace.description || t('noDescription')}</p>
+                <p>{workspace.description || t('workspace.noDescription')}</p>
                 <div className="mt-4 flex justify-end gap-2">
                   <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onEditWorkspace(workspace); }}>{t('workspace.edit')}</Button>
                   <AlertDialog>
