@@ -51,12 +51,12 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({ workspace, onSuccess, onC
   return (
     <Card className="p-4">
       <CardHeader>
-        <CardTitle>{workspace ? t('editWorkspace') : t('createWorkspace')}</CardTitle>
+        <CardTitle>{workspace ? t('workspace.editWorkspace') : t('workspace.createWorkspace')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">{t('workspaceName')}</Label>
+            <Label htmlFor="name">{t('workspace.workspaceName')}</Label>
             <Input
               id="name"
               type="text"
@@ -67,7 +67,7 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({ workspace, onSuccess, onC
             />
           </div>
           <div>
-            <Label htmlFor="description">{t('workspaceDescription')}</Label>
+            <Label htmlFor="description">{t('workspace.workspaceDescription')}</Label>
             <Textarea
               id="description"
               value={description}
@@ -78,10 +78,10 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({ workspace, onSuccess, onC
           {error && <p className="text-red-500 text-sm">{t('error')}: {error}</p>}
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-              {t('cancel')}
+              {t('workspace.cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? t('saving') : (workspace ? t('saveChanges') : t('create'))}
+              {loading ? t('workspace.saving') : (workspace ? t('workspace.saveChanges') : t('workspace.create'))}
             </Button>
           </div>
         </form>
