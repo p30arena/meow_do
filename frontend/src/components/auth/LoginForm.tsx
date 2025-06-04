@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { login, type LoginResponse } from '../../api/auth';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface LoginFormProps {
   onLoginSuccess: (data: LoginResponse) => void;
@@ -41,6 +42,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
         <CardDescription>{t('login.description')}</CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher />
+        </div>
         <div className="flex flex-col items-center justify-center mb-4">
           <img src="/logo.png" alt="MeowDo Logo" className="h-16 w-16 mb-2" />
         </div>
