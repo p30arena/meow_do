@@ -274,7 +274,7 @@ const TaskList: React.FC<TaskListProps> = ({
               <CardHeader>
                 <CardTitle>{task.name}</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="w-full overflow-hidden">
                 <p>{task.description || t("noDescription")}</p>
                 <p>
                   <strong>{t("tasks.timeBudget")}:</strong> {task.timeBudget}{" "}
@@ -302,7 +302,7 @@ const TaskList: React.FC<TaskListProps> = ({
                     {t("tasks.tracking")}: {durationDisplay}
                   </p>
                 )}
-                <div className="mt-4 flex justify-end gap-2">
+                <div className="mt-4 flex flex-wrap justify-end gap-2 min-w-0">
                   {activeTrackingTaskId === task.id ? (
                     <Button
                       variant="secondary"
