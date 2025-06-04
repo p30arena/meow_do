@@ -181,7 +181,7 @@ function App() {
             {selectedWorkspace ? (
               selectedGoal ? (
                 <div>
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center mb-4 mt-4">
                     <h2 className="text-2xl font-bold">
                       {t("tasksFor")}: {selectedGoal.name}
                     </h2>
@@ -211,7 +211,7 @@ function App() {
                 </div>
               ) : (
                 <div>
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-center mb-4 mt-4">
                     <h2 className="text-2xl font-bold">
                       {t("goalsFor")}: {selectedWorkspace.name}
                     </h2>
