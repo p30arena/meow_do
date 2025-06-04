@@ -2,9 +2,18 @@
 
 ## Current Work Focus
 
-The current focus is on implementing new features: user timezone preference, task tracking (start/stop, time spent summary with Recharts), and task priority. All previous core features (User authentication, Workspace management, Goal management, and Task management) and project initialization tasks (multi-language support including RTL/LTR, and light/dark mode theming) have been successfully implemented. All core backend features are also complete.
+The current focus is on implementing new features: user timezone preference, task tracking (start/stop, time spent summary with Recharts), task priority, and **manual task time record entry**. All previous core features (User authentication, Workspace management, Goal management, and Task management) and project initialization tasks (multi-language support including RTL/LTR, and light/dark mode theming) have been successfully implemented. All core backend features are also complete.
 
 ## Recent Changes
+
+*   **Implemented backend Zod validation schema (`createManualTaskRecordSchema`) for manual task time records.**
+*   **Implemented backend controller function (`createManualTaskRecord`) to handle insertion of manual task time records into `taskTrackingRecords` table (with `startTime` defaulting to insertion time as per schema constraint).**
+*   **Added new backend route (`POST /api/v1/tasks/:taskId/manual-record`) for creating manual task time records.**
+*   **Created new frontend API function (`createManualTaskRecord`) and interface (`CreateManualTaskRecordPayload`) in `frontend/src/api/task.ts` for manual time record creation.**
+*   **Created new frontend UI component (`ManualTimeRecordForm.tsx`) for users to input manual start and stop times.**
+*   **Integrated `ManualTimeRecordForm` into `frontend/src/components/task/TaskList.tsx` with a button to open the form and state management.**
+*   **Added new internationalization keys for manual time record feature in `frontend/public/locales/en/translation.json`, `ar/translation.json`, and `fa/translation.json`.**
+*   **Addressed the user's constraint regarding "no schema changes" by implementing manual record functionality within the existing `taskTrackingRecords` schema, with the understanding that the `startTime` in the database will reflect the time of API call, not the user's manually entered past start time.**
 
 *   Successfully initialized the backend project with Express, Zod, Drizzle, and TypeScript.
 *   Successfully initialized the frontend project with Vite, React, TypeScript, TailwindCSS, ShadcnUI, and Lucide Icons.

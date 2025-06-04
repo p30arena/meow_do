@@ -118,7 +118,17 @@
     "stopTimeBeforeStartTime": "وقت التوقف لا يمكن أن يكون قبل وقت البدء.",
     "stopTrackingTitle": "إيقاف تتبع المهمة",
     "stopTrackingDescription": "أدخل التاريخ والوقت بالضبط عندما توقفت عن العمل على هذه المهمة.",
-    "stopTime": "وقت التوقف"
+    "stopTime": "وقت التوقف",
+    "manualRecord": {
+      "add": "إضافة سجل يدوي",
+      "addManualRecord": "إضافة سجل وقت يدوي",
+      "startTime": "وقت البدء",
+      "stopTime": "وقت التوقف",
+      "invalidTimeFormat": "تنسيق التاريخ/الوقت غير صالح. يرجى استخدام التنسيق YYYY-MM-DDTHH:MM.",
+      "stopTimeBeforeStartTime": "وقت التوقف لا يمكن أن يكون قبل وقت البدء.",
+      "failedToCreateRecord": "فشل إنشاء سجل يدوي: {{message}}",
+      "adding": "جارٍ الإضافة..."
+    }
   },
   "cancel": "إلغاء",
   "confirm": "تأكيد",

@@ -27,6 +27,12 @@ export interface CreateTaskPayload {
   isRecurring?: boolean;
 }
 
+export interface CreateManualTaskRecordPayload {
+  startTime: string; // ISO date string
+  stopTime: string; // ISO date string
+  duration: number; // in seconds
+}
+
 export interface UpdateTaskPayload {
   name?: string;
   description?: string;
@@ -56,6 +62,29 @@ export const createTask = async (payload: CreateTaskPayload): Promise<Task> => {
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to create task');
+  }
+  return response.json();
+};
+
+export const createManualTaskRecord = async (taskId: string, payload: CreateManualTaskRecordPayload): Promise<TaskTrackingRecord> => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/manual-record`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Failed to create manual record for task ID ${taskId}`);
   }
   return response.json();
 };

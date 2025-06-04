@@ -118,7 +118,17 @@
     "stopTimeBeforeStartTime": "Stop time cannot be before start time.",
     "stopTrackingTitle": "Stop Task Tracking",
     "stopTrackingDescription": "Enter the exact date and time when you stopped working on this task.",
-    "stopTime": "Stop Time"
+    "stopTime": "Stop Time",
+    "manualRecord": {
+      "add": "Add Manual Record",
+      "addManualRecord": "Add Manual Time Record",
+      "startTime": "Start Time",
+      "stopTime": "Stop Time",
+      "invalidTimeFormat": "Invalid date/time format. Please use the format YYYY-MM-DDTHH:MM.",
+      "stopTimeBeforeStartTime": "Stop time cannot be before start time.",
+      "failedToCreateRecord": "Failed to create manual record: {{message}}",
+      "adding": "Adding..."
+    }
   },
   "cancel": "Cancel",
   "confirm": "Confirm",

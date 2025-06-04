@@ -118,7 +118,17 @@
     "stopTimeBeforeStartTime": "زمان توقف نمی‌تواند قبل از زمان شروع باشد.",
     "stopTrackingTitle": "توقف ردیابی وظیفه",
     "stopTrackingDescription": "تاریخ و زمان دقیق توقف کار بر روی این وظیفه را وارد کنید.",
-    "stopTime": "زمان توقف"
+    "stopTime": "زمان توقف",
+    "manualRecord": {
+      "add": "افزودن رکورد دستی",
+      "addManualRecord": "افزودن رکورد زمان دستی",
+      "startTime": "زمان شروع",
+      "stopTime": "زمان توقف",
+      "invalidTimeFormat": "فرمت تاریخ/زمان نامعتبر است. لطفاً از فرمت YYYY-MM-DDTHH:MM استفاده کنید.",
+      "stopTimeBeforeStartTime": "زمان توقف نمی‌تواند قبل از زمان شروع باشد.",
+      "failedToCreateRecord": "ایجاد رکورد دستی ناموفق بود: {{message}}",
+      "adding": "در حال افزودن..."
+    }
   },
   "cancel": "لغو",
   "confirm": "تایید",

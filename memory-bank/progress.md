@@ -70,6 +70,7 @@
 *   Task priority (backend schema, API, frontend UI) - **Completed**.
 *   Task start/stop tracking (backend schema, API, frontend UI) - **Completed**.
 *   Task time spent summary and display using Recharts (backend API, frontend UI) - **Completed**.
+*   **Manual task time record entry (backend API, frontend UI) - Completed (with `startTime` in DB reflecting insertion time due to schema constraint).**
 
 ### Enhancements:
 *   Comprehensive error handling.

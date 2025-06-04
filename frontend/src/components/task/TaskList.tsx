@@ -6,6 +6,7 @@ import {
   stopTaskTracking,
   type Task,
 } from "../../api/task";
+import { ManualTimeRecordForm } from "./ManualTimeRecordForm"; // Import the new component
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
@@ -63,6 +64,8 @@ const TaskList: React.FC<TaskListProps> = ({
   const [currentTrackingRecordStartTime, setCurrentTrackingRecordStartTime] =
     useState<Date | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null); // State to hold task to delete
+  const [showManualRecordForm, setShowManualRecordForm] = useState(false); // State for manual record form
+  const [selectedTaskIdForManualRecord, setSelectedTaskIdForManualRecord] = useState<string | null>(null); // State for selected task ID
 
   const fetchTasks = async () => {
     try {
@@ -327,6 +330,18 @@ const TaskList: React.FC<TaskListProps> = ({
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => {
+                      setSelectedTaskIdForManualRecord(task.id);
+                      setShowManualRecordForm(true);
+                    }}
+                    disabled={loading}
+                    className="flex-shrink"
+                  >
+                    {t("tasks.manualRecord.add")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => onEditTask(task)}
                     disabled={loading}
                     className="flex-shrink"
@@ -417,6 +432,15 @@ const TaskList: React.FC<TaskListProps> = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {showManualRecordForm && selectedTaskIdForManualRecord && (
+        <ManualTimeRecordForm
+          taskId={selectedTaskIdForManualRecord}
+          isOpen={showManualRecordForm}
+          onClose={() => setShowManualRecordForm(false)}
+          onRecordCreated={fetchTasks} // Re-fetch tasks after a manual record is created
+        />
+      )}
     </div>
   );
 };

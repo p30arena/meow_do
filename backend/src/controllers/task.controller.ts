@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { db } from '../db';
 import { tasks, taskTrackingRecords, users, goals } from '../db/schema'; // Import goals
 import { eq, and, sql, sum } from 'drizzle-orm';
-import { createTaskSchema, updateTaskSchema, startTaskTrackingSchema, stopTaskTrackingSchema } from '../validation/task.validation';
+import { createTaskSchema, updateTaskSchema, startTaskTrackingSchema, stopTaskTrackingSchema, createManualTaskRecordSchema } from '../validation/task.validation';
 import { catchAsync } from '../utils/catchAsync';
 
 export const createTask = catchAsync(async (req: Request, res: Response) => {
@@ -165,6 +165,30 @@ export const stopTask = catchAsync(async (req: Request, res: Response) => {
     ));
 
   res.status(200).json({ message: 'Task tracking stopped', record: updatedRecord[0] });
+});
+
+export const createManualTaskRecord = catchAsync(async (req: Request, res: Response) => {
+  const { taskId } = req.params; // Get taskId from params
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  }
+
+  // Validate input using the new schema, combining params and body
+  const validatedData = createManualTaskRecordSchema.parse({ ...req.body, taskId, userId });
+
+  // Insert the new manual tracking record
+  // Note: startTime in the DB will be defaultNow() due to schema constraint.
+  // The duration is calculated on the frontend and sent here.
+  const newManualRecord = await db.insert(taskTrackingRecords).values({
+    taskId: validatedData.taskId,
+    userId: validatedData.userId,
+    endTime: validatedData.stopTime, // Use stopTime from validated data
+    duration: validatedData.duration, // Use duration from validated data
+  }).returning();
+
+  res.status(201).json({ message: 'Manual task record created', record: newManualRecord[0] });
 });
 
 export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Response) => {
