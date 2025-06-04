@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { createWorkspace, updateWorkspace, type Workspace } from '../../api/workspace';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  createWorkspace,
+  updateWorkspace,
+  type Workspace,
+} from "../../api/workspace";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface WorkspaceFormProps {
   workspace?: Workspace; // Optional, for editing existing workspace
@@ -13,17 +17,21 @@ interface WorkspaceFormProps {
   onCancel: () => void;
 }
 
-const WorkspaceForm: React.FC<WorkspaceFormProps> = ({ workspace, onSuccess, onCancel }: WorkspaceFormProps) => {
+const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
+  workspace,
+  onSuccess,
+  onCancel,
+}: WorkspaceFormProps) => {
   const { t } = useTranslation();
-  const [name, setName] = useState(workspace?.name || '');
-  const [description, setDescription] = useState(workspace?.description || '');
+  const [name, setName] = useState(workspace?.name || "");
+  const [description, setDescription] = useState(workspace?.description || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (workspace) {
       setName(workspace.name);
-      setDescription(workspace.description || '');
+      setDescription(workspace.description || "");
     }
   }, [workspace]);
 
@@ -51,12 +59,16 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({ workspace, onSuccess, onC
   return (
     <Card className="p-4">
       <CardHeader>
-        <CardTitle>{workspace ? t('workspace.editWorkspace') : t('workspace.createWorkspace')}</CardTitle>
+        <CardTitle>
+          {workspace
+            ? t("workspace.editWorkspace")
+            : t("workspace.createWorkspace")}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">{t('workspace.workspaceName')}</Label>
+            <Label htmlFor="name">{t("workspace.workspaceName")}</Label>
             <Input
               id="name"
               type="text"
@@ -67,7 +79,9 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({ workspace, onSuccess, onC
             />
           </div>
           <div>
-            <Label htmlFor="description">{t('workspace.workspaceDescription')}</Label>
+            <Label htmlFor="description">
+              {t("workspace.workspaceDescription")}
+            </Label>
             <Textarea
               id="description"
               value={description}
@@ -75,13 +89,26 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({ workspace, onSuccess, onC
               disabled={loading}
             />
           </div>
-          {error && <p className="text-red-500 text-sm">{t('error')}: {error}</p>}
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-              {t('workspace.cancel')}
+          {error && (
+            <p className="text-red-500 text-sm">
+              {t("error")}: {error}
+            </p>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              {t("workspace.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? t('workspace.saving') : (workspace ? t('workspace.saveChanges') : t('workspace.create'))}
+              {loading
+                ? t("workspace.saving")
+                : workspace
+                ? t("workspace.saveChanges")
+                : t("workspace.create")}
             </Button>
           </div>
         </form>

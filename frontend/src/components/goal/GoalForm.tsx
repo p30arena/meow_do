@@ -1,12 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { createGoal, updateGoal, type Goal } from '../../api/goal';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Textarea } from '../ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { createGoal, updateGoal, type Goal } from "../../api/goal";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface GoalFormProps {
   workspaceId: string;
@@ -15,20 +21,31 @@ interface GoalFormProps {
   onCancel: () => void;
 }
 
-const GoalForm: React.FC<GoalFormProps> = ({ workspaceId, goal, onSuccess, onCancel }) => {
+const GoalForm: React.FC<GoalFormProps> = ({
+  workspaceId,
+  goal,
+  onSuccess,
+  onCancel,
+}) => {
   const { t } = useTranslation();
-  const [name, setName] = useState(goal?.name || '');
-  const [description, setDescription] = useState(goal?.description || '');
-  const [deadline, setDeadline] = useState(goal?.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : '');
-  const [status, setStatus] = useState<'pending' | 'reached'>(goal?.status || 'pending');
+  const [name, setName] = useState(goal?.name || "");
+  const [description, setDescription] = useState(goal?.description || "");
+  const [deadline, setDeadline] = useState(
+    goal?.deadline ? new Date(goal.deadline).toISOString().split("T")[0] : ""
+  );
+  const [status, setStatus] = useState<"pending" | "reached">(
+    goal?.status || "pending"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (goal) {
       setName(goal.name);
-      setDescription(goal.description || '');
-      setDeadline(goal.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : '');
+      setDescription(goal.description || "");
+      setDeadline(
+        goal.deadline ? new Date(goal.deadline).toISOString().split("T")[0] : ""
+      );
       setStatus(goal.status);
     }
   }, [goal]);
@@ -65,12 +82,12 @@ const GoalForm: React.FC<GoalFormProps> = ({ workspaceId, goal, onSuccess, onCan
   return (
     <Card className="p-4">
       <CardHeader>
-        <CardTitle>{goal ? t('editGoal') : t('createGoal')}</CardTitle>
+        <CardTitle>{goal ? t("editGoal") : t("createGoal")}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">{t('goalName')}</Label>
+            <Label htmlFor="name">{t("goalName")}</Label>
             <Input
               id="name"
               type="text"
@@ -81,7 +98,7 @@ const GoalForm: React.FC<GoalFormProps> = ({ workspaceId, goal, onSuccess, onCan
             />
           </div>
           <div>
-            <Label htmlFor="description">{t('goalDescription')}</Label>
+            <Label htmlFor="description">{t("goalDescription")}</Label>
             <Textarea
               id="description"
               value={description}
@@ -90,7 +107,7 @@ const GoalForm: React.FC<GoalFormProps> = ({ workspaceId, goal, onSuccess, onCan
             />
           </div>
           <div>
-            <Label htmlFor="deadline">{t('deadline')}</Label>
+            <Label htmlFor="deadline">{t("deadline")}</Label>
             <Input
               id="deadline"
               type="date"
@@ -100,24 +117,45 @@ const GoalForm: React.FC<GoalFormProps> = ({ workspaceId, goal, onSuccess, onCan
             />
           </div>
           <div>
-            <Label htmlFor="status">{t('status')}</Label>
-            <Select value={status} onValueChange={(value: 'pending' | 'reached') => setStatus(value)} disabled={loading}>
+            <Label htmlFor="status">{t("status")}</Label>
+            <Select
+              value={status}
+              onValueChange={(value: "pending" | "reached") => setStatus(value)}
+              disabled={loading}
+            >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={t('selectStatus')} />
+                <SelectValue placeholder={t("selectStatus")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">{t('goalStatus.pending')}</SelectItem>
-                <SelectItem value="reached">{t('goalStatus.reached')}</SelectItem>
+                <SelectItem value="pending">
+                  {t("goalStatus.pending")}
+                </SelectItem>
+                <SelectItem value="reached">
+                  {t("goalStatus.reached")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {error && <p className="text-red-500 text-sm">{t('error')}: {error}</p>}
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-              {t('workspace.cancel')}
+          {error && (
+            <p className="text-red-500 text-sm">
+              {t("error")}: {error}
+            </p>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              {t("workspace.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? t('workspace.saving') : (goal ? t('workspace.saveChanges') : t('workspace.create'))}
+              {loading
+                ? t("workspace.saving")
+                : goal
+                ? t("workspace.saveChanges")
+                : t("workspace.create")}
             </Button>
           </div>
         </form>
