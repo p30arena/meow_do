@@ -10,17 +10,22 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-const registerSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters long'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters long'),
+interface RegisterFormInputs {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const registerSchema = (t: any): z.ZodSchema<RegisterFormInputs> => z.object({
+  username: z.string().min(3, t('validation.usernameMinLength', { min: 3 })),
+  email: z.string().email(t('validation.invalidEmail')),
+  password: z.string().min(6, t('validation.passwordMinLength', { min: 6 })),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
+  message: t('validation.passwordsMismatch'),
   path: ['confirmPassword'],
 });
-
-type RegisterFormInputs = z.infer<typeof registerSchema>;
 
 interface RegisterFormProps {
   onRegisterSuccess: (data: LoginResponse) => void;
@@ -36,7 +41,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormInputs>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema(t)),
   });
 
   const onSubmit = async (data: RegisterFormInputs) => {

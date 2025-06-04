@@ -31,6 +31,12 @@
     "confirmLogoutTitle": "تایید خروج",
     "confirmLogoutDescription": "آیا مطمئن هستید که می خواهید خارج شوید؟"
   },
+  "validation": {
+    "invalidEmail": "آدرس ایمیل نامعتبر است",
+    "passwordMinLength": "رمز عبور باید حداقل {{min}} کاراکتر باشد",
+    "usernameMinLength": "نام کاربری باید حداقل {{min}} کاراکتر باشد",
+    "passwordsMismatch": "رمزهای عبور مطابقت ندارند"
+  },
   "workspace": {
     "loadingWorkspaces": "در حال بارگذاری فضاهای کاری...",
     "error": "خطا",

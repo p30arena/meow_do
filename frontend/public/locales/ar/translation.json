@@ -31,6 +31,12 @@
     "confirmLogoutTitle": "تأكيد تسجيل الخروج",
     "confirmLogoutDescription": "هل أنت متأكد أنك تريد تسجيل الخروج؟"
   },
+  "validation": {
+    "invalidEmail": "عنوان بريد إلكتروني غير صالح",
+    "passwordMinLength": "يجب أن تتكون كلمة المرور من {{min}} أحرف على الأقل",
+    "usernameMinLength": "يجب أن يتكون اسم المستخدم من {{min}} أحرف على الأقل",
+    "passwordsMismatch": "كلمات المرور غير متطابقة"
+  },
   "workspace": {
     "loadingWorkspaces": "جارٍ تحميل مساحات العمل...",
     "error": "خطأ",

@@ -31,6 +31,12 @@
     "confirmLogoutTitle": "Confirm Logout",
     "confirmLogoutDescription": "Are you sure you want to log out?"
   },
+  "validation": {
+    "invalidEmail": "Invalid email address",
+    "passwordMinLength": "Password must be at least {{min}} characters long",
+    "usernameMinLength": "Username must be at least {{min}} characters long",
+    "passwordsMismatch": "Passwords do not match"
+  },
   "workspace": {
     "loadingWorkspaces": "Loading workspaces...",
     "error": "Error",

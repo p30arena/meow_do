@@ -10,12 +10,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters long'),
-});
+interface LoginFormInputs {
+  email: string;
+  password: string;
+}
 
-type LoginFormInputs = z.infer<typeof loginSchema>;
+const loginSchema = (t: any): z.ZodSchema<LoginFormInputs> => z.object({
+  email: z.string().email(t('validation.invalidEmail')),
+  password: z.string().min(6, t('validation.passwordMinLength', { min: 6 })),
+});
 
 interface LoginFormProps {
   onLoginSuccess: (data: LoginResponse) => void;
@@ -31,7 +34,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormInputs>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema(t)),
   });
 
   const onSubmit = async (data: LoginFormInputs) => {
