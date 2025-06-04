@@ -31,7 +31,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
   }, []);
 
   if (loading) {
-    return <div>{t('loadingWorkspaces')}</div>;
+    return <div>{t('workspace.loadingWorkspaces')}</div>;
   }
 
   if (error) {
@@ -40,9 +40,9 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">{t('workspaces')}</h2>
+      <h2 className="text-2xl font-bold mb-4">{t('workspace.workspaces')}</h2>
       {workspaces.length === 0 ? (
-        <p>{t('noWorkspacesYet')}</p>
+        <p>{t('workspace.noWorkspacesYet')}</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {workspaces.map((workspace) => (
@@ -61,7 +61,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
           ))}
         </div>
       )}
-      <Button className="mt-4" onClick={onCreateNew}>{t('createWorkspace')}</Button>
+      <Button className="mt-4" onClick={onCreateNew}>{t('workspace.createWorkspace')}</Button>
     </div>
   );
 };

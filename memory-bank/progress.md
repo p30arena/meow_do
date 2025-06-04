@@ -19,6 +19,7 @@
 *   Multi-language support for goal features (English, Arabic, Farsi) is configured.
 *   Frontend task management (CRUD, copy to next day) components (`TaskList`, `TaskForm`) and API integration are implemented.
 *   Multi-language support for task features (English, Arabic, Farsi) is configured.
+*   Corrected i18n key usage in `frontend/src/components/workspace/WorkspaceList.tsx` to use nested keys (e.g., `workspace.loadingWorkspaces`) instead of top-level keys, resolving `missingKey` errors.
 *   Both backend and frontend projects build successfully, outputting to their respective `dist` folders, and the frontend build no longer generates unwanted `.d.ts` files.
 *   The backend development server (`npm run dev`) now starts successfully after installing `ts-node`.
 *   Backend API routes have been updated to include `/v1` prefix, aligning with frontend API calls.
@@ -36,7 +37,7 @@
 
 ## Current status
 
-The project has completed its initial setup phase and made significant progress on the frontend. All core backend features are complete. Frontend authentication components (Login and Register forms), workspace management components (list and form), goal management components (list and form), and task management components (list and form) are implemented, integrated with the backend API using `fetch`, and multi-language support for these components is in place. All project initialization tasks, including full RTL/LTR support and light/dark mode theming, are now complete. The backend and frontend projects now build successfully to their `dist` folders, with the frontend build no longer generating unwanted declaration files. The backend development server also starts successfully, and its API routes now include the `/v1` prefix, matching the frontend's API calls. The foundational documentation is updated, providing a clear roadmap for further development.
+The project has completed its initial setup phase and made significant progress on the frontend. All core backend features are complete. Frontend authentication components (Login and Register forms), workspace management components (list and form), goal management components (list and form), and task management components (list and form) are implemented, integrated with the backend API using `fetch`, and multi-language support for these components is in place. All project initialization tasks, including full RTL/LTR support and light/dark mode theming, are now complete. The backend and frontend projects now build successfully to their `dist` folders, with the frontend build no longer generating unwanted declaration files. The backend development server also starts successfully, and its API routes now include the `/v1` prefix, matching the frontend's API calls. The i18n key usage in `WorkspaceList.tsx` has been corrected to use nested keys, resolving previous `missingKey` errors. The foundational documentation is updated, providing a clear roadmap for further development.
 
 ## Known issues
 
