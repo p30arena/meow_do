@@ -20,6 +20,7 @@
 *   Frontend task management (CRUD, copy to next day) components (`TaskList`, `TaskForm`) and API integration are implemented.
 *   Multi-language support for task features (English, Arabic, Farsi) is configured.
 *   Both backend and frontend projects build successfully, outputting to their respective `dist` folders, and the frontend build no longer generates unwanted `.d.ts` files.
+*   The backend development server (`npm run dev`) now starts successfully after installing `ts-node`.
 
 ## What's left to build
 
@@ -34,7 +35,7 @@
 
 ## Current status
 
-The project has completed its initial setup phase and made significant progress on the frontend. All core backend features are complete. Frontend authentication components (Login and Register forms), workspace management components (list and form), goal management components (list and form), and task management components (list and form) are implemented, integrated with the backend API using `fetch`, and multi-language support for these components is in place. All project initialization tasks, including full RTL/LTR support and light/dark mode theming, are now complete. The backend and frontend projects now build successfully to their `dist` folders, with the frontend build no longer generating unwanted declaration files. The foundational documentation is updated, providing a clear roadmap for further development.
+The project has completed its initial setup phase and made significant progress on the frontend. All core backend features are complete. Frontend authentication components (Login and Register forms), workspace management components (list and form), goal management components (list and form), and task management components (list and form) are implemented, integrated with the backend API using `fetch`, and multi-language support for these components is in place. All project initialization tasks, including full RTL/LTR support and light/dark mode theming, are now complete. The backend and frontend projects now build successfully to their `dist` folders, with the frontend build no longer generating unwanted declaration files. The backend development server also starts successfully. The foundational documentation is updated, providing a clear roadmap for further development.
 
 ## Known issues
 
