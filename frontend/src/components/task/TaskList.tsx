@@ -4,7 +4,6 @@ import { getTasksByGoalId, startTaskTracking, stopTaskTracking, type Task } from
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
-import { useAuth } from '../../context/AuthContext'; // Import useAuth
 
 interface TaskListProps {
   goalId: string;
@@ -15,7 +14,6 @@ interface TaskListProps {
 
 const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, onDeleteTask }) => {
   const { t } = useTranslation();
-  const { user } = useAuth(); // Get user from AuthContext
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
