@@ -27,7 +27,9 @@
     "alreadyHaveAccount": "Already have an account? Sign In",
     "dontHaveAccount": "Don't have an account? Sign Up",
     "loggedInMessage": "You are logged in!",
-    "logout": "Logout"
+    "logout": "Logout",
+    "confirmLogoutTitle": "Confirm Logout",
+    "confirmLogoutDescription": "Are you sure you want to log out?"
   },
   "workspace": {
     "loadingWorkspaces": "Loading workspaces...",
@@ -120,6 +122,7 @@
   },
   "cancel": "Cancel",
   "confirm": "Confirm",
+  "confirmDeleteDescription": "This action cannot be undone.",
   "timezone": {
     "label": "Select your Timezone",
     "selectPlaceholder": "Select a timezone",
@@ -133,7 +136,6 @@
     }
   },
   "settings": {
-    "show": "Show Settings",
-    "hide": "Hide Settings"
+    "title": "Settings"
   }
 }

@@ -1,7 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom"; // Import BrowserRouter
 import "./index.css";
-import App from "./App";
+import { App } from "./App"; // Changed to named import
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
@@ -40,7 +41,9 @@ createRoot(rootElement).render(
       >
         <div dir={isRtl ? "rtl" : "ltr"}>
           <AuthProvider>
-            <App />
+            <BrowserRouter> {/* Wrap App with BrowserRouter */}
+              <App />
+            </BrowserRouter>
           </AuthProvider>
         </div>
       </StyleSheetManager>

@@ -20,7 +20,7 @@ const LanguageSwitcher: React.FC = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="ghost" size="sm">
           {i18n.language.toUpperCase()}
         </Button>
       </DropdownMenuTrigger>

@@ -4,6 +4,17 @@ import { getWorkspaces, deleteWorkspace, type Workspace } from '../../api/worksp
 import { useAuth } from '../../context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog'; // Import AlertDialog components
 
 interface WorkspaceListProps {
   onCreateNew: () => void;
@@ -17,6 +28,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [workspaceToDelete, setWorkspaceToDelete] = useState<Workspace | null>(null); // State to hold workspace to delete
 
   const fetchWorkspaces = async () => {
     try {
@@ -34,6 +46,26 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
       fetchWorkspaces();
     }
   }, [token]); // Re-run when token changes
+
+  const confirmDelete = (workspace: Workspace) => {
+    setWorkspaceToDelete(workspace);
+  };
+
+  const executeDelete = async () => {
+    if (workspaceToDelete) {
+      setLoading(true);
+      setError(null);
+      try {
+        await deleteWorkspace(workspaceToDelete.id);
+        fetchWorkspaces(); // Re-fetch workspaces after deletion
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+        setWorkspaceToDelete(null); // Clear the workspace to delete
+      }
+    }
+  };
 
   if (loading) {
     return <div>{t('workspace.loadingWorkspaces')}</div>;
@@ -59,23 +91,31 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
                 <p>{workspace.description || t('noDescription')}</p>
                 <div className="mt-4 flex justify-end space-x-2">
                   <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onEditWorkspace(workspace); }}>{t('workspace.edit')}</Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      if (window.confirm(t('workspace.confirmDelete', { workspaceName: workspace.name }))) {
-                        try {
-                          await deleteWorkspace(workspace.id);
-                          fetchWorkspaces(); // Re-fetch workspaces after deletion
-                        } catch (err: any) {
-                          setError(err.message);
-                        }
-                      }
-                    }}
-                  >
-                    {t('workspace.delete')}
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); confirmDelete(workspace); }}
+                      >
+                        {t('workspace.delete')}
+                      </Button>
+                    </AlertDialogTrigger>
+                    {workspaceToDelete && (
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{t('workspace.confirmDelete', { workspaceName: workspaceToDelete.name })}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t('confirmDeleteDescription')} {/* Assuming a generic description key */}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={executeDelete}>{t('confirm')}</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    )}
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>

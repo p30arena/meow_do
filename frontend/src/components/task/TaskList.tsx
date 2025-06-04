@@ -13,6 +13,17 @@ import {
   DialogFooter,
   DialogClose,
 } from '../ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog'; // Import AlertDialog components
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
@@ -37,6 +48,7 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
   const [selectedStopTime, setSelectedStopTime] = useState('');
   const [currentTrackingRecordIdToStop, setCurrentTrackingRecordIdToStop] = useState<string | null>(null);
   const [currentTrackingRecordStartTime, setCurrentTrackingRecordStartTime] = useState<Date | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null); // State to hold task to delete
 
   const fetchTasks = async () => {
     try {
@@ -175,17 +187,22 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
     }
   };
 
-  const handleDeleteTask = async (task: Task) => {
-    if (window.confirm(t('tasks.confirmDelete', { taskName: task.name }))) {
+  const confirmDelete = (task: Task) => {
+    setTaskToDelete(task);
+  };
+
+  const executeDelete = async () => {
+    if (taskToDelete) {
       setLoading(true);
       setError(null);
       try {
-        await onDeleteTask(task.id);
+        await onDeleteTask(taskToDelete.id);
         fetchTasks(); // Re-fetch tasks after deletion
       } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
+        setTaskToDelete(null); // Clear the task to delete
       }
     }
   };
@@ -247,7 +264,27 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
                   )}
                   <Button variant="outline" size="sm" onClick={() => onEditTask(task)} disabled={loading}>{t('workspace.edit')}</Button>
                   <Button variant="secondary" size="sm" disabled={loading}>{t('copyToNextDay')}</Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDeleteTask(task)} disabled={loading}>{t('workspace.delete')}</Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); confirmDelete(task); }} disabled={loading}>
+                        {t('workspace.delete')}
+                      </Button>
+                    </AlertDialogTrigger>
+                    {taskToDelete && (
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{t('tasks.confirmDelete', { taskName: taskToDelete.name })}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t('confirmDeleteDescription')} {/* Assuming a generic description key */}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={executeDelete}>{t('confirm')}</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    )}
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>

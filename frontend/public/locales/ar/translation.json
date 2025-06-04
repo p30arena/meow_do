@@ -27,7 +27,9 @@
     "alreadyHaveAccount": "هل لديك حساب بالفعل؟ تسجيل الدخول",
     "dontHaveAccount": "ليس لديك حساب؟ إنشاء حساب",
     "loggedInMessage": "لقد قمت بتسجيل الدخول!",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "confirmLogoutTitle": "تأكيد تسجيل الخروج",
+    "confirmLogoutDescription": "هل أنت متأكد أنك تريد تسجيل الخروج؟"
   },
   "workspace": {
     "loadingWorkspaces": "جارٍ تحميل مساحات العمل...",
@@ -120,6 +122,7 @@
   },
   "cancel": "إلغاء",
   "confirm": "تأكيد",
+  "confirmDeleteDescription": "لا يمكن التراجع عن هذا الإجراء.",
   "timezone": {
     "label": "اختر منطقتك الزمنية",
     "selectPlaceholder": "اختر منطقة زمنية",
@@ -133,7 +136,6 @@
     }
   },
   "settings": {
-    "show": "إظهار الإعدادات",
-    "hide": "إخفاء الإعدادات"
+    "title": "الإعدادات"
   }
 }

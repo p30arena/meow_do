@@ -3,6 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { getGoalsByWorkspaceId, type Goal } from '../../api/goal';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog'; // Import AlertDialog components
 
 interface GoalListProps {
   workspaceId: string;
@@ -17,6 +28,7 @@ const GoalList: React.FC<GoalListProps> = ({ workspaceId, onCreateNew, onEditGoa
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null); // State to hold goal to delete
 
   const fetchGoals = async () => {
     try {
@@ -33,17 +45,22 @@ const GoalList: React.FC<GoalListProps> = ({ workspaceId, onCreateNew, onEditGoa
     fetchGoals();
   }, [workspaceId]);
 
-  const handleDeleteGoal = async (goal: Goal) => {
-    if (window.confirm(t('goal.confirmDelete', { goalName: goal.name }))) {
+  const confirmDelete = (goal: Goal) => {
+    setGoalToDelete(goal);
+  };
+
+  const executeDelete = async () => {
+    if (goalToDelete) {
       setLoading(true);
       setError(null);
       try {
-        await onDeleteGoal(goal.id);
+        await onDeleteGoal(goalToDelete.id);
         fetchGoals(); // Re-fetch goals after deletion
       } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
+        setGoalToDelete(null); // Clear the goal to delete
       }
     }
   };
@@ -74,7 +91,27 @@ const GoalList: React.FC<GoalListProps> = ({ workspaceId, onCreateNew, onEditGoa
                 {goal.deadline && <p><strong>{t('deadline')}:</strong> {new Date(goal.deadline).toLocaleDateString()}</p>}
                 <div className="mt-4 flex justify-end space-x-2">
                   <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onEditGoal(goal); }}>{t('workspace.edit')}</Button>
-                  <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); handleDeleteGoal(goal); }}>{t('workspace.delete')}</Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); confirmDelete(goal); }}>
+                        {t('workspace.delete')}
+                      </Button>
+                    </AlertDialogTrigger>
+                    {goalToDelete && (
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{t('goals.confirmDelete', { goalName: goalToDelete.name })}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t('confirmDeleteDescription')} {/* Assuming a generic description key */}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={executeDelete}>{t('confirm')}</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    )}
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>

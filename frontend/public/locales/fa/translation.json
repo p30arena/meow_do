@@ -27,7 +27,9 @@
     "alreadyHaveAccount": "حساب کاربری دارید؟ وارد شوید",
     "dontHaveAccount": "حساب کاربری ندارید؟ ثبت نام کنید",
     "loggedInMessage": "شما وارد شده اید!",
-    "logout": "خروج"
+    "logout": "خروج",
+    "confirmLogoutTitle": "تایید خروج",
+    "confirmLogoutDescription": "آیا مطمئن هستید که می خواهید خارج شوید؟"
   },
   "workspace": {
     "loadingWorkspaces": "در حال بارگذاری فضاهای کاری...",
@@ -120,6 +122,7 @@
   },
   "cancel": "لغو",
   "confirm": "تایید",
+  "confirmDeleteDescription": "این عمل قابل بازگشت نیست.",
   "timezone": {
     "label": "منطقه زمانی خود را انتخاب کنید",
     "selectPlaceholder": "یک منطقه زمانی را انتخاب کنید",
@@ -133,7 +136,6 @@
     }
   },
   "settings": {
-    "show": "نمایش تنظیمات",
-    "hide": "پنهان کردن تنظیمات"
+    "title": "تنظیمات"
   }
 }

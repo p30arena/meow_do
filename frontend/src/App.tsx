@@ -13,52 +13,39 @@ import { deleteTask, type Task } from "./api/task";
 import { type Workspace } from "./api/workspace";
 import { Button } from "./components/ui/button";
 import { useAuth } from "./context/AuthContext";
-import LanguageSwitcher from "./components/LanguageSwitcher";
-import ThemeToggle from "./components/ThemeToggle";
-import TimezoneSelector from "./components/settings/TimezoneSelector";
 import TaskTrackingChart from "./components/task/TaskTrackingChart";
+import { Navbar } from "./components/Navbar"; // Import the new Navbar component
 
 function App() {
   const { t } = useTranslation();
-  const { user, setToken, setUser, logout, isAuthReady } = useAuth();
+  const { user, setToken, setUser, isAuthReady } = useAuth(); // Removed logout
   const [showRegister, setShowRegister] = useState(false);
   const [showWorkspaceForm, setShowWorkspaceForm] = useState(false);
   const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
     null
   );
-  const [editingWorkspace, setEditingWorkspace] = useState<Workspace | undefined>(undefined);
+  const [editingWorkspace, setEditingWorkspace] = useState<
+    Workspace | undefined
+  >(undefined);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
-  const [showSettings, setShowSettings] = useState(false); // New state for settings view
+  // Removed showSettings state and handleToggleSettings function
 
-  const handleToggleSettings = () => {
-    setShowSettings(prev => !prev);
-  };
-
-  const handleLoginSuccess = (data: { token: string; user: any }) => { // Type will be more specific later
+  const handleLoginSuccess = (data: { token: string; user: any }) => {
+    // Type will be more specific later
     setToken(data.token);
     setUser(data.user);
     setShowRegister(false);
   };
 
-  const handleRegisterSuccess = (data: { token: string; user: any }) => { // Type will be more specific later
+  const handleRegisterSuccess = (data: { token: string; user: any }) => {
+    // Type will be more specific later
     setToken(data.token);
     setUser(data.user);
     setShowRegister(false);
-  };
-
-  const handleLogout = () => {
-    logout();
-    setShowWorkspaceForm(false);
-    setSelectedWorkspace(null);
-    setSelectedGoal(null);
-    setShowGoalForm(false);
-    setEditingGoal(undefined);
-    setShowTaskForm(false);
-    setEditingTask(undefined);
   };
 
   const handleCreateWorkspaceClick = () => {
@@ -171,122 +158,107 @@ function App() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
       {!user || !isAuthReady ? (
-        <div className="flex flex-col items-center gap-4">
-          {showRegister ? (
-            <RegisterForm onRegisterSuccess={handleRegisterSuccess} />
-          ) : (
-            <LoginForm onLoginSuccess={handleLoginSuccess} />
-          )}
-          <Button variant="link" onClick={() => setShowRegister(!showRegister)}>
-            {showRegister
-              ? t("auth.alreadyHaveAccount")
-              : t("auth.dontHaveAccount")}
-          </Button>
+        <div className="flex items-center justify-center flex-grow"> {/* Centered login/register */}
+          <div className="flex flex-col items-center gap-4">
+            {showRegister ? (
+              <RegisterForm onRegisterSuccess={handleRegisterSuccess} />
+            ) : (
+              <LoginForm onLoginSuccess={handleLoginSuccess} />
+            )}
+            <Button variant="link" onClick={() => setShowRegister(!showRegister)}>
+              {showRegister
+                ? t("auth.alreadyHaveAccount")
+                : t("auth.dontHaveAccount")}
+            </Button>
+          </div>
         </div>
       ) : (
-        <div className="container mx-auto p-4">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center space-x-2">
-              <img src="/logo.png" alt="MeowDo Logo" className="h-8 w-8" />
-              <h1 className="text-3xl font-bold">{t("welcome_message")}</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <LanguageSwitcher />
-              <ThemeToggle />
-              <Button onClick={handleToggleSettings}>
-                {showSettings ? t("settings.hide") : t("settings.show")}
-              </Button>
-              <Button onClick={handleLogout}>{t("auth.logout")}</Button>
-            </div>
-          </div>
-
-          {showSettings ? (
-            <div className="space-y-8">
-              <TimezoneSelector />
-              {/* TaskTrackingChart is moved out of settings */}
-            </div>
-          ) : selectedWorkspace ? (
-            selectedGoal ? (
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold">
-                    {t("tasksFor")}: {selectedGoal.name}
-                  </h2>
-                  <Button onClick={handleBackToGoals}>
-                    {t("backToGoals")}
-                  </Button>
+        <> {/* Use Fragment to wrap Navbar and main content */}
+          <Navbar /> {/* Render the Navbar component */}
+          <div className="container mx-auto p-4 flex-grow pt-16"> {/* Added pt-16 for navbar height */}
+            {selectedWorkspace ? (
+              selectedGoal ? (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">
+                      {t("tasksFor")}: {selectedGoal.name}
+                    </h2>
+                    <Button onClick={handleBackToGoals}>
+                      {t("backToGoals")}
+                    </Button>
+                  </div>
+                  {showTaskForm ? (
+                    <TaskForm
+                      goalId={selectedGoal.id}
+                      task={editingTask}
+                      onSuccess={handleTaskFormSuccess}
+                      onCancel={handleTaskFormCancel}
+                    />
+                  ) : (
+                    <TaskList
+                      goalId={selectedGoal.id}
+                      onCreateNew={handleCreateTaskClick}
+                      onEditTask={handleEditTaskClick}
+                      onDeleteTask={handleDeleteTask}
+                    />
+                  )}
+                  {/* Display chart for specific goal */}
+                  <div className="mt-8">
+                    <TaskTrackingChart goalId={selectedGoal.id} />
+                  </div>
                 </div>
-                {showTaskForm ? (
-                  <TaskForm
-                    goalId={selectedGoal.id}
-                    task={editingTask}
-                    onSuccess={handleTaskFormSuccess}
-                    onCancel={handleTaskFormCancel}
-                  />
-                ) : (
-                  <TaskList
-                    goalId={selectedGoal.id}
-                    onCreateNew={handleCreateTaskClick}
-                    onEditTask={handleEditTaskClick}
-                    onDeleteTask={handleDeleteTask}
-                  />
-                )}
-                {/* Display chart for specific goal */}
-                <div className="mt-8">
-                  <TaskTrackingChart goalId={selectedGoal.id} />
+              ) : (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">
+                      {t("goalsFor")}: {selectedWorkspace.name}
+                    </h2>
+                    <Button onClick={handleBackToWorkspaces}>
+                      {t("backToWorkspaces")}
+                    </Button>
+                  </div>
+                  {showGoalForm ? (
+                    <GoalForm
+                      workspaceId={selectedWorkspace.id}
+                      goal={editingGoal}
+                      onSuccess={handleGoalFormSuccess}
+                      onCancel={handleGoalFormCancel}
+                    />
+                  ) : (
+                    <GoalList
+                      workspaceId={selectedWorkspace.id}
+                      onCreateNew={handleCreateGoalClick}
+                      onEditGoal={handleEditGoalClick}
+                      onSelectGoal={handleSelectGoal}
+                      onDeleteGoal={handleDeleteGoal}
+                    />
+                  )}
+                  {/* Display chart for selected workspace */}
+                  <div className="mt-8">
+                    <TaskTrackingChart workspaceId={selectedWorkspace.id} />
+                  </div>
                 </div>
-              </div>
+              )
+            ) : showWorkspaceForm ? (
+              <WorkspaceForm
+                workspace={editingWorkspace}
+                onSuccess={handleWorkspaceFormSuccess}
+                onCancel={handleWorkspaceFormCancel}
+              />
             ) : (
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold">
-                    {t("goalsFor")}: {selectedWorkspace.name}
-                  </h2>
-                  <Button onClick={handleBackToWorkspaces}>
-                    {t("backToWorkspaces")}
-                  </Button>
-                </div>
-                {showGoalForm ? (
-                  <GoalForm
-                    workspaceId={selectedWorkspace.id}
-                    goal={editingGoal}
-                    onSuccess={handleGoalFormSuccess}
-                    onCancel={handleGoalFormCancel}
-                  />
-                ) : (
-                  <GoalList
-                    workspaceId={selectedWorkspace.id}
-                    onCreateNew={handleCreateGoalClick}
-                    onEditGoal={handleEditGoalClick}
-                    onSelectGoal={handleSelectGoal}
-                    onDeleteGoal={handleDeleteGoal}
-                  />
-                )}
-                {/* Display chart for selected workspace */}
-                <div className="mt-8">
-                  <TaskTrackingChart workspaceId={selectedWorkspace.id} />
-                </div>
-              </div>
-            )
-          ) : showWorkspaceForm ? (
-            <WorkspaceForm
-              workspace={editingWorkspace}
-              onSuccess={handleWorkspaceFormSuccess}
-              onCancel={handleWorkspaceFormCancel}
-            />
-          ) : (
-            <WorkspaceList
-              onCreateNew={handleCreateWorkspaceClick}
-              onSelectWorkspace={handleSelectWorkspace}
-              onEditWorkspace={handleEditWorkspaceClick}
-            />
-          )}
-        </div>
+              <WorkspaceList
+                onCreateNew={handleCreateWorkspaceClick}
+                onSelectWorkspace={handleSelectWorkspace}
+                onEditWorkspace={handleEditWorkspaceClick}
+              />
+            )}
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-export default App;
+export { App }; // Changed to named export
