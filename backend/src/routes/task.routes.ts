@@ -16,6 +16,7 @@ const router: Router = express.Router(); // Task routes
 
 router.post('/', protect, createTask);
 router.get('/', protect, getTasks);
+router.get('/summary', protect, getTaskTrackingSummary); // Move this before dynamic ID routes
 router.get('/:id', protect, getTaskById);
 router.put('/:id', protect, updateTask);
 router.delete('/:id', protect, deleteTask);
@@ -24,6 +25,5 @@ router.get('/daily-budget/:goalId', protect, getDailyTimeBudgetForGoal);
 
 router.post('/:id/start', protect, startTask);
 router.post('/:id/stop', protect, stopTask);
-router.get('/summary', protect, getTaskTrackingSummary);
 
 export default router;

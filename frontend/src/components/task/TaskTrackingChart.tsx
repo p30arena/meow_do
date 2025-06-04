@@ -8,7 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { useAuth } from '../../context/AuthContext';
 import { DateTime } from 'luxon';
 
-const TaskTrackingChart: React.FC = () => {
+interface TaskTrackingChartProps {
+  workspaceId?: string;
+  goalId?: string;
+}
+
+const TaskTrackingChart: React.FC<TaskTrackingChartProps> = ({ workspaceId, goalId }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [summaryData, setSummaryData] = useState<TaskTrackingSummary[]>([]);
@@ -20,7 +25,7 @@ const TaskTrackingChart: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getTaskTrackingSummary(period);
+      const data = await getTaskTrackingSummary(period, workspaceId, goalId);
       setSummaryData(data);
     } catch (err: any) {
       setError(err.message);
@@ -31,7 +36,7 @@ const TaskTrackingChart: React.FC = () => {
 
   useEffect(() => {
     fetchSummary();
-  }, [period]);
+  }, [period, workspaceId, goalId]); // Add workspaceId and goalId to dependencies
 
   const formatYAxisTick = (value: number) => {
     const hours = Math.floor(value / 3600);

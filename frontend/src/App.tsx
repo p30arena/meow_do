@@ -202,7 +202,7 @@ function App() {
           {showSettings ? (
             <div className="space-y-8">
               <TimezoneSelector />
-              <TaskTrackingChart />
+              {/* TaskTrackingChart is moved out of settings */}
             </div>
           ) : selectedWorkspace ? (
             selectedGoal ? (
@@ -230,6 +230,10 @@ function App() {
                     onDeleteTask={handleDeleteTask}
                   />
                 )}
+                {/* Display chart for specific goal */}
+                <div className="mt-8">
+                  <TaskTrackingChart goalId={selectedGoal.id} />
+                </div>
               </div>
             ) : (
               <div>
@@ -257,6 +261,10 @@ function App() {
                     onDeleteGoal={handleDeleteGoal}
                   />
                 )}
+                {/* Display chart for selected workspace */}
+                <div className="mt-8">
+                  <TaskTrackingChart workspaceId={selectedWorkspace.id} />
+                </div>
               </div>
             )
           ) : showWorkspaceForm ? (

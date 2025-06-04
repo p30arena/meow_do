@@ -122,9 +122,21 @@ export const stopTaskTracking = async (trackingId: string, stopTime?: string): P
   return response.json();
 };
 
-export const getTaskTrackingSummary = async (period: 'day' | 'month' | 'year'): Promise<TaskTrackingSummary[]> => {
+export const getTaskTrackingSummary = async (
+  period: 'day' | 'month' | 'year',
+  workspaceId?: string,
+  goalId?: string
+): Promise<TaskTrackingSummary[]> => {
   const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks/summary?period=${period}`, {
+  let queryString = `period=${period}`;
+  if (workspaceId) {
+    queryString += `&workspaceId=${workspaceId}`;
+  }
+  if (goalId) {
+    queryString += `&goalId=${goalId}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/tasks/summary?${queryString}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

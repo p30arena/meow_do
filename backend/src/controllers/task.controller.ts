@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
-import { tasks, taskTrackingRecords, users } from '../db/schema';
+import { tasks, taskTrackingRecords, users, goals } from '../db/schema'; // Import goals
 import { eq, and, sql, sum } from 'drizzle-orm';
 import { createTaskSchema, updateTaskSchema, startTaskTrackingSchema, stopTaskTrackingSchema } from '../validation/task.validation';
 import { catchAsync } from '../utils/catchAsync';
@@ -169,40 +169,48 @@ export const stopTask = catchAsync(async (req: Request, res: Response) => {
 
 export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
-  const { period } = req.query; // 'day', 'month', 'year'
+  const { period, workspaceId, goalId } = req.query; // Add workspaceId and goalId
 
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
 
   let groupByColumn;
-  let dateTruncFunction;
-
+  // No change to dateTruncFunction as it's not directly used in the query building
   switch (period) {
     case 'day':
       groupByColumn = sql`date_trunc('day', ${taskTrackingRecords.startTime})`;
-      dateTruncFunction = 'day';
       break;
     case 'month':
       groupByColumn = sql`date_trunc('month', ${taskTrackingRecords.startTime})`;
-      dateTruncFunction = 'month';
       break;
     case 'year':
       groupByColumn = sql`date_trunc('year', ${taskTrackingRecords.startTime})`;
-      dateTruncFunction = 'year';
       break;
     default:
       return res.status(400).json({ message: 'Invalid period specified. Must be "day", "month", or "year".' });
   }
 
-  const summary = await db.select({
+  const conditions = [eq(taskTrackingRecords.userId, userId)];
+  let query = db.select({
     taskName: tasks.name,
     totalDurationSeconds: sum(taskTrackingRecords.duration),
     period: groupByColumn,
   })
     .from(taskTrackingRecords)
-    .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
-    .where(eq(taskTrackingRecords.userId, userId))
+    .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id));
+
+  if (goalId) {
+    conditions.push(eq(tasks.goalId, goalId as string));
+  }
+
+  if (workspaceId) {
+    query = query.innerJoin(goals, eq(tasks.goalId, goals.id));
+    conditions.push(eq(goals.workspaceId, workspaceId as string));
+  }
+
+  const summary = await query
+    .where(and(...conditions))
     .groupBy(tasks.name, groupByColumn)
     .orderBy(groupByColumn, tasks.name);
 
