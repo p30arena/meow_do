@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DateTime } from 'luxon';
+import timezonesData, { type TimeZone } from 'timezones-list';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Label } from '../ui/label';
 import { Button } from '../ui/button';
@@ -21,12 +22,12 @@ const TimezoneSelector: React.FC = () => {
   const [isError, setIsError] = useState<boolean>(false);
 
   useEffect(() => {
-    // Generate a list of common timezones
-    const allTimezones = DateTime.local().zone.getAllZoneNames().map(zone => ({
-      value: zone,
-      label: zone.replace(/_/g, ' '), // Make it more readable
+    // Generate a list of common timezones from the imported data
+    const allTimezones = timezonesData.map((tz: TimeZone) => ({
+      value: tz.tzCode, // Assuming 'tzCode' is the timezone identifier
+      label: tz.label, // Assuming 'label' is the display name
     }));
-    setTimezones(allTimezones.sort((a, b) => a.label.localeCompare(b.label)));
+    setTimezones(allTimezones.sort((a: TimezoneOption, b: TimezoneOption) => a.label.localeCompare(b.label)));
 
     if (user?.timezone) {
       setSelectedTimezone(user.timezone);
