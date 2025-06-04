@@ -20,4 +20,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Define the command to run the app
-CMD ["npm", "run", "drizzle:migrate", "&&", "npm", "start"]
+CMD ["sh", "-c", "npm run drizzle:migrate && npm start"]
