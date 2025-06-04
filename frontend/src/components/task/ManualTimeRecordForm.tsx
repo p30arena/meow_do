@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
-import { useTranslation } from 'react-i18next';
-import { createManualTaskRecord } from '../../api/task'; // Import the API function
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { useTranslation } from "react-i18next";
+import { createManualTaskRecord } from "../../api/task"; // Import the API function
 
 interface ManualTimeRecordFormProps {
   taskId: string;
@@ -13,16 +19,21 @@ interface ManualTimeRecordFormProps {
   onRecordCreated: () => void;
 }
 
-export const ManualTimeRecordForm: React.FC<ManualTimeRecordFormProps> = ({ taskId, isOpen, onClose, onRecordCreated }) => {
+export const ManualTimeRecordForm: React.FC<ManualTimeRecordFormProps> = ({
+  taskId,
+  isOpen,
+  onClose,
+  onRecordCreated,
+}) => {
   const { t } = useTranslation();
-  const [startTime, setStartTime] = useState('');
-  const [stopTime, setStopTime] = useState('');
-  const [error, setError] = useState('');
+  const [startTime, setStartTime] = useState("");
+  const [stopTime, setStopTime] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
@@ -30,23 +41,31 @@ export const ManualTimeRecordForm: React.FC<ManualTimeRecordFormProps> = ({ task
       const stop = new Date(stopTime);
 
       if (isNaN(start.getTime()) || isNaN(stop.getTime())) {
-        setError(t('tasks.manualRecord.invalidTimeFormat'));
+        setError(t("tasks.manualRecord.invalidTimeFormat"));
         return;
       }
 
       if (stop <= start) {
-        setError(t('tasks.manualRecord.stopTimeBeforeStartTime'));
+        setError(t("tasks.manualRecord.stopTimeBeforeStartTime"));
         return;
       }
 
       const duration = Math.floor((stop.getTime() - start.getTime()) / 1000); // Duration in seconds
 
-      await createManualTaskRecord(taskId, { startTime: start.toISOString(), stopTime: stop.toISOString(), duration });
+      await createManualTaskRecord(taskId, {
+        startTime: start.toISOString(),
+        stopTime: stop.toISOString(),
+        duration,
+      });
 
       onRecordCreated();
       onClose();
     } catch (err) {
-      setError(t('tasks.manualRecord.failedToCreateRecord', { message: (err as Error).message }));
+      setError(
+        t("tasks.manualRecord.failedToCreateRecord", {
+          message: (err as Error).message,
+        })
+      );
     } finally {
       setLoading(false);
     }
@@ -56,44 +75,50 @@ export const ManualTimeRecordForm: React.FC<ManualTimeRecordFormProps> = ({ task
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{t('tasks.manualRecord.addManualRecord')}</DialogTitle>
+          <DialogTitle>{t("tasks.manualRecord.addManualRecord")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="startTime" className="text-right">
-                {t('tasks.manualRecord.startTime')}
+            <div className="flex items-center gap-4">
+              <Label htmlFor="startTime" className="w-1/3 text-start">
+                {t("tasks.manualRecord.startTime")}
               </Label>
               <Input
                 id="startTime"
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="col-span-3"
+                className="flex-grow"
                 required
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="stopTime" className="text-right">
-                {t('tasks.manualRecord.stopTime')}
+            <div className="flex items-center gap-4">
+              <Label htmlFor="stopTime" className="w-1/3 text-start">
+                {t("tasks.manualRecord.stopTime")}
               </Label>
               <Input
                 id="stopTime"
                 type="datetime-local"
                 value={stopTime}
                 onChange={(e) => setStopTime(e.target.value)}
-                className="col-span-3"
+                className="flex-grow"
                 required
               />
             </div>
-            {error && <p className="text-red-500 text-sm col-span-4 text-center">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-sm col-span-4 text-center">
+                {error}
+              </p>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              {t('workspace.cancel')}
+              {t("workspace.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? t('tasks.manualRecord.adding') : t('tasks.manualRecord.add')}
+              {loading
+                ? t("tasks.manualRecord.adding")
+                : t("tasks.manualRecord.add")}
             </Button>
           </DialogFooter>
         </form>
