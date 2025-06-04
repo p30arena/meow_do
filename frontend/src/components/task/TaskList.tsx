@@ -85,7 +85,11 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
-    startTimeRef.current = new Date();
+    // If startTimeRef.current is already set by fetchTasks (meaning an active task was found),
+    // do not reset it. Otherwise, set it to the current time (for newly started tasks).
+    if (!startTimeRef.current) {
+      startTimeRef.current = new Date();
+    }
     setActiveTrackingTaskId(taskId);
 
     intervalRef.current = setInterval(() => {
