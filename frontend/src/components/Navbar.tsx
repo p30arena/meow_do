@@ -29,7 +29,7 @@ export const Navbar: React.FC = () => {
   return (
     <nav className="bg-primary text-primary-foreground p-4 flex items-center justify-between w-full fixed top-0 z-50">
       <Link to="/" className="text-lg font-bold flex items-center">
-        <img src="/logo.png" alt="MeowDo Logo" className="w-8 h-8 rounded-full mr-2" />
+        <img src="/logo.png" alt="MeowDo Logo" className="w-8 h-8 rounded-full mx-2" />
         MeowDo
       </Link>
 

@@ -15,7 +15,7 @@ const ThemeToggle: React.FC = () => {
   const { baseTheme, setBaseTheme } = useBaseTheme(); // Get baseTheme and setBaseTheme
 
   return (
-    <div className="flex items-center space-x-2"> {/* Wrap in a div for two dropdowns */}
+    <div className="flex items-center gap-2"> {/* Wrap in a div for two dropdowns */}
       {/* Light/Dark Mode Toggle */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
