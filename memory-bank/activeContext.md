@@ -53,12 +53,13 @@ The current focus is on frontend development. All core features (User authentica
 *   Implemented task deletion functionality in `frontend/src/components/task/TaskList.tsx` and `frontend/src/App.tsx`, including a confirmation dialog with the new `task.confirmDelete` i18n key.
 *   Modified `frontend/src/api/task.ts` to fetch tasks by `goalId` using a query parameter (e.g., `/api/v1/tasks?goalId=XYZ`), resolving the 404 Not Found error for task fetching.
 *   Updated `frontend/public/locales/ar/translation.json` and `frontend/public/locales/fa/translation.json` to nest `confirmDelete` under `goals` and `tasks` objects, and added `title` keys to `goals` and `tasks` objects, resolving "Duplicate object key" errors.
-*   Corrected i18n key usage in `frontend/src/components/task/TaskForm.tsx` to use nested keys (e.g., `tasks.timeBudget`, `tasks.createTask`, `workspace.cancel`), resolving `missingKey` errors.
 *   Corrected the structure of `frontend/public/locales/en/translation.json`, `frontend/public/locales/ar/translation.json`, and `frontend/public/locales/fa/translation.json` by moving task-related top-level keys into the `tasks` object.
 *   Implemented `handleUnauthorized` utility in `frontend/src/lib/utils.ts` to clear local storage token and redirect to login on 401 Unauthorized responses.
 *   Integrated `handleUnauthorized` into `frontend/src/api/workspace.ts`, `frontend/src/api/goal.ts`, and `frontend/src/api/task.ts` to handle 401 errors.
-*   Corrected i18n key usage in `frontend/src/components/task/TaskList.tsx` to use nested keys (e.g., `tasks.createTask`, `tasks.timeBudget`, `tasks.minutes`, `tasks.status`, `tasks.deadline`, `tasks.recurringTask`, `tasks.confirmDelete`), resolving `missingKey` errors.
 *   Created `.clinerules/i18n-preferences.md` to document guidelines for internationalization translations.
+*   **Reverted runtime versioning of translation files in `frontend/src/main.tsx`.**
+*   **Configured build-time versioning for translation files by adding `__APP_VERSION__` to `frontend/vite.config.ts` and using it in `frontend/src/main.tsx`.**
+*   **Declared `__APP_VERSION__` as a global variable in `frontend/src/vite-env.d.ts` to resolve TypeScript errors.**
 
 ## Next Steps
 
