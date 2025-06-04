@@ -17,8 +17,10 @@
 *   **Styling:** TailwindCSS v3
 *   **Icons:** Lucide Icons
 *   **Language:** TypeScript
-*   **Internationalization:** (To be selected, e.g., `react-i18next` or `next-i18n-router`) - will need to support RTL/LTR.
+*   **Internationalization:** `react-i18next` (or similar) - will need to support RTL/LTR.
 *   **State Management:** (To be selected, e.g., Zustand, Jotai, React Context)
+*   **Charting:** Recharts
+*   **Timezone Handling:** (To be selected, e.g., `luxon`, `date-fns-tz`, or `moment-timezone`)
 
 ## Development Setup
 
@@ -35,7 +37,7 @@
 ### Frontend Specific:
 *   **Vite Configuration:** Standard Vite setup for React with TypeScript.
 *   **TailwindCSS Configuration:** `tailwind.config.js` for custom themes and utility classes.
-*   **ShadcnUI Setup:** Initializing ShadcnUI components as per their documentation, likely involving `npx shadcn-ui@latest init` and `npx shadcn-ui@latest add <component>`.
+*   **ShadcnUI Setup:** Initializing Shadcn components as per their documentation, likely involving `npx shadcn@latest init` and `npx shadcn@latest add <component>`.
 
 ## Technical Constraints
 
@@ -48,7 +50,7 @@
 ## Dependencies
 
 *   **Backend:** `express`, `zod`, `drizzle-orm`, `pg` (PostgreSQL driver), `dotenv`, `cors`, `jsonwebtoken`.
-*   **Frontend:** `react`, `react-dom`, `vite`, `tailwindcss`, `postcss`, `autoprefixer`, `lucide-react`, `class-variance-authority`, `clsx`, `tailwind-merge`, `react-i18next` (or similar), `zustand` (or similar), `stylis-plugin-rtl` (or similar for RTL support).
+*   **Frontend:** `react`, `react-dom`, `vite`, `tailwindcss`, `postcss`, `autoprefixer`, `lucide-react`, `class-variance-authority`, `clsx`, `tailwind-merge`, `react-i18next` (or similar), `zustand` (or similar), `stylis-plugin-rtl` (or similar for RTL support), `recharts`, `luxon` (or similar timezone library).
 *   **Development:** `typescript`, `nodemon` (backend), `vite-plugin-react` (frontend), `drizzle-kit`, `eslint`, `prettier`.
 
 ## Tool Usage Patterns

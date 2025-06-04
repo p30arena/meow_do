@@ -9,6 +9,7 @@ export interface Task {
   timeBudget: number; // in minutes
   deadline?: string; // ISO date string
   status: 'pending' | 'started' | 'failed' | 'done';
+  priority: number; // Add priority to Task interface
   isRecurring: boolean;
   createdAt: string;
   updatedAt: string;
@@ -20,6 +21,8 @@ export interface CreateTaskPayload {
   description?: string;
   timeBudget: number;
   deadline?: string;
+  status?: 'pending' | 'started' | 'failed' | 'done'; // Status can be optional for creation
+  priority?: number; // Add priority to CreateTaskPayload
   isRecurring?: boolean;
 }
 
@@ -29,6 +32,7 @@ export interface UpdateTaskPayload {
   timeBudget?: number;
   deadline?: string;
   status?: 'pending' | 'started' | 'failed' | 'done';
+  priority?: number; // Add priority to UpdateTaskPayload
   isRecurring?: boolean;
 }
 
@@ -51,6 +55,89 @@ export const createTask = async (payload: CreateTaskPayload): Promise<Task> => {
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to create task');
+  }
+  return response.json();
+};
+
+export interface TaskTrackingRecord {
+  id: string;
+  taskId: string;
+  userId: string;
+  startTime: string;
+  endTime?: string;
+  duration?: number; // in seconds
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TaskTrackingSummary {
+  taskName: string;
+  totalDurationSeconds: number;
+  period: string; // ISO date string for the start of the period (day, month, year)
+}
+
+export const startTaskTracking = async (taskId: string): Promise<TaskTrackingRecord> => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/start`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Failed to start tracking for task ID ${taskId}`);
+  }
+  return response.json();
+};
+
+export const stopTaskTracking = async (taskId: string): Promise<TaskTrackingRecord> => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/stop`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Failed to stop tracking for task ID ${taskId}`);
+  }
+  return response.json();
+};
+
+export const getTaskTrackingSummary = async (period: 'day' | 'month' | 'year'): Promise<TaskTrackingSummary[]> => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/tasks/summary?period=${period}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    handleUnauthorized();
+    throw new Error('Unauthorized');
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || `Failed to fetch task tracking summary for period ${period}`);
   }
   return response.json();
 };

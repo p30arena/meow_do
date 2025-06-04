@@ -16,8 +16,10 @@ graph TD
         F3[ShadcnUI]
         F4[TailwindCSS v3]
         F5[Lucide Icons]
-        F6[i18n Library]
-        F7[Theming Logic]
+    F6[i18n Library]
+    F7[Theming Logic]
+    F8[Recharts for Charts]
+    F9[Timezone Library]
     end
 
     subgraph Backend Stack
@@ -34,6 +36,8 @@ graph TD
     F2 --> F5
     F2 --> F6
     F2 --> F7
+    F2 --> F8
+    F2 --> F9
 
     Backend --> B1
     B1 --> B2
@@ -47,8 +51,11 @@ graph TD
 *   **Database Schema:** Drizzle ORM will be used to define and manage the PostgreSQL database schema, ensuring type safety and efficient query building.
 *   **State Management (Frontend):** A suitable React state management solution (e.g., React Context, Zustand, Jotai, or Redux Toolkit depending on complexity) will be chosen to manage global application state.
 *   **Authentication/Authorization:** Multi-user support will be implemented using JWT (JSON Web Tokens) for authentication, passed via the `Authorization` header.
-*   **Internationalization:** A dedicated i18n library will be integrated into the frontend for multi-language support, ensuring compatibility with both Left-to-Right (LTR) and Right-to-Left (RTL) layouts.
+*   **Internationalization:** A dedicated i18n library will be integrated into the frontend for multi-language support, ensuring compatibility with both Left-to-Right (LTR) and Right-to-Right (RTL) layouts.
 *   **Theming:** CSS variables and TailwindCSS will be leveraged for easy implementation and switching between light and dark modes.
+*   **Time Management & Tracking:** Implementation will involve precise timestamping and duration calculations, considering user-defined timezones.
+*   **Charting:** Recharts will be used for visualizing time spent on tasks.
+*   **Prioritization:** Task prioritization will be managed via an integer field in the database and exposed through API.
 
 ## Design Patterns in Use
 
@@ -68,8 +75,10 @@ graph TD
 
 *   **Workspace Management:** CRUD operations for workspaces.
 *   **Goal Management:** CRUD operations for goals within a workspace.
-*   **Task Management:** CRUD operations for tasks associated with goals, including time budget calculations, recurring task logic, and status updates.
+*   **Task Management:** CRUD operations for tasks associated with goals, including time budget calculations, recurring task logic, status updates, and priority management.
+*   **Task Time Tracking:** Implementing start/stop functionality for tasks, recording time spent, and generating daily/monthly/yearly summaries.
 *   **User Authentication:** Secure user registration, login, and session management.
+*   **User Timezone Management:** Allowing users to set and update their preferred timezone.
 *   **Mobile Responsiveness:** Ensuring all UI elements and interactions are optimized for mobile devices.
 *   **Multi-language Support:** Implementing the ability to switch between English, Arabic, and Farsi seamlessly, including full support for RTL/LTR layouts.
 *   **Theming:** Allowing users to toggle between light and dark modes.

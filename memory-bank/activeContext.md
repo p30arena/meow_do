@@ -2,7 +2,7 @@
 
 ## Current Work Focus
 
-The current focus is on frontend development. All core features (User authentication, Workspace management, Goal management, and Task management) and all project initialization tasks (multi-language support including RTL/LTR, and light/dark mode theming) have been successfully implemented. All core backend features are also complete.
+The current focus is on implementing new features: user timezone preference, task tracking (start/stop, time spent summary with Recharts), and task priority. All previous core features (User authentication, Workspace management, Goal management, and Task management) and project initialization tasks (multi-language support including RTL/LTR, and light/dark mode theming) have been successfully implemented. All core backend features are also complete.
 
 ## Recent Changes
 
@@ -60,13 +60,18 @@ The current focus is on frontend development. All core features (User authentica
 *   **Reverted runtime versioning of translation files in `frontend/src/main.tsx`.**
 *   **Configured build-time versioning for translation files by adding `__APP_VERSION__` to `frontend/vite.config.ts` and using it in `frontend/src/main.tsx`.**
 *   **Declared `__APP_VERSION__` as a global variable in `frontend/src/vite-env.d.ts` to resolve TypeScript errors.**
+*   **Docker Setup:** Successfully set up Docker Compose and Dockerfiles for containerizing the backend, frontend, and PostgreSQL database, including Nginx configuration for the frontend and addressing PostgreSQL port exposure.
 
 ## Next Steps
 
-1.  Comprehensive error handling.
-2.  Unit and integration tests for both backend and frontend.
-3.  Deployment pipeline setup.
-4.  Performance optimizations.
+1.  Implement user timezone preference (backend schema, API, frontend UI).
+2.  Implement task priority (backend schema, API, frontend UI).
+3.  Implement task start/stop tracking (backend schema, API, frontend UI).
+4.  Implement task time spent summary and display using Recharts (backend API, frontend UI).
+5.  Comprehensive error handling.
+6.  Unit and integration tests for both backend and frontend.
+7.  Deployment pipeline setup.
+8.  Performance optimizations.
 
 ## Active Decisions and Considerations
 
@@ -75,6 +80,10 @@ The current focus is on frontend development. All core features (User authentica
 *   **Internationalization (i18n):** Integrating multi-lingual support (En, Ar, Fa) early in the frontend setup, including full support for RTL/LTR layouts. The previous RTL punctuation display issue has been addressed and is no longer a concern.
 *   **Theming:** Implementing Light Mode and Dark Mode capabilities for user preference.
 *   **Multi-user & Authentication:** Implementing JWT-based authentication for multi-user support, with tokens passed via `localStorage` and included in `fetch` headers.
+*   **Timezone Preference:** Allowing users to set their preferred timezone for accurate time display and calculations.
+*   **Task Prioritization:** Adding a priority field to tasks to help users organize their work.
+*   **Detailed Task Tracking:** Implementing start/stop functionality and time aggregation for tasks to provide better insights into time spent.
+*   **Charting:** Using Recharts for clear visual representation of time spent on tasks.
 
 ## Important Patterns and Preferences
 

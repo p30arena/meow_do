@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { db } from '../db';
 import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import { registerUserSchema, loginUserSchema } from '../validation/user.validation';
+import { registerUserSchema, loginUserSchema, updateUserTimezoneSchema } from '../validation/user.validation';
 import { catchAsync } from '../utils/catchAsync';
 
 const generateToken = (id: string) => {
@@ -35,6 +35,30 @@ export const register = catchAsync(async (req: Request, res: Response) => {
       email: newUser[0].email,
     },
     token,
+  });
+});
+
+export const updateTimezone = catchAsync(async (req: Request, res: Response) => {
+  const validatedData = updateUserTimezoneSchema.parse(req.body);
+  const { timezone } = validatedData;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  }
+
+  const updatedUsers = await db.update(users)
+    .set({ timezone, updatedAt: new Date() })
+    .where(eq(users.id, userId))
+    .returning({ id: users.id, username: users.username, email: users.email, timezone: users.timezone });
+
+  if (updatedUsers.length === 0) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  res.status(200).json({
+    message: 'Timezone updated successfully',
+    user: updatedUsers[0],
   });
 });
 

@@ -15,6 +15,8 @@ import { type Workspace } from "./api/workspace";
 import { Button } from "./components/ui/button";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 import ThemeToggle from "./components/ThemeToggle";
+import TimezoneSelector from "./components/settings/TimezoneSelector";
+import TaskTrackingChart from "./components/task/TaskTrackingChart";
 
 function App() {
   const { t } = useTranslation();
@@ -30,6 +32,7 @@ function App() {
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
+  const [showSettings, setShowSettings] = useState(false); // New state for settings view
 
   useEffect(() => {
     const token = getAuthToken();
@@ -37,6 +40,10 @@ function App() {
       setIsLoggedIn(true);
     }
   }, []);
+
+  const handleToggleSettings = () => {
+    setShowSettings(prev => !prev);
+  };
 
   const handleLoginSuccess = (token: string) => {
     setAuthToken(token);
@@ -193,11 +200,19 @@ function App() {
             <div className="flex items-center space-x-4">
               <LanguageSwitcher />
               <ThemeToggle />
+              <Button onClick={handleToggleSettings}>
+                {showSettings ? t("settings.hide") : t("settings.show")}
+              </Button>
               <Button onClick={handleLogout}>{t("auth.logout")}</Button>
             </div>
           </div>
 
-          {selectedWorkspace ? (
+          {showSettings ? (
+            <div className="space-y-8">
+              <TimezoneSelector />
+              <TaskTrackingChart />
+            </div>
+          ) : selectedWorkspace ? (
             selectedGoal ? (
               <div>
                 <div className="flex justify-between items-center mb-4">

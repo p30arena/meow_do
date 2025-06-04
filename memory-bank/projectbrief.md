@@ -18,6 +18,11 @@ MeowDo is a mobile-friendly web application designed for tracking and managing g
     *   Tasks can be copied to the next day (recurring tasks).
     *   Tasks can have an optional `deadline`.
     *   Tasks have a `status` (`pending`, `started`, `failed`, `done`).
+    *   Tasks will have a `priority` (default 1, highest 10).
+    *   Users can "start" and "stop" tasks, with tracking records inserted on start and updated on stop.
+    *   The application will provide a summary of time spent for each task based on the current day, month, and year, displayed in a bar chart using Recharts.
+
+4.  **User Preferences:** Users can specify and store their timezone preference.
 
 ## Tech Stack
 

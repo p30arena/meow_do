@@ -93,6 +93,38 @@
       "failed": "فشل",
       "done": "تم"
     },
-    "recurringTask": "مهمة متكررة"
+    "recurringTask": "مهمة متكررة",
+    "priority": "الأولوية",
+    "invalidPriority": "يجب أن تكون الأولوية رقمًا بين 1 و 10.",
+    "tracking": "تتبع",
+    "startTracking": "بدء التتبع",
+    "stopTracking": "إيقاف التتبع",
+    "loadingSummary": "جارٍ تحميل ملخص التتبع...",
+    "trackingSummary": "ملخص تتبع المهام",
+    "selectPeriod": "اختر الفترة",
+    "period": {
+      "day": "يوم",
+      "month": "شهر",
+      "year": "سنة"
+    },
+    "noTrackingData": "لا توجد بيانات تتبع متاحة للفترة المحددة.",
+    "totalTime": "إجمالي الوقت",
+    "timeSpent": "الوقت المستغرق"
+  },
+  "timezone": {
+    "label": "اختر منطقتك الزمنية",
+    "selectPlaceholder": "اختر منطقة زمنية",
+    "saveButton": "حفظ المنطقة الزمنية",
+    "success": {
+      "updated": "تم تحديث المنطقة الزمنية بنجاح!"
+    },
+    "error": {
+      "notAuthenticated": "يجب تسجيل الدخول لتحديث المنطقة الزمنية.",
+      "failedToUpdate": "فشل تحديث المنطقة الزمنية."
+    }
+  },
+  "settings": {
+    "show": "إظهار الإعدادات",
+    "hide": "إخفاء الإعدادات"
   }
 }

@@ -13,6 +13,7 @@ export const users = pgTable('users', {
   username: varchar('username', { length: 256 }).notNull().unique(),
   email: varchar('email', { length: 256 }).notNull().unique(),
   passwordHash: varchar('password_hash', { length: 256 }).notNull(),
+  timezone: varchar('timezone', { length: 256 }).default('UTC').notNull(), // Default to UTC
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -25,7 +26,19 @@ export const tasks = pgTable('tasks', {
   timeBudget: integer('time_budget').notNull(), // in minutes
   deadline: timestamp('deadline'),
   status: varchar('status', { enum: ['pending', 'started', 'failed', 'done'] }).default('pending').notNull(),
+  priority: integer('priority').default(1).notNull(), // Default priority to 1
   isRecurring: boolean('is_recurring').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const taskTrackingRecords = pgTable('task_tracking_records', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  taskId: uuid('task_id').notNull().references(() => tasks.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }), // Assuming tracking is per user
+  startTime: timestamp('start_time').defaultNow().notNull(),
+  endTime: timestamp('end_time'), // Nullable, for ongoing tasks
+  duration: integer('duration'), // Duration in seconds, calculated on stop
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

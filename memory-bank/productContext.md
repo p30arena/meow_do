@@ -8,7 +8,9 @@ MeowDo aims to provide a comprehensive solution for individuals to effectively m
 
 *   **Disorganization:** Helps users organize their goals and daily tasks within defined workspaces.
 *   **Time Management:** Enables users to budget time for tasks and provides warnings for over-allocation, promoting realistic planning.
-*   **Task Tracking:** Offers clear status indicators for tasks, allowing users to monitor their progress (pending, started, failed, done).
+*   **Task Tracking:** Offers clear status indicators for tasks, allowing users to monitor their progress (pending, started, failed, done). It also provides granular time tracking for tasks, enabling users to record actual time spent and view summaries.
+*   **Prioritization:** Allows users to assign priority levels to tasks, helping them focus on what's most important.
+*   **Personalized Experience:** Enables users to set their preferred timezone for accurate time-related data.
 *   **Goal Achievement:** Provides a framework for setting and tracking goals, with status updates (pending, reached) to encourage completion.
 *   **Mobile Accessibility:** Designed with a mobile-first approach to ensure usability and accessibility on smartphones, where many users manage their daily lives.
 
@@ -21,7 +23,10 @@ Users will be able to:
 4.  Monitor the total time allocated for tasks daily and receive warnings if it exceeds 24 hours.
 5.  Easily copy tasks to subsequent days for recurring activities.
 6.  Update the status of tasks and goals as they progress.
-7.  Experience a seamless and intuitive interface on mobile devices.
+7.  **Start and stop tasks** to accurately track time spent, and view aggregated time summaries (daily, monthly, yearly) in a bar chart.
+8.  Assign a **priority** level to each task (1-10).
+9.  Set and store their **timezone preference** for accurate time displays.
+10. Experience a seamless and intuitive interface on mobile devices.
 
 ## User experience goals
 

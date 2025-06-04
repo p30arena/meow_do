@@ -93,6 +93,38 @@
       "failed": "ناموفق",
       "done": "انجام شده"
     },
-    "recurringTask": "وظیفه تکرار شونده"
+    "recurringTask": "وظیفه تکرار شونده",
+    "priority": "اولویت",
+    "invalidPriority": "اولویت باید عددی بین 1 تا 10 باشد.",
+    "tracking": "ردیابی",
+    "startTracking": "شروع ردیابی",
+    "stopTracking": "توقف ردیابی",
+    "loadingSummary": "در حال بارگذاری خلاصه ردیابی...",
+    "trackingSummary": "خلاصه ردیابی وظایف",
+    "selectPeriod": "انتخاب دوره",
+    "period": {
+      "day": "روز",
+      "month": "ماه",
+      "year": "سال"
+    },
+    "noTrackingData": "هیچ داده ردیابی برای دوره انتخاب شده موجود نیست.",
+    "totalTime": "کل زمان",
+    "timeSpent": "زمان صرف شده"
+  },
+  "timezone": {
+    "label": "منطقه زمانی خود را انتخاب کنید",
+    "selectPlaceholder": "یک منطقه زمانی را انتخاب کنید",
+    "saveButton": "ذخیره منطقه زمانی",
+    "success": {
+      "updated": "منطقه زمانی با موفقیت به روز شد!"
+    },
+    "error": {
+      "notAuthenticated": "برای به روز رسانی منطقه زمانی باید وارد شوید.",
+      "failedToUpdate": "به روز رسانی منطقه زمانی ناموفق بود."
+    }
+  },
+  "settings": {
+    "show": "نمایش تنظیمات",
+    "hide": "پنهان کردن تنظیمات"
   }
 }

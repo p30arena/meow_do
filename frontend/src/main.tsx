@@ -10,6 +10,7 @@ import { prefixer } from "stylis";
 import { StyleSheetManager } from "styled-components";
 import rtlPlugin from "stylis-plugin-rtl";
 import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "./context/AuthContext";
 
 // i18n configuration
 i18n
@@ -38,7 +39,9 @@ createRoot(rootElement).render(
         stylisPlugins={isRtl ? [prefixer, rtlPlugin] : [prefixer]}
       >
         <div dir={isRtl ? "rtl" : "ltr"}>
-          <App />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
         </div>
       </StyleSheetManager>
     </ThemeProvider>

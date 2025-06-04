@@ -7,6 +7,7 @@ export const createTaskSchema = z.object({
   timeBudget: z.number().int().min(0, 'Time budget must be a non-negative integer'),
   deadline: z.string().datetime().optional().transform((str) => (str ? new Date(str) : undefined)), // ISO 8601 string to Date object
   status: z.enum(['pending', 'started', 'failed', 'done']).default('pending').optional(),
+  priority: z.number().int().min(1).max(10).default(1).optional(), // Priority from 1 to 10, default 1
   isRecurring: z.boolean().default(false).optional(),
 });
 
@@ -16,5 +17,6 @@ export const updateTaskSchema = z.object({
   timeBudget: z.number().int().min(0, 'Time budget must be a non-negative integer').optional(),
   deadline: z.string().datetime().optional().transform((str) => (str ? new Date(str) : undefined)), // ISO 8601 string to Date object
   status: z.enum(['pending', 'started', 'failed', 'done']).optional(),
+  priority: z.number().int().min(1).max(10).optional(), // Priority from 1 to 10
   isRecurring: z.boolean().optional(),
 });

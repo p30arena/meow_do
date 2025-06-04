@@ -93,6 +93,38 @@
       "failed": "Failed",
       "done": "Done"
     },
-    "recurringTask": "Recurring Task"
+    "recurringTask": "Recurring Task",
+    "priority": "Priority",
+    "invalidPriority": "Priority must be a number between 1 and 10.",
+    "tracking": "Tracking",
+    "startTracking": "Start Tracking",
+    "stopTracking": "Stop Tracking",
+    "loadingSummary": "Loading tracking summary...",
+    "trackingSummary": "Task Tracking Summary",
+    "selectPeriod": "Select Period",
+    "period": {
+      "day": "Day",
+      "month": "Month",
+      "year": "Year"
+    },
+    "noTrackingData": "No tracking data available for the selected period.",
+    "totalTime": "Total Time",
+    "timeSpent": "Time Spent"
+  },
+  "timezone": {
+    "label": "Select your Timezone",
+    "selectPlaceholder": "Select a timezone",
+    "saveButton": "Save Timezone",
+    "success": {
+      "updated": "Timezone updated successfully!"
+    },
+    "error": {
+      "notAuthenticated": "You must be logged in to update timezone.",
+      "failedToUpdate": "Failed to update timezone."
+    }
+  },
+  "settings": {
+    "show": "Show Settings",
+    "hide": "Hide Settings"
   }
 }

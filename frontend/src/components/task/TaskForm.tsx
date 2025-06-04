@@ -23,6 +23,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
   const [timeBudget, setTimeBudget] = useState(task?.timeBudget.toString() || '');
   const [deadline, setDeadline] = useState(task?.deadline ? new Date(task.deadline).toISOString().split('T')[0] : '');
   const [status, setStatus] = useState<'pending' | 'started' | 'failed' | 'done'>(task?.status || 'pending');
+  const [priority, setPriority] = useState<string>(task?.priority?.toString() || '1'); // New state for priority
   const [isRecurring, setIsRecurring] = useState(task?.isRecurring || false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +35,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
       setTimeBudget(task.timeBudget.toString());
       setDeadline(task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : '');
       setStatus(task.status);
+      setPriority(task.priority?.toString() || '1'); // Set priority from task
       setIsRecurring(task.isRecurring);
     }
   }, [task]);
@@ -50,6 +52,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
       return;
     }
 
+    const parsedPriority = parseInt(priority);
+    if (isNaN(parsedPriority) || parsedPriority < 1 || parsedPriority > 10) {
+      setError(t('tasks.invalidPriority')); // New translation key needed
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload = {
         goalId,
@@ -58,6 +67,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
         timeBudget: parsedTimeBudget,
         deadline: deadline || undefined,
         status,
+        priority: parsedPriority, // Include priority in payload
         isRecurring,
       };
 
@@ -138,6 +148,19 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
                 <SelectItem value="done">{t('tasks.taskStatus.done')}</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label htmlFor="priority">{t('tasks.priority')}</Label>
+            <Input
+              id="priority"
+              type="number"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              required
+              min="1"
+              max="10"
+              disabled={loading}
+            />
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox
