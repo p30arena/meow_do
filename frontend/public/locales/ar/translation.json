@@ -69,26 +69,30 @@
   "tasksFor": "مهام لـ",
   "backToGoals": "العودة إلى الأهداف",
   "loadingTasks": "جارٍ تحميل المهام...",
+  "recurring": "متكرر",
+  "copyToNextDay": "نسخ إلى اليوم التالي",
+  "taskForm.invalidTimeBudget": "يجب أن تكون ميزانية الوقت رقمًا موجبًا.",
   "tasks": {
     "title": "المهام",
     "timeBudgetWarning": "تحذير: إجمالي ميزانية الوقت ({hours} ساعة {minutes} دقيقة) يتجاوز 24 ساعة!",
     "totalTimeBudget": "إجمالي ميزانية الوقت",
     "noTasksYet": "لا توجد مهام بعد. أنشئ أول مهمة لك!",
-    "confirmDelete": "هل أنت متأكد أنك تريد حذف المهمة \"{{taskName}}\"؟"
-  },
-  "minutes": "دقيقة",
-  "taskStatus": {
-    "pending": "معلق",
-    "started": "بدأ",
-    "failed": "فشل",
-    "done": "تم"
-  },
-  "recurring": "متكرر",
-  "copyToNextDay": "نسخ إلى اليوم التالي",
-  "createTask": "إنشاء مهمة جديدة",
-  "editTask": "تعديل المهمة",
-  "taskName": "اسم المهمة",
-  "taskDescription": "وصف المهمة",
-  "recurringTask": "مهمة متكررة",
-  "taskForm.invalidTimeBudget": "يجب أن تكون ميزانية الوقت رقمًا موجبًا."
+    "confirmDelete": "هل أنت متأكد أنك تريد حذف المهمة \"{{taskName}}\"؟",
+    "createTask": "إنشاء مهمة جديدة",
+    "editTask": "تعديل المهمة",
+    "taskName": "اسم المهمة",
+    "taskDescription": "وصف المهمة",
+    "timeBudget": "ميزانية الوقت",
+    "minutes": "دقيقة",
+    "deadline": "الموعد النهائي",
+    "status": "الحالة",
+    "selectStatus": "اختر حالة",
+    "taskStatus": {
+      "pending": "معلق",
+      "started": "بدأ",
+      "failed": "فشل",
+      "done": "تم"
+    },
+    "recurringTask": "مهمة متكررة"
+  }
 }

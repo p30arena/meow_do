@@ -79,12 +79,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
   return (
     <Card className="p-4">
       <CardHeader>
-        <CardTitle>{task ? t('editTask') : t('createTask')}</CardTitle>
+        <CardTitle>{task ? t('tasks.editTask') : t('tasks.createTask')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">{t('taskName')}</Label>
+            <Label htmlFor="name">{t('tasks.taskName')}</Label>
             <Input
               id="name"
               type="text"
@@ -95,7 +95,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
             />
           </div>
           <div>
-            <Label htmlFor="description">{t('taskDescription')}</Label>
+            <Label htmlFor="description">{t('tasks.taskDescription')}</Label>
             <Textarea
               id="description"
               value={description}
@@ -104,7 +104,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
             />
           </div>
           <div>
-            <Label htmlFor="timeBudget">{t('timeBudget')} ({t('minutes')})</Label>
+            <Label htmlFor="timeBudget">{t('tasks.timeBudget')} ({t('tasks.minutes')})</Label>
             <Input
               id="timeBudget"
               type="number"
@@ -116,7 +116,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
             />
           </div>
           <div>
-            <Label htmlFor="deadline">{t('deadline')}</Label>
+            <Label htmlFor="deadline">{t('tasks.deadline')}</Label>
             <Input
               id="deadline"
               type="date"
@@ -126,16 +126,16 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
             />
           </div>
           <div>
-            <Label htmlFor="status">{t('status')}</Label>
+            <Label htmlFor="status">{t('tasks.status')}</Label>
             <Select value={status} onValueChange={(value: 'pending' | 'started' | 'failed' | 'done') => setStatus(value)} disabled={loading}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder={t('selectStatus')} />
+                <SelectValue placeholder={t('tasks.selectStatus')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">{t('taskStatus.pending')}</SelectItem>
-                <SelectItem value="started">{t('taskStatus.started')}</SelectItem>
-                <SelectItem value="failed">{t('taskStatus.failed')}</SelectItem>
-                <SelectItem value="done">{t('taskStatus.done')}</SelectItem>
+                <SelectItem value="pending">{t('tasks.taskStatus.pending')}</SelectItem>
+                <SelectItem value="started">{t('tasks.taskStatus.started')}</SelectItem>
+                <SelectItem value="failed">{t('tasks.taskStatus.failed')}</SelectItem>
+                <SelectItem value="done">{t('tasks.taskStatus.done')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -146,15 +146,15 @@ const TaskForm: React.FC<TaskFormProps> = ({ goalId, task, onSuccess, onCancel }
               onCheckedChange={(checked: boolean) => setIsRecurring(checked)}
               disabled={loading}
             />
-            <Label htmlFor="isRecurring">{t('recurringTask')}</Label>
+            <Label htmlFor="isRecurring">{t('tasks.recurringTask')}</Label>
           </div>
-          {error && <p className="text-red-500 text-sm">{t('error')}: {error}</p>}
+          {error && <p className="text-red-500 text-sm">{t('workspace.error')}: {error}</p>}
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-              {t('cancel')}
+              {t('workspace.cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? t('saving') : (task ? t('saveChanges') : t('create'))}
+              {loading ? t('workspace.saving') : (task ? t('workspace.saveChanges') : t('workspace.create'))}
             </Button>
           </div>
         </form>

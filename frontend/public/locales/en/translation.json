@@ -69,26 +69,30 @@
   "tasksFor": "Tasks for",
   "backToGoals": "Back to Goals",
   "loadingTasks": "Loading tasks...",
+  "recurring": "Recurring",
+  "copyToNextDay": "Copy to Next Day",
+  "taskForm.invalidTimeBudget": "Time budget must be a positive number.",
   "tasks": {
     "title": "Tasks",
     "timeBudgetWarning": "Warning: Total time budget ({hours}h {minutes}m) exceeds 24 hours!",
     "totalTimeBudget": "Total Time Budget",
     "noTasksYet": "No tasks yet. Create your first one!",
-    "confirmDelete": "Are you sure you want to delete task \"{{taskName}}\"?"
-  },
-  "minutes": "minutes",
-  "taskStatus": {
-    "pending": "Pending",
-    "started": "Started",
-    "failed": "Failed",
-    "done": "Done"
-  },
-  "recurring": "Recurring",
-  "copyToNextDay": "Copy to Next Day",
-  "createTask": "Create New Task",
-  "editTask": "Edit Task",
-  "taskName": "Task Name",
-  "taskDescription": "Task Description",
-  "recurringTask": "Recurring Task",
-  "taskForm.invalidTimeBudget": "Time budget must be a positive number."
+    "confirmDelete": "Are you sure you want to delete task \"{{taskName}}\"?",
+    "createTask": "Create New Task",
+    "editTask": "Edit Task",
+    "taskName": "Task Name",
+    "taskDescription": "Task Description",
+    "timeBudget": "Time Budget",
+    "minutes": "minutes",
+    "deadline": "Deadline",
+    "status": "Status",
+    "selectStatus": "Select a status",
+    "taskStatus": {
+      "pending": "Pending",
+      "started": "Started",
+      "failed": "Failed",
+      "done": "Done"
+    },
+    "recurringTask": "Recurring Task"
+  }
 }

@@ -69,26 +69,30 @@
   "tasksFor": "وظایف برای",
   "backToGoals": "بازگشت به اهداف",
   "loadingTasks": "در حال بارگذاری وظایف...",
+  "recurring": "تکرار شونده",
+  "copyToNextDay": "کپی به روز بعد",
+  "taskForm.invalidTimeBudget": "بودجه زمانی باید یک عدد مثبت باشد.",
   "tasks": {
     "title": "وظایف",
     "timeBudgetWarning": "هشدار: کل بودجه زمانی ({hours} ساعت {minutes} دقیقه) از 24 ساعت بیشتر است!",
     "totalTimeBudget": "کل بودجه زمانی",
     "noTasksYet": "هنوز وظیفه ای وجود ندارد. اولین وظیفه خود را ایجاد کنید!",
-    "confirmDelete": "آیا مطمئن هستید که می خواهید وظیفه \"{{taskName}}\" را حذف کنید؟"
-  },
-  "minutes": "دقیقه",
-  "taskStatus": {
-    "pending": "در انتظار",
-    "started": "شروع شده",
-    "failed": "ناموفق",
-    "done": "انجام شده"
-  },
-  "recurring": "تکرار شونده",
-  "copyToNextDay": "کپی به روز بعد",
-  "createTask": "ایجاد وظیفه جدید",
-  "editTask": "ویرایش وظیفه",
-  "taskName": "نام وظیفه",
-  "taskDescription": "توضیحات وظیفه",
-  "recurringTask": "وظیفه تکرار شونده",
-  "taskForm.invalidTimeBudget": "بودجه زمانی باید یک عدد مثبت باشد."
+    "confirmDelete": "آیا مطمئن هستید که می خواهید وظیفه \"{{taskName}}\" را حذف کنید؟",
+    "createTask": "ایجاد وظیفه جدید",
+    "editTask": "ویرایش وظیفه",
+    "taskName": "نام وظیفه",
+    "taskDescription": "توضیحات وظیفه",
+    "timeBudget": "بودجه زمانی",
+    "minutes": "دقیقه",
+    "deadline": "مهلت",
+    "status": "وضعیت",
+    "selectStatus": "انتخاب وضعیت",
+    "taskStatus": {
+      "pending": "در انتظار",
+      "started": "شروع شده",
+      "failed": "ناموفق",
+      "done": "انجام شده"
+    },
+    "recurringTask": "وظیفه تکرار شونده"
+  }
 }
