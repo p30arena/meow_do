@@ -6,6 +6,16 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { login, type LoginResponse } from '../../api/auth';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
+});
+
+type LoginFormInputs = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
   onLoginSuccess: (data: LoginResponse) => void;
@@ -13,20 +23,25 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   const { t } = useTranslation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormInputs>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormInputs) => {
     setError('');
     setLoading(true);
 
     try {
-      console.log('Attempting login with:', { email, password });
-      const data = await login(email, password);
-      onLoginSuccess(data);
+      console.log('Attempting login with:', { email: data.email, password: data.password });
+      const loginData = await login(data.email, data.password);
+      onLoginSuccess(loginData);
     } catch (err: any) {
       setError(err.message || t('login.errorOccurred'));
       console.error('Login error:', err);
@@ -48,27 +63,25 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
         <div className="flex flex-col items-center justify-center mb-4">
           <img src="/logo.png" alt="MeowDo Logo" className="h-16 w-16 mb-2" />
         </div>
-        <form onSubmit={handleSubmit} className="grid gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">{t('login.email')}</Label>
             <Input
               id="email"
               type="email"
               placeholder="m@example.com"
-              required
-              value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              {...register('email')}
             />
+            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">{t('login.password')}</Label>
             <Input
               id="password"
               type="password"
-              required
-              value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+              {...register('password')}
             />
+            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>

@@ -6,6 +6,21 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { register, type LoginResponse } from '../../api/auth';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const registerSchema = z.object({
+  username: z.string().min(3, 'Username must be at least 3 characters long'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+});
+
+type RegisterFormInputs = z.infer<typeof registerSchema>;
 
 interface RegisterFormProps {
   onRegisterSuccess: (data: LoginResponse) => void;
@@ -13,28 +28,25 @@ interface RegisterFormProps {
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
   const { t } = useTranslation();
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const {
+    register: formRegister,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormInputs>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const onSubmit = async (data: RegisterFormInputs) => {
     setError('');
     setLoading(true);
 
-    if (password !== confirmPassword) {
-      setError(t('register.passwordsMismatch'));
-      setLoading(false);
-      return;
-    }
-
     try {
-      console.log('Attempting registration with:', { username, email, password });
-      const data = await register(username, email, password);
-      onRegisterSuccess(data);
+      console.log('Attempting registration with:', { username: data.username, email: data.email, password: data.password });
+      const registerData = await register(data.username, data.email, data.password);
+      onRegisterSuccess(registerData);
     } catch (err: any) {
       setError(err.message || t('register.errorOccurred'));
       console.error('Registration error:', err);
@@ -56,17 +68,16 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
         <div className="flex flex-col items-center justify-center mb-4">
           <img src="/logo.png" alt="MeowDo Logo" className="h-16 w-16 mb-2" />
         </div>
-        <form onSubmit={handleSubmit} className="grid gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="username">{t('register.username')}</Label>
             <Input
               id="username"
               type="text"
               placeholder="john_doe"
-              required
-              value={username}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
+              {...formRegister('username')}
             />
+            {errors.username && <p className="text-red-500 text-sm">{errors.username.message}</p>}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="email">{t('register.email')}</Label>
@@ -74,30 +85,27 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
               id="email"
               type="email"
               placeholder="m@example.com"
-              required
-              value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              {...formRegister('email')}
             />
+            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">{t('register.password')}</Label>
             <Input
               id="password"
               type="password"
-              required
-              value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+              {...formRegister('password')}
             />
+            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="confirmPassword">{t('register.confirmPassword')}</Label>
             <Input
               id="confirmPassword"
               type="password"
-              required
-              value={confirmPassword}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+              {...formRegister('confirmPassword')}
             />
+            {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>}
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
