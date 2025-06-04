@@ -45,7 +45,7 @@ export const createGoal = async (payload: CreateGoalPayload): Promise<Goal> => {
 
 export const getGoalsByWorkspaceId = async (workspaceId: string): Promise<Goal[]> => {
   const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/goals`, {
+  const response = await fetch(`${API_BASE_URL}/goals?workspaceId=${workspaceId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

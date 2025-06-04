@@ -46,6 +46,7 @@ The current focus is on frontend development. All core features (User authentica
 *   Corrected i18n key usage for 'edit' and 'delete' in `frontend/src/components/workspace/WorkspaceList.tsx` to use nested keys (e.g., `workspace.edit`, `workspace.delete`), resolving `missingKey` errors.
 *   Implemented edit and delete functionalities for workspaces in `frontend/src/components/workspace/WorkspaceList.tsx`, including integration with `App.tsx` for state management and adding a confirmation dialog for deletion with the new `workspace.confirmDelete` i18n key.
 *   Corrected i18n key usage for 'error' in `frontend/src/components/goal/GoalList.tsx` to use `workspace.error`, resolving `missingKey` errors.
+*   Modified `frontend/src/api/goal.ts` to fetch goals by `workspaceId` using a query parameter (e.g., `/api/v1/goals?workspaceId=XYZ`), resolving the 404 Not Found error for goal fetching.
 
 ## Next Steps
 
