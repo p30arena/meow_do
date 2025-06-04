@@ -40,6 +40,7 @@ The current focus is on frontend development. All core features (User authentica
 *   Implemented `ThemeProvider` and `ThemeToggle` components for light/dark mode theming and integrated them into `main.tsx` and `App.tsx` respectively.
 *   Configured both backend and frontend projects to build successfully to their respective `dist` folders, and resolved issues preventing the frontend from generating unwanted `.d.ts` files.
 *   Resolved the "ts-node: command not found" error for the backend development server by installing `ts-node` as a dev dependency.
+*   Updated backend API routes in `backend/src/index.ts` to include the `/v1` prefix, ensuring alignment with frontend API calls.
 
 ## Next Steps
 

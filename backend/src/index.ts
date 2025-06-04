@@ -19,18 +19,18 @@ app.get('/', (req, res) => {
 });
 
 // Auth routes
-app.use('/api/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 import { protect } from './middleware/auth.middleware';
 
 // Workspace routes
-app.use('/api/workspaces', protect, workspaceRoutes);
+app.use('/api/v1/workspaces', protect, workspaceRoutes);
 
 // Goal routes
-app.use('/api/goals', protect, goalRoutes);
+app.use('/api/v1/goals', protect, goalRoutes);
 
 // Task routes
-app.use('/api/tasks', protect, taskRoutes);
+app.use('/api/v1/tasks', protect, taskRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
