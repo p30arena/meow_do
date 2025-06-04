@@ -2,7 +2,7 @@
 FROM node:20-alpine
 
 # Copy the rest of the application code
-COPY backend/ /app/
+COPY . /app/
 
 # Set the working directory in the container
 WORKDIR /app
