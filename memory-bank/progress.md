@@ -63,6 +63,7 @@
 *   **Fixed RTL Grid Alignment (Phase 4 - Flexbox Justification):** Added `justify-start` to the flex containers in `frontend/src/components/workspace/WorkspaceList.tsx`, `frontend/src/components/goal/GoalList.tsx`, and `frontend/src/components/task/TaskList.tsx`. This aligns flex items to the start of the main axis, which correctly maps to right in RTL and left in LTR, ensuring the grid items start from the correct side in a directionality-agnostic manner.
 *   **Fixed RTL Button Spacing:** Replaced all instances of `space-x-*` with `gap-*` across relevant components (e.g., `WorkspaceList.tsx`, `GoalList.tsx`, `TaskList.tsx`) to ensure consistent spacing between elements in both LTR and RTL layouts.
 *   **Fixed Task Card Button Overflow:** Added `flex-shrink` to individual `Button` components within the task cards in `frontend/src/components/task/TaskList.tsx` to allow them to shrink and prevent overflow, ensuring they remain within the card boundaries in both LTR and RTL layouts.
+*   **i18n `noDescription` Key:** Confirmed that the `noDescription` key is present in `fa/translation.json`, `en/translation.json`, and `ar/translation.json`. The `i18next::translator: missingKey fa translation noDescription noDescription` error persists, indicating a potential issue with `i18next` configuration, caching, or how the key is being used in `WorkspaceList.tsx`, rather than a missing translation key itself.
 
 ## What's left to build
 

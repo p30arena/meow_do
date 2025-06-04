@@ -55,7 +55,8 @@
   "goals": {
     "title": "الأهداف",
     "noGoalsYet": "لا توجد أهداف بعد. أنشئ أول هدف لك!",
-    "confirmDelete": "هل أنت متأكد أنك تريد حذف الهدف \"{{goalName}}\"؟"
+    "confirmDelete": "هل أنت متأكد أنك تريد حذف الهدف \"{{goalName}}\"؟",
+    "noDescription": "لم يتم تقديم وصف."
   },
   "status": "الحالة",
   "goalStatus": {

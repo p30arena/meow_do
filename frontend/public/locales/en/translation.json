@@ -55,7 +55,8 @@
   "goals": {
     "title": "Goals",
     "noGoalsYet": "No goals yet. Create your first one!",
-    "confirmDelete": "Are you sure you want to delete goal \"{{goalName}}\"?"
+    "confirmDelete": "Are you sure you want to delete goal \"{{goalName}}\"?",
+    "noDescription": "No description provided."
   },
   "status": "Status",
   "goalStatus": {

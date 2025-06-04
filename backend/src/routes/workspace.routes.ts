@@ -6,13 +6,14 @@ import {
   updateWorkspace,
   deleteWorkspace,
 } from '../controllers/workspace.controller';
+import { protect } from '../middleware/auth.middleware';
 
 const router: Router = express.Router(); // Workspace routes
 
-router.post('/', createWorkspace);
-router.get('/', getWorkspaces);
-router.get('/:id', getWorkspaceById);
-router.put('/:id', updateWorkspace);
-router.delete('/:id', deleteWorkspace);
+router.post('/', protect, createWorkspace);
+router.get('/', protect, getWorkspaces);
+router.get('/:id', protect, getWorkspaceById);
+router.put('/:id', protect, updateWorkspace);
+router.delete('/:id', protect, deleteWorkspace);
 
 export default router;

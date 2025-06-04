@@ -7,7 +7,11 @@ import { catchAsync } from '../utils/catchAsync';
 
 export const createTask = catchAsync(async (req: Request, res: Response) => {
   const validatedData = createTaskSchema.parse(req.body);
-  const newTask = await db.insert(tasks).values(validatedData).returning();
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  }
+  const newTask = await db.insert(tasks).values({ ...validatedData, userId }).returning();
   res.status(201).json(newTask[0]);
 });
 
@@ -48,7 +52,11 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
 
 export const getTaskById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const task = await db.select().from(tasks).where(eq(tasks.id, id));
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  }
+  const task = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
   if (task.length === 0) {
     return res.status(404).json({ message: 'Task not found' });
   }
@@ -57,8 +65,12 @@ export const getTaskById = catchAsync(async (req: Request, res: Response) => {
 
 export const updateTask = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  }
   const validatedData = updateTaskSchema.parse(req.body);
-  const updatedTask = await db.update(tasks).set(validatedData).where(eq(tasks.id, id)).returning();
+  const updatedTask = await db.update(tasks).set(validatedData).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
   if (updatedTask.length === 0) {
     return res.status(404).json({ message: 'Task not found' });
   }
@@ -67,7 +79,11 @@ export const updateTask = catchAsync(async (req: Request, res: Response) => {
 
 export const deleteTask = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const deletedTask = await db.delete(tasks).where(eq(tasks.id, id)).returning();
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  }
+  const deletedTask = await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
   if (deletedTask.length === 0) {
     return res.status(404).json({ message: 'Task not found' });
   }
@@ -76,7 +92,15 @@ export const deleteTask = catchAsync(async (req: Request, res: Response) => {
 
 export const getDailyTimeBudgetForGoal = catchAsync(async (req: Request, res: Response) => {
   const { goalId } = req.params; // Assuming goalId comes from params for a specific goal's daily budget
-  const tasksForGoal = await db.select({ timeBudget: tasks.timeBudget }).from(tasks).where(eq(tasks.goalId, goalId));
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  }
+  // Ensure the goal belongs to the user, and then filter tasks by that goal and user
+  const tasksForGoal = await db.select({ timeBudget: tasks.timeBudget })
+    .from(tasks)
+    .innerJoin(goals, and(eq(tasks.goalId, goals.id), eq(goals.userId, userId)))
+    .where(eq(tasks.goalId, goalId));
 
   const totalTimeBudgetMinutes = tasksForGoal.reduce((sum, task) => sum + task.timeBudget, 0);
   const totalTimeBudgetHours = totalTimeBudgetMinutes / 60;

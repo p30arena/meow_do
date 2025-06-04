@@ -278,7 +278,7 @@ const TaskList: React.FC<TaskListProps> = ({
                 <CardTitle>{task.name}</CardTitle>
               </CardHeader>
               <CardContent className="w-full overflow-hidden">
-                <p>{task.description || t("noDescription")}</p>
+                <p>{task.description || t("workspace.noDescription")}</p>
                 <p>
                   <strong>{t("tasks.timeBudget")}:</strong> {task.timeBudget}{" "}
                   {t("tasks.minutes")}

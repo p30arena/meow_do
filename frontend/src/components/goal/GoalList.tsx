@@ -100,7 +100,7 @@ const GoalList: React.FC<GoalListProps> = ({
                 <CardTitle>{goal.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>{goal.description || t("noDescription")}</p>
+                <p>{goal.description || t("goals.noDescription")}</p>
                 <p>
                   <strong>{t("status")}:</strong>{" "}
                   {t(`goalStatus.${goal.status}`)}

@@ -2,6 +2,7 @@ import { pgTable, uuid, varchar, text, timestamp, integer, boolean } from 'drizz
 
 export const workspaces = pgTable('workspaces', {
   id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 256 }).notNull(),
   description: text('description'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -20,6 +21,7 @@ export const users = pgTable('users', {
 
 export const tasks = pgTable('tasks', {
   id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
   goalId: uuid('goal_id').notNull().references(() => goals.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 256 }).notNull(),
   description: text('description'),
@@ -45,6 +47,7 @@ export const taskTrackingRecords = pgTable('task_tracking_records', {
 
 export const goals = pgTable('goals', {
   id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
   workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 256 }).notNull(),
   description: text('description'),
