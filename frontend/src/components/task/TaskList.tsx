@@ -231,7 +231,7 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
       {tasks.length === 0 ? (
         <p>{t('tasks.noTasksYet')}</p>
       ) : (
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 justify-start">
           {tasks.map((task) => (
             <Card key={task.id} className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.33%-0.66rem)]">
               <CardHeader>

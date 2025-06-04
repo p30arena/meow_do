@@ -39,7 +39,7 @@ createRoot(rootElement).render(
       <StyleSheetManager
         stylisPlugins={isRtl ? [prefixer, rtlPlugin] : [prefixer]}
       >
-        <div dir={isRtl ? "rtl" : "ltr"}>
+        <div>
           <AuthProvider>
             <BrowserRouter> {/* Wrap App with BrowserRouter */}
               <App />
