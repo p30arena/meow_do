@@ -74,6 +74,7 @@
 *   Task time spent summary and display using Recharts (backend API, frontend UI) - **Completed**.
 *   **Manual task time record entry (backend API, frontend UI) - Completed (with `startTime` in DB reflecting insertion time due to schema constraint).**
 *   **Logo 'frontend/public/logo.png' in the Navbar near the title with a circular shape.**
+*   **Fixed `backend/Dockerfile` to use a multi-stage build, resolving the `Error: Cannot find module '/app/dist/index.js'` by ensuring the `dist` directory is correctly copied into the final image.**
 *   **Theme preference storage (using `localStorage`) - Completed.**
 
 ### Enhancements:
