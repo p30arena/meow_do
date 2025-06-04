@@ -79,9 +79,9 @@ const GoalList: React.FC<GoalListProps> = ({ workspaceId, onCreateNew, onEditGoa
       {goals.length === 0 ? (
         <p>{t('goals.noGoalsYet')}</p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 place-items-start">
+        <div className="flex flex-wrap gap-4">
           {goals.map((goal) => (
-            <Card key={goal.id} onClick={() => onSelectGoal(goal)} className="cursor-pointer">
+            <Card key={goal.id} onClick={() => onSelectGoal(goal)} className="cursor-pointer w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.33%-0.66rem)]">
               <CardHeader>
                 <CardTitle>{goal.name}</CardTitle>
               </CardHeader>
