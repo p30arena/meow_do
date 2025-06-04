@@ -154,6 +154,7 @@
     "selectBaseTheme": "Select base theme"
   },
   "pwa": {
-    "installApp": "Install App"
+    "installApp": "Install App",
+    "installInstructions": "To install, use 'Add to Home Screen' in your browser's menu."
   }
 }

@@ -49,14 +49,23 @@ const InstallPWAButton: React.FC = () => {
     setDeferredPrompt(null);
   };
 
-  if (isAppInstalled || !deferredPrompt) {
-    return null;
+  if (isAppInstalled) {
+    return null; // Always hide if installed
   }
 
+  if (deferredPrompt) {
+    return (
+      <Button onClick={handleInstallClick} className="mr-2">
+        {t('pwa.installApp')}
+      </Button>
+    );
+  }
+
+  // If not installed and no deferredPrompt (e.g., iOS or dismissed on Android)
   return (
-    <Button onClick={handleInstallClick} className="mr-2">
-      {t('pwa.installApp')}
-    </Button>
+    <span className="text-sm text-muted-foreground mr-2">
+      {t('pwa.installInstructions')}
+    </span>
   );
 };
 
