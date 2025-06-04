@@ -188,7 +188,10 @@ function App() {
       ) : (
         <div className="container mx-auto p-4">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">{t("welcome_message")}</h1>
+            <div className="flex items-center space-x-2">
+              <img src="/logo.png" alt="MeowDo Logo" className="h-8 w-8" />
+              <h1 className="text-3xl font-bold">{t("welcome_message")}</h1>
+            </div>
             <div className="flex items-center space-x-4">
               <LanguageSwitcher />
               <ThemeToggle />

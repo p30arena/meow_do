@@ -41,6 +41,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
         <CardDescription>{t('login.description')}</CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="flex flex-col items-center justify-center mb-4">
+          <img src="/logo.png" alt="MeowDo Logo" className="h-16 w-16 mb-2" />
+        </div>
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">{t('login.email')}</Label>
