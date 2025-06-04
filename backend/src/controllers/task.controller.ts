@@ -29,7 +29,9 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
     sql`${taskTrackingRecords.endTime} IS NULL`
   );
 
-  const mainQueryConditions = [];
+  const mainQueryConditions = [
+    eq(tasks.userId, userId)
+  ];
   if (goalId) {
     mainQueryConditions.push(eq(tasks.goalId, goalId as string));
   }
