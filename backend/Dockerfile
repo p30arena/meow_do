@@ -1,11 +1,11 @@
 # Use an official Node.js runtime as a parent image
 FROM node:20-alpine
 
+# Copy the rest of the application code
+COPY backend/ /app/
+
 # Set the working directory in the container
 WORKDIR /app
-
-# Copy the rest of the application code
-COPY backend/ ./
 
 # Install dependencies
 RUN npm install
