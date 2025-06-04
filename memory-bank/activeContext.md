@@ -64,10 +64,10 @@ The current focus is on implementing new features: user timezone preference, tas
 
 ## Next Steps
 
-1.  Implement user timezone preference (backend schema, API, frontend UI).
-2.  Implement task priority (backend schema, API, frontend UI).
-3.  Implement task start/stop tracking (backend schema, API, frontend UI).
-4.  Implement task time spent summary and display using Recharts (backend API, frontend UI).
+1.  Implement user timezone preference (backend schema, API, frontend UI) - **Completed**.
+2.  Implement task priority (backend schema, API, frontend UI) - **Completed**.
+3.  Implement task start/stop tracking (backend schema, API, frontend UI) - **Completed**.
+4.  Implement task time spent summary and display using Recharts (backend API, frontend UI) - **Completed**.
 5.  Comprehensive error handling.
 6.  Unit and integration tests for both backend and frontend.
 7.  Deployment pipeline setup.
