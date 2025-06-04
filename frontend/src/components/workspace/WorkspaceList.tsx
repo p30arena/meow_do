@@ -89,7 +89,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
               </CardHeader>
               <CardContent>
                 <p>{workspace.description || t('noDescription')}</p>
-                <div className="mt-4 flex justify-end space-x-2">
+                <div className="mt-4 flex justify-end ltr:space-x-2 rtl:space-x-reverse">
                   <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onEditWorkspace(workspace); }}>{t('workspace.edit')}</Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>

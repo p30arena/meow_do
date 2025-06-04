@@ -252,7 +252,7 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
                     {t('tasks.tracking')}: {durationDisplay}
                   </p>
                 )}
-                <div className="mt-4 flex justify-end space-x-2">
+                <div className="mt-4 flex justify-end ltr:space-x-2 rtl:space-x-reverse">
                   {activeTrackingTaskId === task.id ? (
                     <Button variant="secondary" size="sm" onClick={() => handleStopTracking(task)} disabled={loading}>
                       {t('tasks.stopTracking')}
@@ -303,7 +303,7 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="stopTime" className="text-right">
+              <Label htmlFor="stopTime" className="ltr:text-right rtl:text-left">
                 {t('tasks.stopTime')}
               </Label>
               <Input

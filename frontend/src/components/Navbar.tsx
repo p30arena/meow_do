@@ -21,8 +21,10 @@ import ThemeToggle from './ThemeToggle';
 import TimezoneSelector from './settings/TimezoneSelector'; // Import TimezoneSelector
 
 export const Navbar: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // Destructure i18n
   const { logout } = useAuth();
+
+  const isRtl = i18n.language === 'ar' || i18n.language === 'fa'; // Determine RTL
 
   return (
     <nav className="bg-primary text-primary-foreground p-4 flex items-center justify-between w-full fixed top-0 z-50">
@@ -38,8 +40,8 @@ export const Navbar: React.FC = () => {
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[200px] sm:w-[250px] p-4">
-            <SheetTitle className="sr-only">Main Navigation</SheetTitle> {/* Hidden title for accessibility */}
+          <SheetContent side={isRtl ? "left" : "right"} className="w-[200px] sm:w-[250px] p-4"> {/* Dynamic side */}
+            <SheetTitle className="sr-only">Main Navigation</SheetTitle>
             <div className="flex flex-col space-y-4">
               <LanguageSwitcher />
               <ThemeToggle />
@@ -47,12 +49,12 @@ export const Navbar: React.FC = () => {
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" className="w-full justify-start">
-                    <Settings className="mr-2 h-4 w-4" />
+                    <Settings className="me-2 h-4 w-4" /> {/* Changed mr-2 to me-2 */}
                     {t('settings.title')}
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[200px] sm:w-[250px] p-4">
-                  <SheetTitle>{t('settings.title')}</SheetTitle> {/* Visible title for settings sheet */}
+                <SheetContent side={isRtl ? "left" : "right"} className="w-[200px] sm:w-[250px] p-4"> {/* Dynamic side */}
+                  <SheetTitle>{t('settings.title')}</SheetTitle>
                   <div className="flex flex-col space-y-4">
                     <TimezoneSelector />
                     <AlertDialog>
@@ -92,12 +94,12 @@ export const Navbar: React.FC = () => {
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost">
-              <Settings className="mr-2 h-4 w-4" />
+              <Settings className="me-2 h-4 w-4" /> {/* Changed mr-2 to me-2 */}
               {t('settings.title')}
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[200px] sm:w-[250px] p-4">
-            <SheetTitle>{t('settings.title')}</SheetTitle> {/* Visible title for settings sheet */}
+          <SheetContent side={isRtl ? "left" : "right"} className="w-[200px] sm:w-[250px] p-4"> {/* Dynamic side */}
+            <SheetTitle>{t('settings.title')}</SheetTitle>
             <div className="flex flex-col space-y-4">
               <TimezoneSelector />
               <AlertDialog>
