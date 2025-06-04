@@ -101,7 +101,7 @@ export const startTaskTracking = async (taskId: string): Promise<TaskTrackingRec
 
 export const stopTaskTracking = async (trackingId: string, stopTime?: string): Promise<TaskTrackingRecord> => {
   const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks/tracking/${trackingId}/stop`, {
+  const response = await fetch(`${API_BASE_URL}/tasks/${trackingId}/stop`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

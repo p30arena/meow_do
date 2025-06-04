@@ -147,20 +147,24 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
       return;
     }
 
-    const parsedStopTime = new Date(selectedStopTime);
+    // Create a Date object from the local datetime string
+    const localStopTime = new Date(selectedStopTime);
 
-    if (isNaN(parsedStopTime.getTime())) {
+    if (isNaN(localStopTime.getTime())) {
       setError(t('tasks.invalidStopDateTimeFormat'));
       return;
     }
 
-    if (parsedStopTime < currentTrackingRecordStartTime) {
+    if (localStopTime < currentTrackingRecordStartTime) {
       setError(t('tasks.stopTimeBeforeStartTime'));
       return;
     }
 
+    // Convert to ISO 8601 string for backend validation
+    const isoStopTime = localStopTime.toISOString();
+
     try {
-      await stopTaskTracking(currentTrackingRecordIdToStop, selectedStopTime);
+      await stopTaskTracking(currentTrackingRecordIdToStop, isoStopTime);
       setShowStopTrackingDialog(false);
       setSelectedStopTime('');
       setCurrentTrackingRecordIdToStop(null);
