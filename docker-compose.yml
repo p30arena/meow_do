@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   database:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg17
     restart: always
     environment:
       POSTGRES_DB: ${DB_NAME:-meowdo_db}
@@ -44,7 +44,9 @@ services:
 
 volumes:
   db_data:
+    name: meowdo_db
 
 networks:
   app-network:
     driver: bridge
+    name: meowdo_network
