@@ -24,7 +24,7 @@ WORKDIR /app
 COPY --from=builder /app/package*.json ./
 
 # Install production dependencies
-RUN npm install --omit=dev
+RUN npm install
 
 # Copy the built application from the builder stage
 COPY --from=builder /app/dist ./dist
