@@ -1,33 +1,17 @@
-# Stage 1: Builder
-FROM node:20-alpine AS builder
+# Use an official Node.js runtime as a parent image
+FROM node:20-alpine
 
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Copy the rest of the application code
+COPY backend/ ./
 
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application code
-COPY . .
-
 # Build the TypeScript application
 RUN npm run build
-
-# Stage 2: Production
-FROM node:20-alpine
-
-WORKDIR /app
-
-# Copy package.json and package-lock.json from builder stage
-COPY --from=builder /app/package*.json ./
-
-# Install production dependencies
-RUN npm install
-
-# Copy the built application from the builder stage
-COPY --from=builder /app/dist ./dist
 
 # Expose the port the app runs on
 EXPOSE 3000
