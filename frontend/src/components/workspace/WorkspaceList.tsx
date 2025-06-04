@@ -81,7 +81,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
       {workspaces.length === 0 ? (
         <p>{t('workspace.noWorkspacesYet')}</p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 place-items-start">
           {workspaces.map((workspace) => (
             <Card key={workspace.id} onClick={() => onSelectWorkspace(workspace)} className="cursor-pointer">
               <CardHeader>

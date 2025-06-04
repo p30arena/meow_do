@@ -231,7 +231,7 @@ const TaskList: React.FC<TaskListProps> = ({ goalId, onCreateNew, onEditTask, on
       {tasks.length === 0 ? (
         <p>{t('tasks.noTasksYet')}</p>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-4 place-items-start">
           {tasks.map((task) => (
             <Card key={task.id}>
               <CardHeader>
