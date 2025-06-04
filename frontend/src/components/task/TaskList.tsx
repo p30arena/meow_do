@@ -309,6 +309,7 @@ const TaskList: React.FC<TaskListProps> = ({
                       size="sm"
                       onClick={() => handleStopTracking(task)}
                       disabled={loading}
+                      className="flex-shrink"
                     >
                       {t("tasks.stopTracking")}
                     </Button>
@@ -318,6 +319,7 @@ const TaskList: React.FC<TaskListProps> = ({
                       size="sm"
                       onClick={() => handleStartTracking(task.id)}
                       disabled={loading || activeTrackingTaskId !== null}
+                      className="flex-shrink"
                     >
                       {t("tasks.startTracking")}
                     </Button>
@@ -327,10 +329,11 @@ const TaskList: React.FC<TaskListProps> = ({
                     size="sm"
                     onClick={() => onEditTask(task)}
                     disabled={loading}
+                    className="flex-shrink"
                   >
                     {t("workspace.edit")}
                   </Button>
-                  <Button variant="secondary" size="sm" disabled={loading}>
+                  <Button variant="secondary" size="sm" disabled={loading} className="flex-shrink">
                     {t("copyToNextDay")}
                   </Button>
                   <AlertDialog>
@@ -343,6 +346,7 @@ const TaskList: React.FC<TaskListProps> = ({
                           confirmDelete(task);
                         }}
                         disabled={loading}
+                        className="flex-shrink"
                       >
                         {t("workspace.delete")}
                       </Button>
