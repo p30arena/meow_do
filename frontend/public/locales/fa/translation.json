@@ -44,7 +44,8 @@
     "cancel": "لغو",
     "saving": "در حال ذخیره...",
     "saveChanges": "ذخیره تغییرات",
-    "create": "ایجاد"
+    "create": "ایجاد",
+    "confirmDelete": "آیا مطمئن هستید که می خواهید فضای کاری \"{{workspaceName}}\" را حذف کنید؟"
   },
   "goalsFor": "اهداف برای",
   "backToWorkspaces": "بازگشت به فضاهای کاری",

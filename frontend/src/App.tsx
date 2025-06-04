@@ -24,6 +24,7 @@ function App() {
   const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
     null
   );
+  const [editingWorkspace, setEditingWorkspace] = useState<Workspace | undefined>(undefined);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | undefined>(undefined);
@@ -65,12 +66,19 @@ function App() {
     setShowWorkspaceForm(true);
   };
 
+  const handleEditWorkspaceClick = (workspace: Workspace) => {
+    setEditingWorkspace(workspace);
+    setShowWorkspaceForm(true);
+  };
+
   const handleWorkspaceFormSuccess = () => {
     setShowWorkspaceForm(false);
+    setEditingWorkspace(undefined);
   };
 
   const handleWorkspaceFormCancel = () => {
     setShowWorkspaceForm(false);
+    setEditingWorkspace(undefined);
   };
 
   const handleSelectWorkspace = (workspace: Workspace) => {
@@ -224,6 +232,7 @@ function App() {
             )
           ) : showWorkspaceForm ? (
             <WorkspaceForm
+              workspace={editingWorkspace}
               onSuccess={handleWorkspaceFormSuccess}
               onCancel={handleWorkspaceFormCancel}
             />
@@ -231,6 +240,7 @@ function App() {
             <WorkspaceList
               onCreateNew={handleCreateWorkspaceClick}
               onSelectWorkspace={handleSelectWorkspace}
+              onEditWorkspace={handleEditWorkspaceClick}
             />
           )}
         </div>

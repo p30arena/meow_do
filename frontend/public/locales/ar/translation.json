@@ -44,7 +44,8 @@
     "cancel": "إلغاء",
     "saving": "جارٍ الحفظ...",
     "saveChanges": "حفظ التغييرات",
-    "create": "إنشاء"
+    "create": "إنشاء",
+    "confirmDelete": "هل أنت متأكد أنك تريد حذف مساحة العمل \"{{workspaceName}}\"؟"
   },
   "goalsFor": "أهداف لـ",
   "backToWorkspaces": "العودة إلى مساحات العمل",

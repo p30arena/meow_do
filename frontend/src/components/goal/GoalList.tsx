@@ -37,7 +37,7 @@ const GoalList: React.FC<GoalListProps> = ({ workspaceId, onCreateNew, onEditGoa
   }
 
   if (error) {
-    return <div>{t('error')}: {error}</div>;
+    return <div>{t('workspace.error')}: {error}</div>;
   }
 
   return (

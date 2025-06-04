@@ -1,32 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getWorkspaces, type Workspace } from '../../api/workspace';
+import { getWorkspaces, deleteWorkspace, type Workspace } from '../../api/workspace';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 
 interface WorkspaceListProps {
   onCreateNew: () => void;
   onSelectWorkspace: (workspace: Workspace) => void;
+  onEditWorkspace: (workspace: Workspace) => void;
 }
 
-const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWorkspace }) => {
+const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWorkspace, onEditWorkspace }) => {
   const { t } = useTranslation();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchWorkspaces = async () => {
-      try {
-        const data = await getWorkspaces();
-        setWorkspaces(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchWorkspaces = async () => {
+    try {
+      const data = await getWorkspaces();
+      setWorkspaces(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchWorkspaces();
   }, []);
 
@@ -53,8 +54,24 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
               <CardContent>
                 <p>{workspace.description || t('noDescription')}</p>
                 <div className="mt-4 flex justify-end space-x-2">
-                  <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); /* handle edit */ }}>{t('workspace.edit')}</Button>
-                  <Button variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); /* handle delete */ }}>{t('workspace.delete')}</Button>
+                  <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); onEditWorkspace(workspace); }}>{t('workspace.edit')}</Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (window.confirm(t('workspace.confirmDelete', { workspaceName: workspace.name }))) {
+                        try {
+                          await deleteWorkspace(workspace.id);
+                          fetchWorkspaces(); // Re-fetch workspaces after deletion
+                        } catch (err: any) {
+                          setError(err.message);
+                        }
+                      }
+                    }}
+                  >
+                    {t('workspace.delete')}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

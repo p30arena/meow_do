@@ -44,7 +44,8 @@
     "cancel": "Cancel",
     "saving": "Saving...",
     "saveChanges": "Save Changes",
-    "create": "Create"
+    "create": "Create",
+    "confirmDelete": "Are you sure you want to delete workspace \"{{workspaceName}}\"?"
   },
   "goalsFor": "Goals for",
   "backToWorkspaces": "Back to Workspaces",
