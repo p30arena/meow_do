@@ -244,7 +244,7 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
   const conditions = [eq(taskTrackingRecords.userId, userId)];
   let query = db.select({
     taskName: tasks.name,
-    totalDurationSeconds: sum(taskTrackingRecords.duration),
+    totalDurationSeconds: sql<number>`sum(${taskTrackingRecords.duration})::integer`,
     period: groupByColumn,
   })
     .from(taskTrackingRecords)
