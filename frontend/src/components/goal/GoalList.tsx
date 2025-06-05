@@ -94,7 +94,7 @@ const GoalList: React.FC<GoalListProps> = ({
             <Card
               key={goal.id}
               onClick={() => onSelectGoal(goal)}
-              className="cursor-pointer w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.33%-0.66rem)]"
+              className="cursor-pointer w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
             >
               <CardHeader>
                 <CardTitle>{goal.name}</CardTitle>

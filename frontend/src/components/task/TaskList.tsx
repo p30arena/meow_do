@@ -312,7 +312,7 @@ const TaskList: React.FC<TaskListProps> = ({
           {tasks.map((task) => (
             <Card
               key={task.id}
-              className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.33%-0.66rem)]"
+              className="w-full md:w-[calc(50%-0.5rem)]"
             >
               <CardHeader>
                 <CardTitle>{task.name}</CardTitle>
