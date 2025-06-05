@@ -385,40 +385,44 @@ const TaskList: React.FC<TaskListProps> = ({
                   </p>
                 )}
                 <div className="mt-4 flex flex-wrap justify-end gap-2 min-w-0">
-                  {activeTrackingTaskId === task.id ? (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); handleStopTracking(task); }}
-                      disabled={loading}
-                      className="flex-shrink"
-                    >
-                      {t("tasks.stopTracking")}
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); handleStartTracking(task.id); }}
-                      disabled={loading || activeTrackingTaskId !== null}
-                      className="flex-shrink"
-                    >
-                      {t("tasks.startTracking")}
-                    </Button>
+                  {task.status !== "done" && (
+                    <>
+                      {activeTrackingTaskId === task.id ? (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); handleStopTracking(task); }}
+                          disabled={loading}
+                          className="flex-shrink"
+                        >
+                          {t("tasks.stopTracking")}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); handleStartTracking(task.id); }}
+                          disabled={loading || activeTrackingTaskId !== null}
+                          className="flex-shrink"
+                        >
+                          {t("tasks.startTracking")}
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTaskIdForManualRecord(task.id);
+                          setShowManualRecordForm(true);
+                        }}
+                        disabled={loading}
+                        className="flex-shrink"
+                      >
+                        {t("tasks.manualRecord.add")}
+                      </Button>
+                    </>
                   )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedTaskIdForManualRecord(task.id);
-                      setShowManualRecordForm(true);
-                    }}
-                    disabled={loading}
-                    className="flex-shrink"
-                  >
-                    {t("tasks.manualRecord.add")}
-                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0">
