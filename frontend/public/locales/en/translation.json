@@ -131,6 +131,7 @@
     "missingStopTimeInfo": "Missing tracking record ID or stop time information.",
     "invalidStopDateTimeFormat": "Invalid stop date/time format.",
     "stopTimeBeforeStartTime": "Stop time cannot be before start time.",
+    "anotherTaskActive": "Another task ({{taskName}}) is already active. Please stop it before starting a new one.",
     "stopTrackingTitle": "Stop Task Tracking",
     "stopTrackingDescription": "Enter the exact date and time when you stopped working on this task.",
     "stopTime": "Stop Time",

@@ -132,7 +132,26 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
   // Validate input using the new schema
   const validatedData = startTaskTrackingSchema.parse({ taskId, userId });
 
-  // Stop any existing active tracking records for this task
+  // Check if any other task is currently active for this user
+  const activeTaskRecord = await db.select({
+    taskId: taskTrackingRecords.taskId,
+    taskName: tasks.name,
+  })
+    .from(taskTrackingRecords)
+    .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
+    .where(and(
+      eq(taskTrackingRecords.userId, userId),
+      sql`${taskTrackingRecords.endTime} IS NULL`
+    ));
+
+  if (activeTaskRecord.length > 0) {
+    return res.status(400).json({
+      message: 'Another task is already active. Please stop it before starting a new one.',
+      activeTask: activeTaskRecord[0],
+    });
+  }
+
+  // Stop any existing active tracking records for this task (should not happen if above check passes, but as a safety)
   await db.update(taskTrackingRecords)
     .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - ${taskTrackingRecords.startTime}))` }) // Calculate duration
     .where(and(eq(taskTrackingRecords.taskId, validatedData.taskId), sql`${taskTrackingRecords.endTime} IS NULL`));

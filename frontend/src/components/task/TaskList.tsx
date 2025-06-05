@@ -174,7 +174,11 @@ const TaskList: React.FC<TaskListProps> = ({
       await startTaskTracking(taskId);
       fetchTasks(); // Re-fetch tasks to update active tracking status and timer
     } catch (err: any) {
-      setError(err.message);
+      if (err.response && err.response.status === 400 && err.response.data && err.response.data.activeTask) {
+        setError(t("tasks.anotherTaskActive", { taskName: err.response.data.activeTask.taskName }));
+      } else {
+        setError(err.message);
+      }
       stopTimer(); // Stop timer if API call fails
     }
   };

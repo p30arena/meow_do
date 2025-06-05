@@ -131,6 +131,7 @@
     "missingStopTimeInfo": "معلومات معرف سجل التتبع أو وقت التوقف مفقودة.",
     "invalidStopDateTimeFormat": "تنسيق تاريخ/وقت التوقف غير صالح.",
     "stopTimeBeforeStartTime": "وقت التوقف لا يمكن أن يكون قبل وقت البدء.",
+    "anotherTaskActive": "مهمة أخرى ({{taskName}}) نشطة بالفعل. يرجى إيقافها قبل بدء مهمة جديدة.",
     "stopTrackingTitle": "إيقاف تتبع المهمة",
     "stopTrackingDescription": "أدخل التاريخ والوقت بالضبط عندما توقفت عن العمل على هذه المهمة.",
     "stopTime": "وقت التوقف",
