@@ -53,7 +53,8 @@
     "saving": "جارٍ الحفظ...",
     "saveChanges": "حفظ التغييرات",
     "create": "إنشاء",
-    "confirmDelete": "هل أنت متأكد أنك تريد حذف مساحة العمل \"{{workspaceName}}\"؟"
+    "confirmDelete": "هل أنت متأكد أنك تريد حذف مساحة العمل \"{{workspaceName}}\"؟",
+    "openMenu": "فتح القائمة"
   },
   "goalsFor": "أهداف لـ",
   "backToWorkspaces": "العودة إلى مساحات العمل",

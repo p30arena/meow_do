@@ -35,6 +35,13 @@ import {
 } from "../ui/alert-dialog"; // Import AlertDialog components
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
+import { MoreVertical } from 'lucide-react';
 
 interface TaskListProps {
   workspaceId: string; // Add workspaceId to props
@@ -382,7 +389,7 @@ const TaskList: React.FC<TaskListProps> = ({
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => handleStopTracking(task)}
+                      onClick={(e) => { e.stopPropagation(); handleStopTracking(task); }}
                       disabled={loading}
                       className="flex-shrink"
                     >
@@ -392,7 +399,7 @@ const TaskList: React.FC<TaskListProps> = ({
                     <Button
                       variant="default"
                       size="sm"
-                      onClick={() => handleStartTracking(task.id)}
+                      onClick={(e) => { e.stopPropagation(); handleStartTracking(task.id); }}
                       disabled={loading || activeTrackingTaskId !== null}
                       className="flex-shrink"
                     >
@@ -402,7 +409,8 @@ const TaskList: React.FC<TaskListProps> = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedTaskIdForManualRecord(task.id);
                       setShowManualRecordForm(true);
                     }}
@@ -411,55 +419,53 @@ const TaskList: React.FC<TaskListProps> = ({
                   >
                     {t("tasks.manualRecord.add")}
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEditTask(task)}
-                    disabled={loading}
-                    className="flex-shrink"
-                  >
-                    {t("workspace.edit")}
-                  </Button>
-                  <Button variant="secondary" size="sm" disabled={loading} className="flex-shrink">
-                    {t("copyToNextDay")}
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          confirmDelete(task);
-                        }}
-                        disabled={loading}
-                        className="flex-shrink"
-                      >
-                        {t("workspace.delete")}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0">
+                        <span className="sr-only">{t('workspace.openMenu')}</span>
+                        <MoreVertical className="h-4 w-4" />
                       </Button>
-                    </AlertDialogTrigger>
-                    {taskToDelete && (
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            {t("tasks.confirmDelete", {
-                              taskName: taskToDelete.name,
-                            })}
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {t("confirmDeleteDescription")}{" "}
-                            {/* Assuming a generic description key */}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
-                          <AlertDialogAction onClick={executeDelete}>
-                            {t("confirm")}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    )}
-                  </AlertDialog>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditTask(task); }}>
+                        {t('workspace.edit')}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); /* Add copy to next day logic here */ }}>
+                        {t('copyToNextDay')}
+                      </DropdownMenuItem>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            onClick={(e) => { e.stopPropagation(); confirmDelete(task); }}
+                            className="text-red-600"
+                          >
+                            {t('workspace.delete')}
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        {taskToDelete && (
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                {t("tasks.confirmDelete", {
+                                  taskName: taskToDelete.name,
+                                })}
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {t("confirmDeleteDescription")}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
+                              <AlertDialogAction onClick={(e) => { e.stopPropagation(); executeDelete(); }}>
+                                {t("confirm")}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        )}
+                      </AlertDialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardContent>
             </Card>

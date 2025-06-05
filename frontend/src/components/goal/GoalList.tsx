@@ -13,7 +13,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "../ui/alert-dialog"; // Import AlertDialog components
+} from "../ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
+import { MoreVertical } from 'lucide-react';
 
 interface GoalListProps {
   workspaceId: string;
@@ -111,52 +118,51 @@ const GoalList: React.FC<GoalListProps> = ({
                     {new Date(goal.deadline).toLocaleDateString()}
                   </p>
                 )}
-                <div className="mt-4 flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditGoal(goal);
-                    }}
-                  >
-                    {t("workspace.edit")}
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          confirmDelete(goal);
-                        }}
-                      >
-                        {t("workspace.delete")}
+                <div className="mt-4 flex justify-end">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">{t('workspace.openMenu')}</span>
+                        <MoreVertical className="h-4 w-4" />
                       </Button>
-                    </AlertDialogTrigger>
-                    {goalToDelete && (
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            {t("goals.confirmDelete", {
-                              goalName: goalToDelete.name,
-                            })}
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {t("confirmDeleteDescription")}{" "}
-                            {/* Assuming a generic description key */}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
-                          <AlertDialogAction onClick={executeDelete}>
-                            {t("confirm")}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    )}
-                  </AlertDialog>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditGoal(goal); }}>
+                        {t('workspace.edit')}
+                      </DropdownMenuItem>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            onClick={(e) => { e.stopPropagation(); confirmDelete(goal); }}
+                            className="text-red-600"
+                          >
+                            {t('workspace.delete')}
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        {goalToDelete && (
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                {t("goals.confirmDelete", {
+                                  goalName: goalToDelete.name,
+                                })}
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {t("confirmDeleteDescription")}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
+                              <AlertDialogAction onClick={(e) => { e.stopPropagation(); executeDelete(); }}>
+                                {t("confirm")}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        )}
+                      </AlertDialog>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardContent>
             </Card>

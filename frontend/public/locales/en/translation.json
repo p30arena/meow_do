@@ -53,7 +53,8 @@
     "saving": "Saving...",
     "saveChanges": "Save Changes",
     "create": "Create",
-    "confirmDelete": "Are you sure you want to delete workspace \"{{workspaceName}}\"?"
+    "confirmDelete": "Are you sure you want to delete workspace \"{{workspaceName}}\"?",
+    "openMenu": "Open menu"
   },
   "goalsFor": "Goals for",
   "backToWorkspaces": "Back to Workspaces",
