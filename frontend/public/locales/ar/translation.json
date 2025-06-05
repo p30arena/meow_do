@@ -89,7 +89,7 @@
   "taskForm.invalidTimeBudget": "يجب أن تكون ميزانية الوقت رقمًا موجبًا.",
   "tasks": {
     "title": "المهام",
-    "timeBudgetWarning": "تحذير: إجمالي ميزانية الوقت ({hours} ساعة {minutes} دقيقة) يتجاوز 24 ساعة!",
+    "timeBudgetWarning": "تحذير: إجمالي ميزانية الوقت ({{hours}} ساعة {{minutes}} دقيقة) يتجاوز 24 ساعة!",
     "totalTimeBudget": "إجمالي ميزانية الوقت",
     "dailyProgress": "التقدم اليومي",
     "noTasksYet": "لا توجد مهام بعد. أنشئ أول مهمة لك!",

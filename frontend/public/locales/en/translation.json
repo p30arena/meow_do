@@ -89,7 +89,7 @@
   "taskForm.invalidTimeBudget": "Time budget must be a positive number.",
   "tasks": {
     "title": "Tasks",
-    "timeBudgetWarning": "Warning: Total time budget ({hours}h {minutes}m) exceeds 24 hours!",
+    "timeBudgetWarning": "Warning: Total time budget ({{hours}}h {{minutes}}m) exceeds 24 hours!",
     "totalTimeBudget": "Total Time Budget",
     "dailyProgress": "Daily Progress",
     "noTasksYet": "No tasks yet. Create your first one!",
