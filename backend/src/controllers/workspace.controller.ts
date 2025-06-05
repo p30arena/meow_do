@@ -37,7 +37,7 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
     description: workspaces.description,
     createdAt: workspaces.createdAt,
     updatedAt: workspaces.updatedAt,
-    goalCount: sql<number>`COUNT(${goals.id})::integer`.as('goalCount'),
+    goalCount: sql<number>`COUNT(DISTINCT ${goals.id})::integer`.as('goalCount'),
     taskCount: sql<number>`COUNT(${tasks.id})::integer`.as('taskCount'),
     totalProgress: sql<number>`
       (CASE
