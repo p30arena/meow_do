@@ -430,9 +430,6 @@ const TaskList: React.FC<TaskListProps> = ({
                       <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditTask(task); }}>
                         {t('workspace.edit')}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); /* Add copy to next day logic here */ }}>
-                        {t('copyToNextDay')}
-                      </DropdownMenuItem>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem
