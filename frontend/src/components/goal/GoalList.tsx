@@ -118,6 +118,12 @@ const GoalList: React.FC<GoalListProps> = ({
                     {new Date(goal.deadline).toLocaleDateString()}
                   </p>
                 )}
+                <p className="text-sm text-gray-500">
+                  {t('goals.tasks')}: {goal.taskCount ?? 0}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {t('goals.progress')}: {goal.totalProgress != null && !isNaN(goal.totalProgress) ? `${goal.totalProgress.toFixed(0)}%` : '0%'}
+                </p>
                 <div className="mt-4 flex justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

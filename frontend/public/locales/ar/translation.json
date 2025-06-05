@@ -54,7 +54,10 @@
     "saveChanges": "حفظ التغييرات",
     "create": "إنشاء",
     "confirmDelete": "هل أنت متأكد أنك تريد حذف مساحة العمل \"{{workspaceName}}\"؟",
-    "openMenu": "فتح القائمة"
+    "openMenu": "فتح القائمة",
+    "goals": "الأهداف",
+    "tasks": "المهام",
+    "progress": "التقدم"
   },
   "goalsFor": "أهداف لـ",
   "backToWorkspaces": "العودة إلى مساحات العمل",
@@ -63,7 +66,9 @@
     "title": "الأهداف",
     "noGoalsYet": "لا توجد أهداف بعد. أنشئ أول هدف لك!",
     "confirmDelete": "هل أنت متأكد أنك تريد حذف الهدف \"{{goalName}}\"؟",
-    "noDescription": "لم يتم تقديم وصف."
+    "noDescription": "لم يتم تقديم وصف.",
+    "tasks": "المهام",
+    "progress": "التقدم"
   },
   "status": "الحالة",
   "goalStatus": {

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../db';
-import { workspaces } from '../db/schema';
-import { eq, and } from 'drizzle-orm';
+import { workspaces, goals, tasks, taskTrackingRecords } from '../db/schema';
+import { eq, and, count, sum, sql } from 'drizzle-orm';
 import { createWorkspaceSchema, updateWorkspaceSchema } from '../validation/workspace.validation';
 import { catchAsync } from '../utils/catchAsync';
 
@@ -20,8 +20,53 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
-  const allWorkspaces = await db.select().from(workspaces).where(eq(workspaces.userId, userId));
-  res.status(200).json(allWorkspaces);
+
+  const dailyTrackedTimeSubquery = db.select({
+    taskId: taskTrackingRecords.taskId,
+    total_duration_minutes: sql<number>`SUM(${taskTrackingRecords.duration})::numeric / 60`.as('total_duration_minutes'),
+  })
+  .from(taskTrackingRecords)
+  .where(sql`date_trunc('day', ${taskTrackingRecords.startTime}) = date_trunc('day', NOW())`)
+  .groupBy(taskTrackingRecords.taskId)
+  .as('daily_tracked_time');
+
+  const allWorkspaces = await db.select({
+    id: workspaces.id,
+    userId: workspaces.userId,
+    name: workspaces.name,
+    description: workspaces.description,
+    createdAt: workspaces.createdAt,
+    updatedAt: workspaces.updatedAt,
+    goalCount: sql<number>`COUNT(${goals.id})::integer`.as('goalCount'),
+    taskCount: sql<number>`COUNT(${tasks.id})::integer`.as('taskCount'),
+    totalProgress: sql<number>`
+      (CASE
+        WHEN SUM(${tasks.timeBudget}) = 0 THEN 0
+        ELSE
+          (
+            SUM(
+              CASE
+                WHEN ${tasks.status} = 'done' THEN ${tasks.timeBudget}
+                ELSE COALESCE(${dailyTrackedTimeSubquery.total_duration_minutes}, 0)
+              END
+            ) * 100.0 / SUM(${tasks.timeBudget})
+          )
+      END)::numeric
+    `.as('totalProgress'),
+  })
+  .from(workspaces)
+  .leftJoin(goals, and(eq(goals.workspaceId, workspaces.id), eq(goals.userId, userId)))
+  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId)))
+  .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
+  .where(eq(workspaces.userId, userId))
+  .groupBy(workspaces.id, workspaces.name, workspaces.description, workspaces.createdAt, workspaces.updatedAt, workspaces.userId);
+
+  const formattedWorkspaces = allWorkspaces.map(workspace => ({
+    ...workspace,
+    totalProgress: workspace.totalProgress != null ? parseFloat(workspace.totalProgress.toString()) : 0,
+  }));
+
+  res.status(200).json(formattedWorkspaces);
 });
 
 export const getWorkspaceById = catchAsync(async (req: Request, res: Response) => {

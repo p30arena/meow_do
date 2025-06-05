@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
-import { goals } from '../db/schema';
-import { eq, and } from 'drizzle-orm';
+import { goals, tasks, taskTrackingRecords } from '../db/schema';
+import { eq, and, count, sum, sql } from 'drizzle-orm';
 import { createGoalSchema, updateGoalSchema } from '../validation/goal.validation';
 import { catchAsync } from '../utils/catchAsync';
 
@@ -21,13 +21,59 @@ export const getGoals = catchAsync(async (req: Request, res: Response) => {
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
-  let allGoals;
+
+  let conditions = [eq(goals.userId, userId)];
   if (workspaceId) {
-    allGoals = await db.select().from(goals).where(and(eq(goals.workspaceId, workspaceId as string), eq(goals.userId, userId)));
-  } else {
-    allGoals = await db.select().from(goals).where(eq(goals.userId, userId));
+    conditions.push(eq(goals.workspaceId, workspaceId as string));
   }
-  res.status(200).json(allGoals);
+
+  const dailyTrackedTimeSubquery = db.select({
+    taskId: taskTrackingRecords.taskId,
+    total_duration_minutes: sql<number>`SUM(${taskTrackingRecords.duration})::numeric / 60`.as('total_duration_minutes'),
+  })
+  .from(taskTrackingRecords)
+  .where(sql`date_trunc('day', ${taskTrackingRecords.startTime}) = date_trunc('day', NOW())`)
+  .groupBy(taskTrackingRecords.taskId)
+  .as('daily_tracked_time');
+
+  const allGoals = await db.select({
+    id: goals.id,
+    userId: goals.userId,
+    workspaceId: goals.workspaceId,
+    name: goals.name,
+    description: goals.description,
+    deadline: goals.deadline,
+    status: goals.status,
+    createdAt: goals.createdAt,
+    updatedAt: goals.updatedAt,
+    taskCount: sql<number>`COUNT(${tasks.id})::integer`.as('taskCount'),
+    totalProgress: sql<number>`
+      (CASE
+        WHEN SUM(${tasks.timeBudget}) = 0 THEN 0
+        ELSE
+          (
+            SUM(
+              CASE
+                WHEN ${tasks.status} = 'done' THEN ${tasks.timeBudget}
+                ELSE COALESCE(${dailyTrackedTimeSubquery.total_duration_minutes}, 0)
+              END
+            ) * 100.0 / SUM(${tasks.timeBudget})
+          )
+      END)::numeric
+    `.as('totalProgress'),
+  })
+  .from(goals)
+  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId)))
+  .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
+  .where(and(...conditions))
+  .groupBy(goals.id, goals.name, goals.description, goals.deadline, goals.status, goals.createdAt, goals.updatedAt, goals.userId, goals.workspaceId);
+
+  const formattedGoals = allGoals.map(goal => ({
+    ...goal,
+    totalProgress: goal.totalProgress != null ? parseFloat(goal.totalProgress.toString()) : 0,
+  }));
+
+  res.status(200).json(formattedGoals);
 });
 
 export const getGoalById = catchAsync(async (req: Request, res: Response) => {

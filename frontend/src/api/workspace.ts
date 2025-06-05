@@ -7,6 +7,9 @@ export interface Workspace {
   description?: string;
   createdAt: string;
   updatedAt: string;
+  goalCount?: number;
+  taskCount?: number;
+  totalProgress?: number;
 }
 
 interface CreateWorkspacePayload {

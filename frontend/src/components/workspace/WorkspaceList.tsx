@@ -96,6 +96,15 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
               </CardHeader>
               <CardContent>
                 <p>{workspace.description || t('workspace.noDescription')}</p>
+                <p className="text-sm text-gray-500">
+                  {t('workspace.goals')}: {workspace.goalCount ?? 0}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {t('workspace.tasks')}: {workspace.taskCount ?? 0}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {t('workspace.progress')}: {workspace.totalProgress != null && !isNaN(workspace.totalProgress) ? `${workspace.totalProgress.toFixed(0)}%` : '0%'}
+                </p>
                 <div className="mt-4 flex justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

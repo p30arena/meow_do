@@ -10,6 +10,8 @@ export interface Goal {
   status: 'pending' | 'reached';
   createdAt: string;
   updatedAt: string;
+  taskCount?: number;
+  totalProgress?: number;
 }
 
 export interface CreateGoalPayload {

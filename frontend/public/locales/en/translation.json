@@ -54,7 +54,10 @@
     "saveChanges": "Save Changes",
     "create": "Create",
     "confirmDelete": "Are you sure you want to delete workspace \"{{workspaceName}}\"?",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "goals": "Goals",
+    "tasks": "Tasks",
+    "progress": "Progress"
   },
   "goalsFor": "Goals for",
   "backToWorkspaces": "Back to Workspaces",
@@ -63,7 +66,9 @@
     "title": "Goals",
     "noGoalsYet": "No goals yet. Create your first one!",
     "confirmDelete": "Are you sure you want to delete goal \"{{goalName}}\"?",
-    "noDescription": "No description provided."
+    "noDescription": "No description provided.",
+    "tasks": "Tasks",
+    "progress": "Progress"
   },
   "status": "Status",
   "goalStatus": {
