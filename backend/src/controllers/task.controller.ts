@@ -42,7 +42,11 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
   })
   .from(tasks)
   .leftJoin(taskTrackingRecords, joinCondition)
-  .where(and(...mainQueryConditions));
+  .where(and(...mainQueryConditions))
+  .orderBy(
+    sql`CASE WHEN ${tasks.status} = 'done' THEN 1 ELSE 0 END`,
+    tasks.name
+  );
 
   const tasksWithTracking = result.map(row => ({
     ...row.task,
