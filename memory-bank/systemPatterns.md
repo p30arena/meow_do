@@ -56,6 +56,7 @@ graph TD
 *   **Time Management & Tracking:** Implementation will involve precise timestamping and duration calculations, considering user-defined timezones.
 *   **Charting:** Recharts will be used for visualizing time spent on tasks.
 *   **Prioritization:** Task prioritization will be managed via an integer field in the database and exposed through API.
+*   **PWA Caching Strategy:** The PWA will utilize `vite-plugin-pwa` with Workbox to implement an aggressive caching strategy, including `cleanupOutdatedCaches`, `skipWaiting`, and `clientsClaim` to ensure immediate updates and cache invalidation on new deployments.
 
 ## Design Patterns in Use
 

@@ -96,3 +96,4 @@ The current focus is on implementing new features: user timezone preference, tas
     *   Installed `vite-plugin-pwa` and configured it in `frontend/vite.config.ts` to generate and register the service worker.
     *   Created `frontend/src/components/InstallPWAButton.tsx` to handle the `beforeinstallprompt` event and provide a UI for installing the PWA. It now uses i18n for the button text, correctly hides when the app is installed, and displays instructional text when the `beforeinstallprompt` event is not available. The React Hooks order error in this component has been resolved.
     *   Integrated `InstallPWAButton` into `frontend/src/components/Navbar.tsx` for both mobile and desktop views.
+    *   **Configured `vite-plugin-pwa` in `frontend/vite.config.ts` to aggressively update PWA caches by adding `cleanupOutdatedCaches: true`, `skipWaiting: true`, and `clientsClaim: true` to the `workbox` options.**
