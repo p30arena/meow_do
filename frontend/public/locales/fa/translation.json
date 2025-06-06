@@ -57,7 +57,15 @@
     "openMenu": "باز کردن منو",
     "goals": "اهداف",
     "tasks": "وظایف",
-    "progress": "پیشرفت"
+    "progress": "پیشرفت",
+    "createGroup": "ایجاد گروه جدید",
+    "groupName": "نام گروه",
+    "enterGroupName": "نام گروه را وارد کنید",
+    "addGroup": "افزودن گروه",
+    "ungrouped": "بدون گروه",
+    "deleteGroup": "حذف گروه",
+    "dragWorkspacesHere": "فضاهای کاری را اینجا بکشید",
+    "group": "گروه"
   },
   "goalsFor": "اهداف برای",
   "backToWorkspaces": "بازگشت به فضاهای کاری",

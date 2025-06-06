@@ -57,7 +57,15 @@
     "openMenu": "فتح القائمة",
     "goals": "الأهداف",
     "tasks": "المهام",
-    "progress": "التقدم"
+    "progress": "التقدم",
+    "createGroup": "إنشاء مجموعة جديدة",
+    "groupName": "اسم المجموعة",
+    "enterGroupName": "أدخل اسم المجموعة",
+    "addGroup": "إضافة مجموعة",
+    "ungrouped": "غير مجمعة",
+    "deleteGroup": "حذف المجموعة",
+    "dragWorkspacesHere": "اسحب مساحات العمل هنا",
+    "group": "المجموعة"
   },
   "goalsFor": "أهداف لـ",
   "backToWorkspaces": "العودة إلى مساحات العمل",

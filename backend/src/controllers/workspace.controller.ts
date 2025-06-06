@@ -35,6 +35,7 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
     userId: workspaces.userId,
     name: workspaces.name,
     description: workspaces.description,
+    groupName: workspaces.groupName, // Include groupName
     createdAt: workspaces.createdAt,
     updatedAt: workspaces.updatedAt,
     goalCount: sql<number>`COUNT(DISTINCT ${goals.id})::integer`.as('goalCount'),
@@ -59,7 +60,7 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
   .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId)))
   .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
   .where(eq(workspaces.userId, userId))
-  .groupBy(workspaces.id, workspaces.name, workspaces.description, workspaces.createdAt, workspaces.updatedAt, workspaces.userId);
+  .groupBy(workspaces.id, workspaces.name, workspaces.description, workspaces.groupName, workspaces.createdAt, workspaces.updatedAt, workspaces.userId);
 
   const formattedWorkspaces = allWorkspaces.map(workspace => ({
     ...workspace,

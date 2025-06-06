@@ -5,6 +5,7 @@ export const workspaces = pgTable('workspaces', {
   userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
   name: varchar('name', { length: 256 }).notNull(),
   description: text('description'),
+  groupName: varchar('group_name', { length: 256 }), // New column for grouping workspaces
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

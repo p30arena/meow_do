@@ -57,7 +57,15 @@
     "openMenu": "Open menu",
     "goals": "Goals",
     "tasks": "Tasks",
-    "progress": "Progress"
+    "progress": "Progress",
+    "createGroup": "Create New Group",
+    "groupName": "Group Name",
+    "enterGroupName": "Enter group name",
+    "addGroup": "Add Group",
+    "ungrouped": "Ungrouped",
+    "deleteGroup": "Delete Group",
+    "dragWorkspacesHere": "Drag workspaces here",
+    "group": "Group"
   },
   "goalsFor": "Goals for",
   "backToWorkspaces": "Back to Workspaces",

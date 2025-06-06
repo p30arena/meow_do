@@ -5,6 +5,7 @@ export interface Workspace {
   id: string;
   name: string;
   description?: string;
+  groupName?: string | null; // New: Optional group name
   createdAt: string;
   updatedAt: string;
   goalCount?: number;
@@ -15,11 +16,13 @@ export interface Workspace {
 interface CreateWorkspacePayload {
   name: string;
   description?: string;
+  groupName?: string | null; // New: Optional group name
 }
 
 interface UpdateWorkspacePayload {
   name?: string;
   description?: string;
+  groupName?: string | null; // New: Optional group name
 }
 
 export const createWorkspace = async (payload: CreateWorkspacePayload): Promise<Workspace> => {
