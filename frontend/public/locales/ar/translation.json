@@ -67,10 +67,12 @@
     "dragWorkspacesHere": "اسحب مساحات العمل هنا",
     "group": "المجموعة",
     "confirmDeleteGroup": "هل أنت متأكد أنك تريد حذف المجموعة \"{{groupName}}\"؟ ستصبح جميع مساحات العمل في هذه المجموعة غير مجمعة.",
-    "optionalGroupName": "اسم مجموعة اختياري",
     "saveRename": "حفظ إعادة التسمية",
     "editGroup": "تعديل المجموعة",
-    "groupNameExists": "اسم المجموعة موجود بالفعل."
+    "groupNameExists": "اسم المجموعة موجود بالفعل.",
+    "optionalGroupName": "اسم المجموعة اختياري",
+    "noGroup": "لا توجد مجموعة",
+    "typeNewGroup": "اكتب اسم مجموعة جديدة أو اختر من الموجودة"
   },
   "goalsFor": "أهداف لـ",
   "backToWorkspaces": "العودة إلى مساحات العمل",

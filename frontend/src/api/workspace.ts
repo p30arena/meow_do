@@ -48,6 +48,28 @@ export const createWorkspace = async (payload: CreateWorkspacePayload): Promise<
   return response.json();
 };
 
+export const getUniqueGroupNames = async (): Promise<string[]> => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('Authentication token not found');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/workspaces/groups/unique`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to fetch unique group names');
+  }
+
+  return response.json();
+};
+
 export const getWorkspaces = async (): Promise<Workspace[]> => {
   const token = localStorage.getItem('token');
   const response = await fetch(`${API_BASE_URL}/workspaces`, {

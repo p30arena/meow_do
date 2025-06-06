@@ -67,10 +67,12 @@
     "dragWorkspacesHere": "فضاهای کاری را اینجا بکشید",
     "group": "گروه",
     "confirmDeleteGroup": "آیا مطمئن هستید که می خواهید گروه \"{{groupName}}\" را حذف کنید؟ همه فضاهای کاری در این گروه بدون گروه خواهند شد.",
-    "optionalGroupName": "نام گروه اختیاری",
     "saveRename": "ذخیره تغییر نام",
     "editGroup": "ویرایش گروه",
-    "groupNameExists": "نام گروه از قبل موجود است."
+    "groupNameExists": "نام گروه از قبل موجود است.",
+    "optionalGroupName": "نام گروه اختیاری",
+    "noGroup": "بدون گروه",
+    "typeNewGroup": "نام گروه جدید را تایپ کنید یا از موجود انتخاب کنید"
   },
   "goalsFor": "اهداف برای",
   "backToWorkspaces": "بازگشت به فضاهای کاری",

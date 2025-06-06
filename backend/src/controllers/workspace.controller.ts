@@ -109,3 +109,16 @@ export const deleteWorkspace = catchAsync(async (req: Request, res: Response) =>
   }
   res.status(204).send(); // No content for successful deletion
 });
+
+export const getUniqueGroupNames = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  }
+
+  const groupNames = await db.selectDistinct({ groupName: workspaces.groupName })
+    .from(workspaces)
+    .where(and(eq(workspaces.userId, userId), sql`${workspaces.groupName} IS NOT NULL`));
+
+  res.status(200).json(groupNames.map(g => g.groupName));
+});

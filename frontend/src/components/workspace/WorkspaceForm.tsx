@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   createWorkspace,
   updateWorkspace,
+  getUniqueGroupNames, // Import the new API function
   type Workspace,
 } from "../../api/workspace";
 import { Button } from "../ui/button";
@@ -10,6 +11,9 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+
+const EMPTY_VALUE = "$null"; // Define magic string for no group
 
 interface WorkspaceFormProps {
   workspace?: Workspace; // Optional, for editing existing workspace
@@ -25,7 +29,8 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
   const { t } = useTranslation();
   const [name, setName] = useState(workspace?.name || "");
   const [description, setDescription] = useState(workspace?.description || "");
-  const [groupName, setGroupName] = useState<string>(workspace?.groupName || ""); // New state for group name
+  const [groupName, setGroupName] = useState<string>(workspace?.groupName || EMPTY_VALUE); // Initialize with EMPTY_VALUE
+  const [availableGroups, setAvailableGroups] = useState<string[]>([]); // New state for available groups
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,9 +38,22 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
     if (workspace) {
       setName(workspace.name);
       setDescription(workspace.description || "");
-      setGroupName(workspace.groupName || ""); // Initialize group name
+      setGroupName(workspace.groupName || EMPTY_VALUE); // Initialize with EMPTY_VALUE
     }
   }, [workspace]);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const groups = await getUniqueGroupNames();
+        setAvailableGroups(groups);
+      } catch (err: any) {
+        console.error("Failed to fetch unique group names:", err);
+        // Optionally set an error state for the user
+      }
+    };
+    fetchGroups();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,7 +61,11 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
     setError(null);
 
     try {
-      const payload = { name, description, groupName: groupName.trim() === '' ? null : groupName.trim() };
+      const payload = { 
+        name, 
+        description, 
+        groupName: groupName === EMPTY_VALUE ? null : groupName.trim() === '' ? null : groupName.trim() 
+      };
       if (workspace) {
         // Update existing workspace
         await updateWorkspace(workspace.id, payload);
@@ -94,13 +116,32 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
           </div>
           <div>
             <Label htmlFor="groupName">{t("workspace.groupName")}</Label>
+            <Select onValueChange={setGroupName} value={groupName}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t("workspace.optionalGroupName")} />
+              </SelectTrigger>
+              <SelectContent>
+                {availableGroups.map((group) => (
+                  <SelectItem key={group} value={group}>
+                    {group}
+                  </SelectItem>
+                ))}
+                {groupName !== EMPTY_VALUE && !availableGroups.includes(groupName) && (
+                  <SelectItem key={groupName} value={groupName}>
+                    {groupName} (New)
+                  </SelectItem>
+                )}
+                <SelectItem value={EMPTY_VALUE}>{t("workspace.noGroup")}</SelectItem>
+              </SelectContent>
+            </Select>
             <Input
-              id="groupName"
+              id="groupNameInput"
               type="text"
-              value={groupName}
+              value={groupName === EMPTY_VALUE ? "" : groupName}
               onChange={(e) => setGroupName(e.target.value)}
               disabled={loading}
-              placeholder={t("workspace.optionalGroupName")}
+              placeholder={t("workspace.typeNewGroup")}
+              className="mt-2"
             />
           </div>
           {error && (

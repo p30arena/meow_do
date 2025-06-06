@@ -67,10 +67,12 @@
     "dragWorkspacesHere": "Drag workspaces here",
     "group": "Group",
     "confirmDeleteGroup": "Are you sure you want to delete group \"{{groupName}}\"? All workspaces in this group will become ungrouped.",
-    "optionalGroupName": "Optional group name",
     "saveRename": "Save Rename",
     "editGroup": "Edit Group",
-    "groupNameExists": "Group name already exists."
+    "groupNameExists": "Group name already exists.",
+    "optionalGroupName": "Optional group name",
+    "noGroup": "No Group",
+    "typeNewGroup": "Type a new group name or select from existing"
   },
   "goalsFor": "Goals for",
   "backToWorkspaces": "Back to Workspaces",
