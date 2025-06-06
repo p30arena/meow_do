@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input'; // Import Input component
 import { Label } from '../ui/label'; // Import Label component
-import { XCircle } from 'lucide-react'; // Import XCircle icon for deleting groups
+import { XCircle, Pencil } from 'lucide-react'; // Import XCircle and Pencil icons
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +42,8 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
   const [groups, setGroups] = useState<string[]>([]); // State to manage frontend groups
   const [newGroupName, setNewGroupName] = useState<string>(''); // State for new group input
   const [draggingWorkspaceId, setDraggingWorkspaceId] = useState<string | null>(null); // State for dragged workspace ID
+  const [editingGroup, setEditingGroup] = useState<string | null>(null); // State to track which group is being edited
+  const [editedGroupName, setEditedGroupName] = useState<string>(''); // State for the edited group name
 
   const fetchWorkspaces = async () => {
     try {
@@ -115,6 +117,39 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
       }
       fetchWorkspaces(); // Re-fetch all workspaces to update UI
       setGroups(prev => prev.filter(group => group !== groupToDelete)); // Remove group from frontend state
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditGroup = (groupName: string) => {
+    setEditingGroup(groupName);
+    setEditedGroupName(groupName);
+  };
+
+  const handleSaveGroupRename = async (oldGroupName: string) => {
+    if (editedGroupName.trim() === '' || editedGroupName.trim() === oldGroupName) {
+      setEditingGroup(null); // Cancel edit if name is empty or unchanged
+      return;
+    }
+
+    if (groups.includes(editedGroupName.trim())) {
+      setError(t('workspace.groupNameExists')); // New i18n key needed
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const workspacesInGroup = workspaces.filter(ws => ws.groupName === oldGroupName);
+      for (const ws of workspacesInGroup) {
+        await updateWorkspace(ws.id, { groupName: editedGroupName.trim() });
+      }
+      fetchWorkspaces(); // Re-fetch all workspaces to update UI
+      setEditingGroup(null);
+      setEditedGroupName('');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -197,34 +232,67 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
               onDrop={(e) => handleDrop(e, groupName)}
             >
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold">
-                  {groupName === 'Ungrouped' ? t('workspace.ungrouped') : groupName}
-                </h3>
+                {editingGroup === groupName ? (
+                  <div className="flex items-center gap-2 flex-grow">
+                    <Input
+                      value={editedGroupName}
+                      onChange={(e) => setEditedGroupName(e.target.value)}
+                      onBlur={() => handleSaveGroupRename(groupName)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSaveGroupRename(groupName);
+                        }
+                      }}
+                      className="text-xl font-semibold"
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => handleSaveGroupRename(groupName)}>
+                      <span className="sr-only">{t('workspace.saveRename')}</span>
+                      <Pencil className="h-5 w-5" /> {/* Reusing Pencil for save icon */}
+                    </Button>
+                  </div>
+                ) : (
+                  <h3 className="text-xl font-semibold">
+                    {groupName === 'Ungrouped' ? t('workspace.ungrouped') : groupName}
+                  </h3>
+                )}
                 {groupName !== 'Ungrouped' && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
+                  <div className="flex gap-2">
+                    {editingGroup !== groupName && (
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleEditGroup(groupName)}
+                        className="text-gray-500 hover:text-gray-700"
                       >
-                        <XCircle className="h-5 w-5" />
-                        <span className="sr-only">{t('workspace.deleteGroup')}</span>
+                        <Pencil className="h-5 w-5" />
+                        <span className="sr-only">{t('workspace.editGroup')}</span>
                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{t('workspace.confirmDeleteGroup', { groupName: groupName })}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {t('confirmDeleteDescription')}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteGroup(groupName)}>{t('confirm')}</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                    )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <XCircle className="h-5 w-5" />
+                          <span className="sr-only">{t('workspace.deleteGroup')}</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{t('workspace.confirmDeleteGroup', { groupName: groupName })}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t('confirmDeleteDescription')}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteGroup(groupName)}>{t('confirm')}</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 )}
               </div>
               <div className="flex flex-wrap gap-4 justify-start min-h-[100px] p-2 border border-dashed rounded-md border-gray-300 dark:border-gray-700">
