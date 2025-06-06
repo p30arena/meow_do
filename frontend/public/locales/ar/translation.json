@@ -65,7 +65,8 @@
     "ungrouped": "غير مجمعة",
     "deleteGroup": "حذف المجموعة",
     "dragWorkspacesHere": "اسحب مساحات العمل هنا",
-    "group": "المجموعة"
+    "group": "المجموعة",
+    "confirmDeleteGroup": "هل أنت متأكد أنك تريد حذف المجموعة \"{{groupName}}\"؟ ستصبح جميع مساحات العمل في هذه المجموعة غير مجمعة."
   },
   "goalsFor": "أهداف لـ",
   "backToWorkspaces": "العودة إلى مساحات العمل",

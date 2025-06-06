@@ -201,15 +201,30 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
                   {groupName === 'Ungrouped' ? t('workspace.ungrouped') : groupName}
                 </h3>
                 {groupName !== 'Ungrouped' && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteGroup(groupName)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <XCircle className="h-5 w-5" />
-                    <span className="sr-only">{t('workspace.deleteGroup')}</span>
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <XCircle className="h-5 w-5" />
+                        <span className="sr-only">{t('workspace.deleteGroup')}</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{t('workspace.confirmDeleteGroup', { groupName: groupName })}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {t('confirmDeleteDescription')}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteGroup(groupName)}>{t('confirm')}</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
               </div>
               <div className="flex flex-wrap gap-4 justify-start min-h-[100px] p-2 border border-dashed rounded-md border-gray-300 dark:border-gray-700">

@@ -65,7 +65,8 @@
     "ungrouped": "Ungrouped",
     "deleteGroup": "Delete Group",
     "dragWorkspacesHere": "Drag workspaces here",
-    "group": "Group"
+    "group": "Group",
+    "confirmDeleteGroup": "Are you sure you want to delete group \"{{groupName}}\"? All workspaces in this group will become ungrouped."
   },
   "goalsFor": "Goals for",
   "backToWorkspaces": "Back to Workspaces",
