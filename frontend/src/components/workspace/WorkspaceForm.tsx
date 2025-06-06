@@ -25,6 +25,7 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
   const { t } = useTranslation();
   const [name, setName] = useState(workspace?.name || "");
   const [description, setDescription] = useState(workspace?.description || "");
+  const [groupName, setGroupName] = useState<string>(workspace?.groupName || ""); // New state for group name
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +33,7 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
     if (workspace) {
       setName(workspace.name);
       setDescription(workspace.description || "");
+      setGroupName(workspace.groupName || ""); // Initialize group name
     }
   }, [workspace]);
 
@@ -41,12 +43,13 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
     setError(null);
 
     try {
+      const payload = { name, description, groupName: groupName.trim() === '' ? null : groupName.trim() };
       if (workspace) {
         // Update existing workspace
-        await updateWorkspace(workspace.id, { name, description });
+        await updateWorkspace(workspace.id, payload);
       } else {
         // Create new workspace
-        await createWorkspace({ name, description });
+        await createWorkspace(payload);
       }
       onSuccess();
     } catch (err: any) {
@@ -87,6 +90,17 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={loading}
+            />
+          </div>
+          <div>
+            <Label htmlFor="groupName">{t("workspace.groupName")}</Label>
+            <Input
+              id="groupName"
+              type="text"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              disabled={loading}
+              placeholder={t("workspace.optionalGroupName")}
             />
           </div>
           {error && (
