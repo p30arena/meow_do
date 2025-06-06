@@ -29,8 +29,9 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
   const { t } = useTranslation();
   const [name, setName] = useState(workspace?.name || "");
   const [description, setDescription] = useState(workspace?.description || "");
-  const [groupName, setGroupName] = useState<string>(workspace?.groupName || EMPTY_VALUE); // Initialize with EMPTY_VALUE
-  const [availableGroups, setAvailableGroups] = useState<string[]>([]); // New state for available groups
+  const [groupName, setGroupName] = useState<string>(workspace?.groupName || EMPTY_VALUE);
+  const [selectedGroup, setSelectedGroup] = useState<string>(groupName); // New state for Select's value
+  const [availableGroups, setAvailableGroups] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,22 +39,29 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
     if (workspace) {
       setName(workspace.name);
       setDescription(workspace.description || "");
-      setGroupName(workspace.groupName || EMPTY_VALUE); // Initialize with EMPTY_VALUE
+      setGroupName(workspace.groupName || EMPTY_VALUE);
+      setSelectedGroup(workspace.groupName || EMPTY_VALUE); // Initialize selectedGroup
     }
   }, [workspace]);
+
+  // Sync selectedGroup with groupName when selectedGroup changes from Select
+  useEffect(() => {
+    setGroupName(selectedGroup);
+  }, [selectedGroup]);
 
   useEffect(() => {
     const fetchGroups = async () => {
       try {
         const groups = await getUniqueGroupNames();
-        setAvailableGroups(groups);
+        // Filter out any empty strings from the available groups
+        setAvailableGroups(groups.filter(group => group !== ''));
       } catch (err: any) {
         console.error("Failed to fetch unique group names:", err);
         // Optionally set an error state for the user
       }
     };
     fetchGroups();
-  }, []);
+  }, []); // No dependency on workspace.groupName here, useMemo will handle it
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -116,7 +124,7 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
           </div>
           <div>
             <Label htmlFor="groupName">{t("workspace.groupName")}</Label>
-            <Select onValueChange={setGroupName} value={groupName}>
+            <Select onValueChange={setSelectedGroup} value={selectedGroup}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t("workspace.optionalGroupName")} />
               </SelectTrigger>
@@ -126,14 +134,10 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
                     {group}
                   </SelectItem>
                 ))}
-                {groupName !== EMPTY_VALUE && !availableGroups.includes(groupName) && (
-                  <SelectItem key={groupName} value={groupName}>
-                    {groupName} (New)
-                  </SelectItem>
-                )}
                 <SelectItem value={EMPTY_VALUE}>{t("workspace.noGroup")}</SelectItem>
               </SelectContent>
             </Select>
+            {/* Input for typing new group name, always visible */}
             <Input
               id="groupNameInput"
               type="text"
