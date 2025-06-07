@@ -60,7 +60,7 @@ const GoalForm: React.FC<GoalFormProps> = ({
         workspaceId,
         name,
         description: description || undefined,
-        deadline: deadline || undefined,
+        deadline: deadline ? deadline + "T00:00:00.000Z" : undefined,
         status,
       };
 

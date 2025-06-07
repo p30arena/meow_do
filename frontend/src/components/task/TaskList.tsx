@@ -223,7 +223,7 @@ const TaskList: React.FC<TaskListProps> = ({
       return;
     }
 
-    if (localStopTime < currentTrackingRecordStartTime) {
+    if (currentTrackingRecordStartTime.getTime() - localStopTime.getTime() > 60_000) {
       setError(t("tasks.stopTimeBeforeStartTime"));
       return;
     }

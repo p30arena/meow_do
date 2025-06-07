@@ -86,7 +86,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
         name,
         description: description || undefined,
         timeBudget: parsedTimeBudget,
-        deadline: deadline || undefined,
+        deadline: deadline ? deadline + "T00:00:00.000Z" : undefined,
         status,
         priority: parsedPriority, // Include priority in payload
         isRecurring,
