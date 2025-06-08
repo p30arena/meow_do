@@ -72,7 +72,8 @@
     "groupNameExists": "نام گروه از قبل موجود است.",
     "optionalGroupName": "نام گروه اختیاری",
     "noGroup": "بدون گروه",
-    "typeNewGroup": "نام گروه جدید را تایپ کنید یا از موجود انتخاب کنید"
+    "typeNewGroup": "نام گروه جدید را تایپ کنید یا از موجود انتخاب کنید",
+    "runningTask": "وظیفه در حال اجرا"
   },
   "goalsFor": "اهداف برای",
   "backToWorkspaces": "بازگشت به فضاهای کاری",
@@ -83,7 +84,8 @@
     "confirmDelete": "آیا مطمئن هستید که می خواهید هدف \"{{goalName}}\" را حذف کنید؟",
     "noDescription": "توضیحی ارائه نشده است.",
     "tasks": "وظایف",
-    "progress": "پیشرفت"
+    "progress": "پیشرفت",
+    "runningTask": "وظیفه در حال اجرا"
   },
   "status": "وضعیت",
   "goalStatus": {

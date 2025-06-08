@@ -103,27 +103,35 @@ const GoalList: React.FC<GoalListProps> = ({
               onClick={() => onSelectGoal(goal)}
               className="cursor-pointer w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
             >
-              <CardHeader>
-                <CardTitle>{goal.name}</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-medium">{goal.name}</CardTitle>
+                {goal.hasRunningTask && (
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" title={t('goals.runningTask')}></span>
+                  </span>
+                )}
               </CardHeader>
               <CardContent>
-                <p>{goal.description || t("goals.noDescription")}</p>
-                <p>
-                  <strong>{t("status")}:</strong>{" "}
-                  {t(`goalStatus.${goal.status}`)}
-                </p>
-                {goal.deadline && (
+                <p className="text-sm text-muted-foreground">{goal.description || t("goals.noDescription")}</p>
+                <div className="mt-2 text-sm text-gray-500">
                   <p>
-                    <strong>{t("deadline")}:</strong>{" "}
-                    {new Date(goal.deadline).toLocaleDateString()}
+                    <strong>{t("status")}:</strong>{" "}
+                    {t(`goalStatus.${goal.status}`)}
                   </p>
-                )}
-                <p className="text-sm text-gray-500">
-                  {t('goals.tasks')}: {goal.taskCount ?? 0}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {t('goals.progress')}: {goal.totalProgress != null && !isNaN(goal.totalProgress) ? `${goal.totalProgress.toFixed(0)}%` : '0%'}
-                </p>
+                  {goal.deadline && (
+                    <p>
+                      <strong>{t("deadline")}:</strong>{" "}
+                      {new Date(goal.deadline).toLocaleDateString()}
+                    </p>
+                  )}
+                  <p>
+                    {t('goals.tasks')}: {goal.taskCount ?? 0}
+                  </p>
+                  <p>
+                    {t('goals.progress')}: {goal.totalProgress != null && !isNaN(goal.totalProgress) ? `${goal.totalProgress.toFixed(0)}%` : '0%'}
+                  </p>
+                </div>
                 <div className="mt-4 flex justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

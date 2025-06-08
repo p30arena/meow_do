@@ -11,6 +11,7 @@ export interface Workspace {
   goalCount?: number;
   taskCount?: number;
   totalProgress?: number;
+  hasRunningTask?: boolean;
 }
 
 interface CreateWorkspacePayload {

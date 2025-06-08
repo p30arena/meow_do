@@ -36,6 +36,16 @@ export const getGoals = catchAsync(async (req: Request, res: Response) => {
   .groupBy(taskTrackingRecords.taskId)
   .as('daily_tracked_time');
 
+  const runningTasksSubquery = db.select({
+    goalId: tasks.goalId,
+    hasRunningTask: sql<boolean>`TRUE`.as('hasRunningTask'),
+  })
+  .from(taskTrackingRecords)
+  .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
+  .where(and(eq(taskTrackingRecords.userId, userId), sql`${taskTrackingRecords.endTime} IS NULL`))
+  .groupBy(tasks.goalId)
+  .as('running_tasks');
+
   const allGoals = await db.select({
     id: goals.id,
     userId: goals.userId,
@@ -61,16 +71,19 @@ export const getGoals = catchAsync(async (req: Request, res: Response) => {
           )
       END)::numeric
     `.as('totalProgress'),
+    hasRunningTask: sql<boolean>`COALESCE(${runningTasksSubquery.hasRunningTask}, FALSE)`.as('hasRunningTask'),
   })
   .from(goals)
   .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId)))
   .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
+  .leftJoin(runningTasksSubquery, eq(goals.id, runningTasksSubquery.goalId))
   .where(and(...conditions))
-  .groupBy(goals.id, goals.name, goals.description, goals.deadline, goals.status, goals.createdAt, goals.updatedAt, goals.userId, goals.workspaceId);
+  .groupBy(goals.id, goals.name, goals.description, goals.deadline, goals.status, goals.createdAt, goals.updatedAt, goals.userId, goals.workspaceId, runningTasksSubquery.hasRunningTask);
 
   const formattedGoals = allGoals.map(goal => ({
     ...goal,
     totalProgress: goal.totalProgress != null ? parseFloat(goal.totalProgress.toString()) : 0,
+    hasRunningTask: goal.hasRunningTask || false, // Ensure it's always a boolean
   }));
 
   res.status(200).json(formattedGoals);

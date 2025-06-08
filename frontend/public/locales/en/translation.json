@@ -72,7 +72,8 @@
     "groupNameExists": "Group name already exists.",
     "optionalGroupName": "Optional group name",
     "noGroup": "No Group",
-    "typeNewGroup": "Type a new group name or select from existing"
+    "typeNewGroup": "Type a new group name or select from existing",
+    "runningTask": "Running Task"
   },
   "goalsFor": "Goals for",
   "backToWorkspaces": "Back to Workspaces",
@@ -83,7 +84,8 @@
     "confirmDelete": "Are you sure you want to delete goal \"{{goalName}}\"?",
     "noDescription": "No description provided.",
     "tasks": "Tasks",
-    "progress": "Progress"
+    "progress": "Progress",
+    "runningTask": "Running Task"
   },
   "status": "Status",
   "goalStatus": {

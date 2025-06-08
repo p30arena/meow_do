@@ -30,6 +30,17 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
   .groupBy(taskTrackingRecords.taskId)
   .as('daily_tracked_time');
 
+  const runningTasksSubquery = db.select({
+    workspaceId: goals.workspaceId,
+    hasRunningTask: sql<boolean>`TRUE`.as('hasRunningTask'),
+  })
+  .from(taskTrackingRecords)
+  .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
+  .innerJoin(goals, eq(tasks.goalId, goals.id))
+  .where(and(eq(taskTrackingRecords.userId, userId), sql`${taskTrackingRecords.endTime} IS NULL`))
+  .groupBy(goals.workspaceId)
+  .as('running_tasks');
+
   const allWorkspaces = await db.select({
     id: workspaces.id,
     userId: workspaces.userId,
@@ -54,17 +65,20 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
           )
       END)::numeric
     `.as('totalProgress'),
+    hasRunningTask: sql<boolean>`COALESCE(${runningTasksSubquery.hasRunningTask}, FALSE)`.as('hasRunningTask'),
   })
   .from(workspaces)
   .leftJoin(goals, and(eq(goals.workspaceId, workspaces.id), eq(goals.userId, userId)))
   .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId)))
   .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
+  .leftJoin(runningTasksSubquery, eq(workspaces.id, runningTasksSubquery.workspaceId))
   .where(eq(workspaces.userId, userId))
-  .groupBy(workspaces.id, workspaces.name, workspaces.description, workspaces.groupName, workspaces.createdAt, workspaces.updatedAt, workspaces.userId);
+  .groupBy(workspaces.id, workspaces.name, workspaces.description, workspaces.groupName, workspaces.createdAt, workspaces.updatedAt, workspaces.userId, runningTasksSubquery.hasRunningTask);
 
   const formattedWorkspaces = allWorkspaces.map(workspace => ({
     ...workspace,
     totalProgress: workspace.totalProgress != null ? parseFloat(workspace.totalProgress.toString()) : 0,
+    hasRunningTask: workspace.hasRunningTask || false, // Ensure it's always a boolean
   }));
 
   res.status(200).json(formattedWorkspaces);

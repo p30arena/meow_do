@@ -12,6 +12,7 @@ export interface Goal {
   updatedAt: string;
   taskCount?: number;
   totalProgress?: number;
+  hasRunningTask?: boolean;
 }
 
 export interface CreateGoalPayload {

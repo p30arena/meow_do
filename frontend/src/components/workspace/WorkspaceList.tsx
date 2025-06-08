@@ -304,25 +304,27 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
                     onClick={() => onSelectWorkspace(workspace)}
                     className="cursor-pointer w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
                   >
-                    <CardHeader>
-                      <CardTitle>{workspace.name}</CardTitle>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-lg font-medium">{workspace.name}</CardTitle>
+                      {workspace.hasRunningTask && (
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" title={t('workspace.runningTask')}></span>
+                        </span>
+                      )}
                     </CardHeader>
                     <CardContent>
-                      <p>{workspace.description || t('workspace.noDescription')}</p>
-                      <p className="text-sm text-gray-500">
-                        {t('workspace.goals')}: {workspace.goalCount ?? 0}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {t('workspace.tasks')}: {workspace.taskCount ?? 0}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {t('workspace.progress')}: {workspace.totalProgress != null && !isNaN(workspace.totalProgress) ? `${workspace.totalProgress.toFixed(0)}%` : '0%'}
-                      </p>
-                      {workspace.groupName && (
-                        <p className="text-sm text-gray-500 mt-2">
-                          {t('workspace.group')}: {workspace.groupName}
-                        </p>
-                      )}
+                      <p className="text-sm text-muted-foreground">{workspace.description || t('workspace.noDescription')}</p>
+                      <div className="mt-2 text-sm text-gray-500">
+                        <p>{t('workspace.goals')}: {workspace.goalCount ?? 0}</p>
+                        <p>{t('workspace.tasks')}: {workspace.taskCount ?? 0}</p>
+                        <p>{t('workspace.progress')}: {workspace.totalProgress != null && !isNaN(workspace.totalProgress) ? `${workspace.totalProgress.toFixed(0)}%` : '0%'}</p>
+                        {workspace.groupName && (
+                          <p className="mt-1">
+                            {t('workspace.group')}: {workspace.groupName}
+                          </p>
+                        )}
+                      </div>
                       <div className="mt-4 flex justify-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

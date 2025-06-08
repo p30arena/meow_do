@@ -72,7 +72,8 @@
     "groupNameExists": "اسم المجموعة موجود بالفعل.",
     "optionalGroupName": "اسم المجموعة اختياري",
     "noGroup": "لا توجد مجموعة",
-    "typeNewGroup": "اكتب اسم مجموعة جديدة أو اختر من الموجودة"
+    "typeNewGroup": "اكتب اسم مجموعة جديدة أو اختر من الموجودة",
+    "runningTask": "مهمة قيد التشغيل"
   },
   "goalsFor": "أهداف لـ",
   "backToWorkspaces": "العودة إلى مساحات العمل",
@@ -83,7 +84,8 @@
     "confirmDelete": "هل أنت متأكد أنك تريد حذف الهدف \"{{goalName}}\"؟",
     "noDescription": "لم يتم تقديم وصف.",
     "tasks": "المهام",
-    "progress": "التقدم"
+    "progress": "التقدم",
+    "runningTask": "مهمة قيد التشغيل"
   },
   "status": "الحالة",
   "goalStatus": {
