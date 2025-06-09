@@ -103,7 +103,7 @@ export interface TaskTrackingRecord {
 export interface TaskTrackingSummary {
   taskName: string;
   totalDurationSeconds: number;
-  period: string; // ISO date string for the start of the period (day, month, year)
+  period?: string; // ISO date string for the start of the period (day, month, year), optional for 'total'
 }
 
 export const startTaskTracking = async (taskId: string): Promise<TaskTrackingRecord> => {
