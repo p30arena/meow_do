@@ -152,7 +152,7 @@ export const stopTaskTracking = async (trackingId: string, stopTime?: string): P
 };
 
 export const getTaskTrackingSummary = async (
-  period: 'day' | 'month' | 'year',
+  period: 'day' | 'month' | 'year' | 'total', // Add 'total' as a valid period
   workspaceId?: string,
   goalId?: string
 ): Promise<TaskTrackingSummary[]> => {

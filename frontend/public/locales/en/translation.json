@@ -107,7 +107,8 @@
   "tasks": {
     "title": "Tasks",
     "timeBudgetWarning": "Warning: Total time budget ({{hours}}h {{minutes}}m) exceeds 24 hours!",
-    "totalTimeBudget": "Total Time Budget",
+    "totalDailyBudget": "Total Daily Budget",
+    "totalOverallSpent": "Total Overall Spent",
     "dailyProgress": "Daily Progress",
     "noTasksYet": "No tasks yet. Create your first one!",
     "confirmDelete": "Are you sure you want to delete task \"{{taskName}}\"?",

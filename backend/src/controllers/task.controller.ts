@@ -242,33 +242,57 @@ export const createManualTaskRecord = catchAsync(async (req: Request, res: Respo
 
 export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
-  const { period, workspaceId, goalId } = req.query; // Add workspaceId and goalId
+  const { period, workspaceId, goalId } = req.query;
 
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
 
-  let groupByColumn;
-  // No change to dateTruncFunction as it's not directly used in the query building
+  // Fetch user's timezone
+  const user = await db.select({ timezone: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
+  const userTimezone = user[0]?.timezone || 'UTC'; // Default to UTC if not found
+
+  let periodGroupByColumn: any = null;
+  let periodOrderByColumn: any = null;
+  let periodCondition: any = null;
+
   switch (period) {
     case 'day':
-      groupByColumn = sql`date_trunc('day', ${taskTrackingRecords.startTime})`;
+      periodGroupByColumn = sql`date_trunc('day', ${taskTrackingRecords.startTime} AT TIME ZONE ${sql.raw(`'${userTimezone}'`)})`;
+      periodOrderByColumn = sql`date_trunc('day', ${taskTrackingRecords.startTime} AT TIME ZONE ${sql.raw(`'${userTimezone}'`)})`;
+      periodCondition = sql`date_trunc('day', ${taskTrackingRecords.startTime} AT TIME ZONE ${sql.raw(`'${userTimezone}'`)}) = date_trunc('day', NOW() AT TIME ZONE ${sql.raw(`'${userTimezone}'`)})`;
       break;
     case 'month':
-      groupByColumn = sql`date_trunc('month', ${taskTrackingRecords.startTime})`;
+      periodGroupByColumn = sql`date_trunc('month', ${taskTrackingRecords.startTime} AT TIME ZONE ${sql.raw(`'${userTimezone}'`)})`;
+      periodOrderByColumn = sql`date_trunc('month', ${taskTrackingRecords.startTime} AT TIME ZONE ${sql.raw(`'${userTimezone}'`)})`;
+      periodCondition = sql`date_trunc('month', ${taskTrackingRecords.startTime} AT TIME ZONE ${sql.raw(`'${userTimezone}'`)}) = date_trunc('month', NOW() AT TIME ZONE ${sql.raw(`'${userTimezone}'`)})`;
       break;
     case 'year':
-      groupByColumn = sql`date_trunc('year', ${taskTrackingRecords.startTime})`;
+      periodGroupByColumn = sql`date_trunc('year', ${taskTrackingRecords.startTime} AT TIME ZONE ${sql.raw(`'${userTimezone}'`)})`;
+      periodOrderByColumn = sql`date_trunc('year', ${taskTrackingRecords.startTime} AT TIME ZONE ${sql.raw(`'${userTimezone}'`)})`;
+      periodCondition = sql`date_trunc('year', ${taskTrackingRecords.startTime} AT TIME ZONE ${sql.raw(`'${userTimezone}'`)}) = date_trunc('year', NOW() AT TIME ZONE ${sql.raw(`'${userTimezone}'`)})`;
+      break;
+    case 'total':
+      // No specific time-based grouping/ordering for 'total'
       break;
     default:
-      return res.status(400).json({ message: 'Invalid period specified. Must be "day", "month", or "year".' });
+      return res.status(400).json({ message: 'Invalid period specified. Must be "day", "month", "year", or "total".' });
   }
 
   const conditions = [eq(taskTrackingRecords.userId, userId)];
-  let query = db.select({
+
+  if (goalId) {
+    conditions.push(eq(tasks.goalId, goalId as string));
+  }
+
+  if (periodCondition) {
+    conditions.push(periodCondition);
+  }
+
+  let queryBuilder: any = db.select({ // Explicitly type as any to resolve type issues
     taskName: tasks.name,
     totalDurationSeconds: sql<number>`sum(${taskTrackingRecords.duration})::integer`,
-    period: groupByColumn,
+    ...(period !== 'total' && { period: periodGroupByColumn }),
   })
     .from(taskTrackingRecords)
     .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id));
@@ -278,14 +302,27 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
   }
 
   if (workspaceId) {
-    query = query.innerJoin(goals, eq(tasks.goalId, goals.id));
+    queryBuilder = queryBuilder.innerJoin(goals, eq(tasks.goalId, goals.id));
     conditions.push(eq(goals.workspaceId, workspaceId as string));
   }
 
-  const summary = await query
-    .where(and(...conditions))
-    .groupBy(tasks.name, groupByColumn)
-    .orderBy(groupByColumn, tasks.name);
+  // Apply where clause
+  queryBuilder = queryBuilder.where(and(...conditions));
+
+  // Construct final groupBy and orderBy arrays
+  const finalGroupByColumns = [tasks.name];
+  if (periodGroupByColumn) {
+    finalGroupByColumns.push(periodGroupByColumn);
+  }
+
+  const finalOrderByColumns = [tasks.name];
+  if (periodOrderByColumn) {
+    finalOrderByColumns.push(periodOrderByColumn);
+  }
+
+  const summary = await queryBuilder
+    .groupBy(...finalGroupByColumns)
+    .orderBy(...finalOrderByColumns);
 
   res.status(200).json(summary);
 });

@@ -63,8 +63,9 @@ const TaskList: React.FC<TaskListProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalTimeBudget, setTotalTimeBudget] = useState(0);
-  const [totalTimeSpentToday, setTotalTimeSpentToday] = useState(0); // New state for total time spent today
-  const [taskSummaries, setTaskSummaries] = useState<TaskTrackingSummary[]>([]); // New state for individual task summaries
+  const [totalTimeSpentToday, setTotalTimeSpentToday] = useState(0); // State for time spent today
+  const [totalTimeSpentOverall, setTotalTimeSpentOverall] = useState(0); // New state for total time spent overall
+  const [taskSummaries, setTaskSummaries] = useState<TaskTrackingSummary[]>([]); // State for individual task summaries
   const [activeTrackingTaskId, setActiveTrackingTaskId] = useState<
     string | null
   >(null);
@@ -89,13 +90,21 @@ const TaskList: React.FC<TaskListProps> = ({
       setTotalTimeBudget(sum);
 
       // Fetch daily task tracking summary
-      const summary = await getTaskTrackingSummary("day", workspaceId, goalId);
-      setTaskSummaries(summary); // Store individual task summaries
-      const totalSpentSeconds = summary.reduce(
+      const dailySummary = await getTaskTrackingSummary("day", workspaceId, goalId);
+      setTaskSummaries(dailySummary); // Store individual task summaries
+      const totalSpentTodaySeconds = dailySummary.reduce(
         (acc, record) => acc + record.totalDurationSeconds,
         0
       );
-      setTotalTimeSpentToday(Math.floor(totalSpentSeconds / 60)); // Convert seconds to minutes
+      setTotalTimeSpentToday(Math.floor(totalSpentTodaySeconds / 60)); // Convert seconds to minutes
+
+      // Fetch overall task tracking summary
+      const overallSummary = await getTaskTrackingSummary("total", workspaceId, goalId);
+      const totalSpentOverallSeconds = overallSummary.reduce(
+        (acc, record) => acc + record.totalDurationSeconds,
+        0
+      );
+      setTotalTimeSpentOverall(Math.floor(totalSpentOverallSeconds / 60)); // Convert seconds to minutes
 
       // Find if any task has an active tracking record
       const activeTask = data.find(
@@ -288,9 +297,13 @@ const TaskList: React.FC<TaskListProps> = ({
           })}
         </p>
       )}
-      <p className="mb-4">
-        {t("tasks.totalTimeBudget")}: {Math.floor(totalTimeBudget / 60)}h{" "}
+      <p className="mb-2">
+        <strong>{t("tasks.totalDailyBudget")}:</strong> {Math.floor(totalTimeBudget / 60)}h{" "}
         {totalTimeBudget % 60}m
+      </p>
+      <p className="mb-4">
+        <strong>{t("tasks.totalOverallSpent")}:</strong> {Math.floor(totalTimeSpentOverall / 60)}h{" "}
+        {totalTimeSpentOverall % 60}m
       </p>
 
       {/* Progress Bar for Daily Budget */}

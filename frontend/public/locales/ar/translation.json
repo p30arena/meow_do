@@ -107,7 +107,8 @@
   "tasks": {
     "title": "المهام",
     "timeBudgetWarning": "تحذير: إجمالي ميزانية الوقت ({{hours}} ساعة {{minutes}} دقيقة) يتجاوز 24 ساعة!",
-    "totalTimeBudget": "إجمالي ميزانية الوقت",
+    "totalDailyBudget": "إجمالي الميزانية اليومية",
+    "totalOverallSpent": "إجمالي الوقت المستغرق",
     "dailyProgress": "التقدم اليومي",
     "noTasksYet": "لا توجد مهام بعد. أنشئ أول مهمة لك!",
     "confirmDelete": "هل أنت متأكد أنك تريد حذف المهمة \"{{taskName}}\"؟",
