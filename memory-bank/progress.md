@@ -69,6 +69,9 @@
     *   `InstallPWAButton` has been integrated into `frontend/src/components/Navbar.tsx`.
 *   **i18n `noDescription` Key:** Confirmed that the `noDescription` key is present in `fa/translation.json`, `en/translation.json`, and `ar/translation.json`. The `i18next::translator: missingKey fa translation noDescription noDescription` error persists, indicating a potential issue with `i18next` configuration, caching, or how the key is being used in `WorkspaceList.tsx`, rather than a missing translation key itself.
 *   **Refactored `frontend/src/components/task/TaskList.tsx` to ensure `getTaskTrackingSummary` is called efficiently, clarifying that the backend API supports 'day' and 'total' periods, not a single 'all' period for comprehensive data. The `TaskTrackingSummary` interface in `frontend/src/api/task.ts` was updated to reflect that the `period` field is optional.**
+*   **Enhanced `frontend/src/components/task/TaskList.tsx` to display the overall total spent time for each individual task within its task card, in minutes. This involved adding a new state (`overallTaskSummaries`) and an additional call to `getTaskTrackingSummary` with `period: "total"` to fetch this data.**
+*   **Resolved `missingKey` error for `tasks.overallSpent` by adding the translation key to `en/translation.json`, `ar/translation.json`, and `fa/translation.json`.**
+*   **Fixed "Invalid DateTime" error in `frontend/src/components/task/TaskTrackingChart.tsx` by changing `DateTime.fromISO` to `DateTime.fromSQL` for parsing the `period` label, as the backend returns a PostgreSQL timestamp format.**
 
 ## What's left to build
 

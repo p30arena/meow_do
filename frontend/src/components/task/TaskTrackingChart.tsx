@@ -47,7 +47,14 @@ const TaskTrackingChart: React.FC<TaskTrackingChartProps> = ({ workspaceId, goal
   const formatTooltipLabel = (label: string) => {
     if (!user?.timezone) return label; // Fallback if timezone is not set
 
-    const dt = DateTime.fromISO(label, { zone: user.timezone });
+    // Use fromSQL to parse the PostgreSQL timestamp string
+    const dt = DateTime.fromSQL(label, { zone: user.timezone });
+
+    if (!dt.isValid) {
+      console.error("Invalid DateTime object:", dt.invalidExplanation);
+      return "Invalid DateTime"; // Return a fallback string for invalid dates
+    }
+
     switch (period) {
       case 'day':
         return dt.toLocaleString(DateTime.DATE_FULL);
