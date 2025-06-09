@@ -5,6 +5,7 @@ import workspaceRoutes from './routes/workspace.routes';
 import goalRoutes from './routes/goal.routes';
 import taskRoutes from './routes/task.routes';
 import authRoutes from './routes/auth.routes';
+import { updateTimezone } from './controllers/auth.controller'; // Import updateTimezone
 
 dotenv.config();
 
@@ -22,6 +23,9 @@ app.get('/', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 
 import { protect } from './middleware/auth.middleware';
+
+// User-specific protected routes
+app.put('/api/v1/me/timezone', protect, updateTimezone);
 
 // Workspace routes
 app.use('/api/v1/workspaces', protect, workspaceRoutes);

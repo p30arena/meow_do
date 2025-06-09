@@ -2,7 +2,7 @@ import { API_BASE_URL } from '../config';
 import { handleUnauthorized } from '../lib/utils';
 
 export const updateTimezone = async (timezone: string, token: string) => {
-  const response = await fetch(`${API_BASE_URL}/v1/me/timezone`, {
+  const response = await fetch(`${API_BASE_URL}/me/timezone`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

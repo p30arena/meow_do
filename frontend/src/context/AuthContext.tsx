@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
+import { updateTimezone } from '../api/user';
 
 interface User {
   id: string;
@@ -23,14 +24,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [tokenState, setTokenState] = useState<string | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
+  const setAuthUser = useCallback((newUser: User | null) => {
+    setUserState(newUser);
+    if (newUser) {
+      localStorage.setItem('user', JSON.stringify(newUser));
+    } else {
+      localStorage.removeItem('user');
+    }
+  }, []);
+
+  const setAuthToken = useCallback((newToken: string | null) => {
+    setTokenState(newToken);
+    if (newToken) {
+      localStorage.setItem('token', newToken);
+    } else {
+      localStorage.removeItem('token');
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    setUserState(null);
+    setTokenState(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+  }, []);
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
 
+    let initialUser: User | null = null;
+    let initialToken: string | null = null;
+
     if (storedUser && storedToken) {
       try {
-        setUserState(JSON.parse(storedUser));
-        setTokenState(storedToken);
+        initialUser = JSON.parse(storedUser);
+        initialToken = storedToken;
+        setUserState(initialUser);
+        setTokenState(initialToken);
       } catch (error) {
         console.error('Failed to parse stored user or token:', error);
         localStorage.removeItem('user');
@@ -38,32 +69,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
     setIsAuthReady(true); // Set ready after initial load attempt
-  }, []);
 
-  const setAuthUser = (newUser: User | null) => {
-    setUserState(newUser);
-    if (newUser) {
-      localStorage.setItem('user', JSON.stringify(newUser));
-    } else {
-      localStorage.removeItem('user');
+    // Automatically set timezone if not already set
+    const autoSetTimezone = async (user: User, token: string) => {
+      const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (user && token && (!user.timezone || user.timezone === 'UTC')) {
+        try {
+          await updateTimezone(localTimezone, token);
+          // Update user state and local storage with the new timezone
+          const updatedUser = { ...user, timezone: localTimezone };
+          setAuthUser(updatedUser); // Use the memoized setter
+        } catch (error) {
+          console.error('Failed to automatically set timezone:', error);
+        }
+      }
+    };
+
+    if (initialUser && initialToken) {
+      autoSetTimezone(initialUser, initialToken);
     }
-  };
+  }, [setAuthUser, setAuthToken, logout]); // Add memoized setters to dependency array
 
-  const setAuthToken = (newToken: string | null) => {
-    setTokenState(newToken);
-    if (newToken) {
-      localStorage.setItem('token', newToken);
-    } else {
-      localStorage.removeItem('token');
-    }
-  };
-
-  const logout = () => {
-    setUserState(null);
-    setTokenState(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-  };
 
   return (
     <AuthContext.Provider value={{ user: userState, token: tokenState, setUser: setAuthUser, setToken: setAuthToken, logout, isAuthReady }}>
