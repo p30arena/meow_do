@@ -20,6 +20,7 @@ The current focus is on implementing new features: user timezone preference, tas
 *   **Fixed `backend/Dockerfile` to use a multi-stage build, resolving the `Error: Cannot find module '/app/dist/index.js'` by ensuring the `dist` directory is correctly copied into the final image.**
 *   **Implemented persistence for the base theme preference (e.g., 'default', 'amber-minimal') using `localStorage` in `frontend/src/context/BaseThemeContext.tsx`. The selected theme is now saved and loaded across sessions.**
 *   **Refactored `frontend/src/components/task/TaskList.tsx` to ensure `getTaskTrackingSummary` is called efficiently, clarifying that the backend API supports 'day' and 'total' periods, not a single 'all' period for comprehensive data. The `TaskTrackingSummary` interface in `frontend/src/api/task.ts` was updated to reflect that the `period` field is optional.**
+*   **Enhanced `frontend/src/components/task/TaskList.tsx` to display the overall total spent time for each individual task within its task card, in minutes. This involved adding a new state (`overallTaskSummaries`) and an additional call to `getTaskTrackingSummary` with `period: "total"` to fetch this data.**
 
 *   Successfully initialized the backend project with Express, Zod, Drizzle, and TypeScript.
 *   Successfully initialized the frontend project with Vite, React, TypeScript, TailwindCSS, ShadcnUI, and Lucide Icons.
@@ -89,13 +90,48 @@ The current focus is on implementing new features: user timezone preference, tas
     *   The backend `getTaskTrackingSummary` API has been updated to support filtering by `workspaceId` and `goalId`.
 *   **Fixed RTL Grid Alignment (Phase 1 - Spacing & Label):** Removed explicit `ltr:` and `rtl:` prefixes for spacing in `frontend/src/components/workspace/WorkspaceList.tsx`, `frontend/src/components/goal/GoalList.tsx`, and `frontend/src/components/task/TaskList.tsx` components, and used `text-end` for label alignment in `TaskList.tsx` to ensure directionality-agnostic alignment of elements within cards.
 *   **Fixed RTL Grid Alignment (Phase 2 - Grid Item Flow - Attempt 1: `place-items-start`):** Attempted to fix grid item flow by adding `place-items-start` to the grid containers. This was found to be insufficient.
-*   **Fixed RTL Grid Alignment (Phase 3 - Grid Item Flow - Attempt 2: Flexbox Refactor):** Refactored grid containers in `frontend/src/components/workspace/WorkspaceList.tsx`, `frontend/src/components/goal/GoalList.tsx`, and `frontend/src/components/task/TaskList.tsx` to use `flex` and `flex-wrap`, along with responsive width classes on `Card` components (`w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.33%-0.66rem)]`). This leverages the browser's default flexbox behavior with `direction: rtl` inherited from the parent `div` to ensure items flow from right to left in RTL mode, and from left to right in LTR mode, in a directionality-agnostic manner.
+*   **Fixed RTL Grid Alignment (Phase 3 - Flexbox Refactor):** Refactored grid containers in `frontend/src/components/workspace/WorkspaceList.tsx`, `frontend/src/components/goal/GoalList.tsx`, and `frontend/src/components/task/TaskList.tsx` to use `flex` and `flex-wrap`, along with responsive width classes on `Card` components (`w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.33%-0.66rem)]`). This leverages the browser's default flexbox behavior with `direction: rtl` inherited from the parent `div` to ensure items flow from right to left in RTL mode, and from left to right in LTR mode, in a directionality-agnostic manner.
 *   **Fixed RTL Button Spacing:** Replaced all instances of `space-x-*` with `gap-*` across relevant components (e.g., `WorkspaceList.tsx`, `GoalList.tsx`, `TaskList.tsx`) to ensure consistent spacing between elements in both LTR and RTL layouts.
 *   **Fixed Task Card Button Overflow:** Added `flex-shrink` to individual `Button` components within the task cards in `frontend/src/components/task/TaskList.tsx` to allow them to shrink and prevent overflow, ensuring they remain within the card boundaries in both LTR and RTL layouts.
 *   **PWA Implementation:**
-    *   Updated `frontend/public/site.webmanifest` with `name`, `short_name`, `start_url`, and `scope` for PWA functionality.
-    *   Installed `vite-plugin-pwa` and configured it in `frontend/vite.config.ts` to generate and register the service worker.
-    *   Created `frontend/src/components/InstallPWAButton.tsx` to handle the `beforeinstallprompt` event and provide a UI for installing the PWA. It now uses i18n for the button text, correctly hides when the app is installed, and displays instructional text when the `beforeinstallprompt` event is not available. The React Hooks order error in this component has been resolved.
-    *   Integrated `InstallPWAButton` into `frontend/src/components/Navbar.tsx` for both mobile and desktop views.
-    *   **Configured `vite-plugin-pwa` in `frontend/vite.config.ts` to aggressively update PWA caches by adding `cleanupOutdatedCaches: true`, `skipWaiting: true`, and `clientsClaim: true` to the `workbox` options.**
+    *   `frontend/public/site.webmanifest` has been updated with `name`, `short_name`, `start_url`, and `scope`.
+    *   `vite-plugin-pwa` has been installed and configured in `frontend/vite.config.ts` to handle service worker generation and registration.
+    *   `frontend/src/components/InstallPWAButton.tsx` has been created to manage the PWA installation prompt, now using i18n for the button text, correctly hiding when the app is installed, and displaying instructional text when the `beforeinstallprompt` event is not available. The React Hooks order error in this component has been resolved.
+    *   `InstallPWAButton` has been integrated into `frontend/src/components/Navbar.tsx`.
+*   **i18n `noDescription` Key:** Confirmed that the `noDescription` key is present in `fa/translation.json`, `en/translation.json`, and `ar/translation.json`. The `i18next::translator: missingKey fa translation noDescription noDescription` error persists, indicating a potential issue with `i18next` configuration, caching, or how the key is being used in `WorkspaceList.tsx`, rather than a missing translation key itself.
 *   **Refactored `frontend/src/components/task/TaskList.tsx` to ensure `getTaskTrackingSummary` is called efficiently, clarifying that the backend API supports 'day' and 'total' periods, not a single 'all' period for comprehensive data. The `TaskTrackingSummary` interface in `frontend/src/api/task.ts` was updated to reflect that the `period` field is optional.**
+*   **Enhanced `frontend/src/components/task/TaskList.tsx` to display the overall total spent time for each individual task within its task card, in minutes. This involved adding a new state (`overallTaskSummaries`) and an additional call to `getTaskTrackingSummary` with `period: "total"` to fetch this data.**
+
+## What's left to build
+
+*   Multi-language support (i18n) including RTL/LTR is fully configured with a language switcher.
+*   Configuration for light/dark mode theming is configured with a theme toggle.
+*   User timezone preference (backend schema, API, frontend UI) - **Completed**.
+*   Task priority (backend schema, API, frontend UI) - **Completed**.
+*   Task start/stop tracking (backend schema, API, frontend UI) - **Completed**.
+*   Task time spent summary and display using Recharts (backend API, frontend UI) - **Completed**.
+*   **Manual task time record entry (backend API, frontend UI) - Completed (with `startTime` in DB reflecting insertion time due to schema constraint).**
+*   **Logo 'frontend/public/logo.png' in the Navbar near the title with a circular shape.**
+*   **Fixed `backend/Dockerfile` to use a multi-stage build, resolving the `Error: Cannot find module '/app/dist/index.js'` by ensuring the `dist` directory is correctly copied into the final image.**
+*   **Theme preference storage (using `localStorage`) - Completed.**
+
+### Enhancements:
+*   Comprehensive error handling.
+*   Unit and integration tests for both backend and frontend.
+*   Deployment pipeline setup.
+*   Performance optimizations.
+
+## Current status
+
+The project has completed its initial setup phase and made significant progress on the frontend. All core backend features are complete. Frontend authentication components (Login and Register forms), workspace management components (list and form), goal management components (list and form), and task management components (list and form) are implemented, integrated with the backend API using `fetch`, and multi-language support for these components is in place. All project initialization tasks, including full RTL/LTR support and light/dark mode theming, are now complete. The backend and frontend projects now build successfully to their `dist` folders, with the frontend build no longer generates unwanted declaration files. The backend development server also starts successfully, and its API routes now include the `/v1` prefix, matching the frontend's API calls. The i18n key usage in `WorkspaceList.tsx`, `WorkspaceForm.tsx`, `GoalList.tsx`, `GoalForm.tsx`, `TaskList.tsx`, and `TaskForm.tsx` has been corrected to use nested keys, and edit/delete functionalities for workspaces, goals, and tasks have been implemented. Additionally, the goal fetching API call in `frontend/src/api/goal.ts` has been updated to use a query parameter for `workspaceId`, resolving the 404 Not Found error. The task fetching API call in `frontend/src/api/task.ts` has also been updated to use a query parameter for `goalId`, resolving the 404 Not Found error for tasks. The translation files for English, Arabic and Farsi have been updated to reflect the new nested key structure for goals and tasks. Furthermore, a centralized unauthorized error handling mechanism has been implemented to clear the authentication token and redirect to the login page upon receiving a 401 Unauthorized response from the API. The foundational documentation is updated, providing a clear roadmap for further development, including new guidelines for i18n translations. The translation files now include build-time versioning to prevent caching issues. The Docker setup for the project is complete, containerizing the backend, frontend, and PostgreSQL database, and addressing the PostgreSQL port exposure. `docker-compose.yml` has been updated to use environment variables for host port mappings for backend and frontend services, and a `.env.example` file has been created with default port values. All previously identified bugs related to the "Tracking" timer display, "Stop Task Tracking" API call, "Stop Time Datetime Format", backend duration calculation errors (for start and stop task), and the task tracking summary route issue have been fixed. The `TaskTrackingChart` component is now correctly placed and filtered based on the selected workspace or goal. The RTL grid alignment issue has been addressed by removing explicit `ltr:` and `rtl:` prefixes and using directionality-agnostic TailwindCSS utilities. The initial attempt with `place-items-start` was insufficient, leading to a refactor of the grid containers to use `flex` and `flex-wrap` with responsive width classes on `Card` components (`w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.33%-0.66rem)]`). This leverages the browser's default flexbox behavior with `direction: rtl` inherited from the parent `div` to ensure items flow from right to left in RTL mode, and from left to right in LTR mode, in a directionality-agnostic manner.
+
+## Known issues
+
+*   None.
+
+## Evolution of project decisions
+
+*   Initial decision to use Express Zod API and Drizzle for backend, and Vite + React with ShadcnUI for frontend, remains firm.
+*   Emphasis on mobile-first design is a guiding principle for all UI/UX decisions.
+*   The need for robust internationalization (including RTL/LTR support) and theming has been identified and will be integrated early in the frontend development.
+*   Multi-user support with JWT authentication is a confirmed core requirement.

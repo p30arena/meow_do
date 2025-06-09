@@ -119,6 +119,7 @@
     "timeBudget": "Time Budget",
     "minutes": "minutes",
     "taskProgress": "Task Progress",
+    "overallSpent": "Overall Spent",
     "deadline": "Deadline",
     "status": "Status",
     "selectStatus": "Select a status",

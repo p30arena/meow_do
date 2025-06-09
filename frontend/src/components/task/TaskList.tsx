@@ -65,7 +65,8 @@ const TaskList: React.FC<TaskListProps> = ({
   const [totalTimeBudget, setTotalTimeBudget] = useState(0);
   const [totalTimeSpentToday, setTotalTimeSpentToday] = useState(0); // State for time spent today
   const [totalTimeSpentOverall, setTotalTimeSpentOverall] = useState(0); // New state for total time spent overall
-  const [taskSummaries, setTaskSummaries] = useState<TaskTrackingSummary[]>([]); // State for individual task summaries
+  const [dailyTaskSummaries, setDailyTaskSummaries] = useState<TaskTrackingSummary[]>([]); // State for individual task summaries (daily)
+  const [overallTaskSummaries, setOverallTaskSummaries] = useState<TaskTrackingSummary[]>([]); // State for individual task summaries (overall)
   const [activeTrackingTaskId, setActiveTrackingTaskId] = useState<
     string | null
   >(null);
@@ -91,20 +92,24 @@ const TaskList: React.FC<TaskListProps> = ({
 
       // Fetch daily task tracking summary
       const dailySummary = await getTaskTrackingSummary("day", workspaceId, goalId);
-      setTaskSummaries(dailySummary); // Store individual task summaries
+      setDailyTaskSummaries(dailySummary); // Store individual task summaries (daily)
       const totalSpentTodaySeconds = dailySummary.reduce(
         (acc, record) => acc + record.totalDurationSeconds,
         0
       );
       setTotalTimeSpentToday(Math.floor(totalSpentTodaySeconds / 60)); // Convert seconds to minutes
 
-      // Fetch overall task tracking summary
+      // Fetch overall task tracking summary (for the top-level display)
       const overallSummary = await getTaskTrackingSummary("total", workspaceId, goalId);
       const totalSpentOverallSeconds = overallSummary.reduce(
         (acc, record) => acc + record.totalDurationSeconds,
         0
       );
       setTotalTimeSpentOverall(Math.floor(totalSpentOverallSeconds / 60)); // Convert seconds to minutes
+
+      // Fetch overall task summaries for individual tasks
+      const individualOverallSummaries = await getTaskTrackingSummary("total", workspaceId, goalId);
+      setOverallTaskSummaries(individualOverallSummaries); // Store individual task summaries (overall)
 
       // Find if any task has an active tracking record
       const activeTask = data.find(
@@ -347,36 +352,52 @@ const TaskList: React.FC<TaskListProps> = ({
                   <strong>{t("tasks.timeBudget")}:</strong> {task.timeBudget}{" "}
                   {t("tasks.minutes")}
                 </p>
-                {/* Individual Task Progress Bar */}
+                {/* Individual Task Progress Bar (Daily) */}
                 {(() => {
-                  const taskSummary = taskSummaries.find(
+                  const dailySummary = dailyTaskSummaries.find(
                     (s) => s.taskName === task.name
                   );
-                  const individualTimeSpent = taskSummary
-                    ? Math.floor(taskSummary.totalDurationSeconds / 60)
+                  const individualDailyTimeSpent = dailySummary
+                    ? Math.floor(dailySummary.totalDurationSeconds / 60)
                     : 0;
-                  const individualPercentage =
+                  const individualDailyPercentage =
                     task.timeBudget > 0
-                      ? (individualTimeSpent / task.timeBudget) * 100
+                      ? (individualDailyTimeSpent / task.timeBudget) * 100
                       : 0;
 
                   return (
                     <div className="mb-2">
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-sm font-medium">
-                          {t("tasks.taskProgress")}:
+                          {t("tasks.dailyProgress")}:
                         </span>
                         <span className="text-sm font-medium">
-                          {individualTimeSpent} {t("tasks.minutes")} /{" "}
+                          {individualDailyTimeSpent} {t("tasks.minutes")} /{" "}
                           {task.timeBudget} {t("tasks.minutes")} (
-                          {individualPercentage.toFixed(0)}%)
+                          {individualDailyPercentage.toFixed(0)}%)
                         </span>
                       </div>
                       <Progress
-                        value={Math.min(100, individualPercentage)}
+                        value={Math.min(100, individualDailyPercentage)}
                         className="h-2"
                       />
                     </div>
+                  );
+                })()}
+                {/* Individual Task Overall Spent Time */}
+                {(() => {
+                  const overallSummary = overallTaskSummaries.find(
+                    (s) => s.taskName === task.name
+                  );
+                  const individualOverallTimeSpent = overallSummary
+                    ? Math.floor(overallSummary.totalDurationSeconds / 60)
+                    : 0;
+
+                  return (
+                    <p className="mb-2">
+                      <strong>{t("tasks.overallSpent")}:</strong>{" "}
+                      {individualOverallTimeSpent} {t("tasks.minutes")}
+                    </p>
                   );
                 })()}
                 <p>
