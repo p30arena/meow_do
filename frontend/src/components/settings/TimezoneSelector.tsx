@@ -49,7 +49,7 @@ const TimezoneSelector: React.FC = () => {
       setIsError(false);
       // Update user context with new timezone
       if (setUser) {
-        setUser(prevUser => prevUser ? { ...prevUser, timezone: response.user.timezone } : null);
+        setUser(response.user); // Use the full user object from the API response
       }
     } catch (error: any) {
       setMessage(error.message || t('timezone.error.failedToUpdate'));

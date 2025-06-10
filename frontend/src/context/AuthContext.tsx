@@ -57,15 +57,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     let initialToken: string | null = null;
 
     if (storedUser && storedToken) {
-      try {
-        initialUser = JSON.parse(storedUser);
-        initialToken = storedToken;
-        setUserState(initialUser);
-        setTokenState(initialToken);
-      } catch (error) {
-        console.error('Failed to parse stored user or token:', error);
+      if (storedUser === 'undefined') {
+        console.warn('Stored user is "undefined", clearing local storage.');
         localStorage.removeItem('user');
         localStorage.removeItem('token');
+      } else {
+        try {
+          initialUser = JSON.parse(storedUser);
+          initialToken = storedToken;
+          setUserState(initialUser);
+          setTokenState(initialToken);
+        } catch (error) {
+          console.error('Failed to parse stored user or token:', error);
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+        }
       }
     }
     setIsAuthReady(true); // Set ready after initial load attempt
@@ -75,10 +81,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (user && token && (!user.timezone || user.timezone === 'UTC')) {
         try {
-          await updateTimezone(localTimezone, token);
+          const response = await updateTimezone(localTimezone, token);
           // Update user state and local storage with the new timezone
-          const updatedUser = { ...user, timezone: localTimezone };
-          setAuthUser(updatedUser); // Use the memoized setter
+          if (response && response.user) {
+            setAuthUser(response.user); // Use the user object from the API response
+          } else {
+            console.error('Timezone update response did not contain user data:', response);
+          }
         } catch (error) {
           console.error('Failed to automatically set timezone:', error);
         }
