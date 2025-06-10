@@ -277,6 +277,9 @@ function App() {
                 onEditWorkspace={handleEditWorkspaceClick}
               />
             )}
+            <div className="text-center text-xs text-muted-foreground mt-4">
+              App Version: {__APP_VERSION__}
+            </div>
           </div>
         </>
       )}

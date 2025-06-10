@@ -36,7 +36,7 @@ export default defineConfig({
     }),
   ],
   define: {
-    __APP_VERSION__: JSON.stringify(new Date().getTime().toString()),
+    __APP_VERSION__: 1,
   },
   resolve: {
     alias: {
