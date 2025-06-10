@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { DateTime } from 'luxon'; // Import luxon
+import { useAuth } from "../../context/AuthContext"; // Import useAuth
 import { createTask, updateTask, type Task } from "../../api/task";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -29,13 +31,18 @@ const TaskForm: React.FC<TaskFormProps> = ({
   onCancel,
 }) => {
   const { t } = useTranslation();
+  const { user } = useAuth(); // Access user from AuthContext
+  const userTimezone = user?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone; // Get user's timezone or system default
+
   const [name, setName] = useState(task?.name || "");
   const [description, setDescription] = useState(task?.description || "");
   const [timeBudget, setTimeBudget] = useState(
     task?.timeBudget.toString() || ""
   );
   const [deadline, setDeadline] = useState(
-    task?.deadline ? new Date(task.deadline).toISOString().split("T")[0] : ""
+    task?.deadline
+      ? DateTime.fromISO(task.deadline, { zone: 'utc' }).setZone(userTimezone).toFormat("yyyy-MM-dd")
+      : ""
   );
   const [status, setStatus] = useState<
     "pending" | "started" | "failed" | "done"
@@ -53,13 +60,15 @@ const TaskForm: React.FC<TaskFormProps> = ({
       setDescription(task.description || "");
       setTimeBudget(task.timeBudget.toString());
       setDeadline(
-        task.deadline ? new Date(task.deadline).toISOString().split("T")[0] : ""
+        task.deadline
+          ? DateTime.fromISO(task.deadline, { zone: 'utc' }).setZone(userTimezone).toFormat("yyyy-MM-dd")
+          : ""
       );
       setStatus(task.status);
       setPriority(task.priority?.toString() || "1"); // Set priority from task
       setIsRecurring(task.isRecurring);
     }
-  }, [task]);
+  }, [task, userTimezone]); // Add userTimezone to dependency array
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,13 +89,26 @@ const TaskForm: React.FC<TaskFormProps> = ({
       return;
     }
 
+    let deadlineToSend: string | undefined;
+    if (deadline) {
+      // Parse the deadline string as a DateTime object in the user's timezone
+      const localDeadline = DateTime.fromFormat(deadline, "yyyy-MM-dd", { zone: userTimezone });
+      if (!localDeadline.isValid) {
+        setError(t("tasks.invalidDeadlineFormat")); // New translation key needed
+        setLoading(false);
+        return;
+      }
+      // Convert to UTC and then to ISO string for backend
+      deadlineToSend = localDeadline.toUTC().toISO();
+    }
+
     try {
       const payload = {
         goalId,
         name,
         description: description || undefined,
         timeBudget: parsedTimeBudget,
-        deadline: deadline ? deadline + "T00:00:00.000Z" : undefined,
+        deadline: deadlineToSend,
         status,
         priority: parsedPriority, // Include priority in payload
         isRecurring,

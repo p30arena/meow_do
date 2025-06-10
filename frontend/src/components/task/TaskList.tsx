@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { DateTime } from 'luxon'; // Import luxon
+import { useAuth } from "../../context/AuthContext"; // Import useAuth
 import {
   getTasksByGoalId,
   startTaskTracking,
@@ -59,6 +61,9 @@ const TaskList: React.FC<TaskListProps> = ({
   onDeleteTask,
 }) => {
   const { t } = useTranslation();
+  const { user } = useAuth(); // Access user from AuthContext
+  const userTimezone = user?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone; // Get user's timezone or system default
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,13 +77,13 @@ const TaskList: React.FC<TaskListProps> = ({
   >(null);
   const [durationDisplay, setDurationDisplay] = useState<string>("00:00:00");
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<Date | null>(null);
+  const startTimeRef = useRef<DateTime | null>(null); // Change to DateTime
   const [showStopTrackingDialog, setShowStopTrackingDialog] = useState(false);
   const [selectedStopTime, setSelectedStopTime] = useState("");
   const [currentTrackingRecordIdToStop, setCurrentTrackingRecordIdToStop] =
     useState<string | null>(null);
   const [currentTrackingRecordStartTime, setCurrentTrackingRecordStartTime] =
-    useState<Date | null>(null);
+    useState<DateTime | null>(null); // Change to DateTime
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null); // State to hold task to delete
   const [showManualRecordForm, setShowManualRecordForm] = useState(false); // State for manual record form
   const [selectedTaskIdForManualRecord, setSelectedTaskIdForManualRecord] = useState<string | null>(null); // State for selected task ID
@@ -118,7 +123,8 @@ const TaskList: React.FC<TaskListProps> = ({
 
       if (activeTask && activeTask.activeTracking) {
         setActiveTrackingTaskId(activeTask.id);
-        startTimeRef.current = new Date(activeTask.activeTracking.startTime);
+        // Convert UTC startTime from backend to user's local timezone for timer
+        startTimeRef.current = DateTime.fromISO(activeTask.activeTracking.startTime, { zone: 'utc' }).setZone(userTimezone);
         startTimer(activeTask.id); // Restart the timer with the correct start time
       } else {
         stopTimer(); // No active task, ensure timer is stopped
@@ -139,7 +145,7 @@ const TaskList: React.FC<TaskListProps> = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [goalId, workspaceId]); // Add workspaceId to dependency array
+  }, [goalId, workspaceId, userTimezone]); // Add userTimezone to dependency array
 
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -156,16 +162,16 @@ const TaskList: React.FC<TaskListProps> = ({
       clearInterval(intervalRef.current);
     }
     // If startTimeRef.current is already set by fetchTasks (meaning an active task was found),
-    // do not reset it. Otherwise, set it to the current time (for newly started tasks).
+    // do not reset it. Otherwise, set it to the current time in user's timezone (for newly started tasks).
     if (!startTimeRef.current) {
-      startTimeRef.current = new Date();
+      startTimeRef.current = DateTime.now().setZone(userTimezone);
     }
     setActiveTrackingTaskId(taskId);
 
     intervalRef.current = setInterval(() => {
       if (startTimeRef.current) {
         const elapsedSeconds = Math.floor(
-          (new Date().getTime() - startTimeRef.current.getTime()) / 1000
+          (DateTime.now().setZone(userTimezone).diff(startTimeRef.current, 'seconds').toObject().seconds || 0)
         );
         setDurationDisplay(formatDuration(elapsedSeconds));
       }
@@ -201,17 +207,13 @@ const TaskList: React.FC<TaskListProps> = ({
     setError(null);
     if (task.activeTracking) {
       setCurrentTrackingRecordIdToStop(task.activeTracking.id);
+      // Convert UTC startTime from backend to user's local timezone for comparison
       setCurrentTrackingRecordStartTime(
-        new Date(task.activeTracking.startTime)
+        DateTime.fromISO(task.activeTracking.startTime, { zone: 'utc' }).setZone(userTimezone)
       );
-      // Pre-fill with current time, formatted for datetime-local input
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = (now.getMonth() + 1).toString().padStart(2, "0");
-      const day = now.getDate().toString().padStart(2, "0");
-      const hours = now.getHours().toString().padStart(2, "0");
-      const minutes = now.getMinutes().toString().padStart(2, "0");
-      setSelectedStopTime(`${year}-${month}-${day}T${hours}:${minutes}`);
+      // Pre-fill with current time in user's timezone, formatted for datetime-local input
+      const nowInUserTimezone = DateTime.now().setZone(userTimezone);
+      setSelectedStopTime(nowInUserTimezone.toFormat("yyyy-MM-dd'T'HH:mm"));
       setShowStopTrackingDialog(true);
     } else {
       setError(t("tasks.noActiveTrackingRecord"));
@@ -229,21 +231,22 @@ const TaskList: React.FC<TaskListProps> = ({
       return;
     }
 
-    // Create a Date object from the local datetime string
-    const localStopTime = new Date(selectedStopTime);
+    // Parse the selected stop time string as a DateTime object in the user's timezone
+    const localStopTime = DateTime.fromFormat(selectedStopTime, "yyyy-MM-dd'T'HH:mm", { zone: userTimezone });
 
-    if (isNaN(localStopTime.getTime())) {
+    if (!localStopTime.isValid) {
       setError(t("tasks.invalidStopDateTimeFormat"));
       return;
     }
 
-    if (currentTrackingRecordStartTime.getTime() - localStopTime.getTime() > 60_000) {
+    // Compare in user's timezone
+    if (currentTrackingRecordStartTime.diff(localStopTime, 'minutes').minutes > 1) { // Allow for 1 minute difference
       setError(t("tasks.stopTimeBeforeStartTime"));
       return;
     }
 
-    // Convert to ISO 8601 string for backend validation
-    const isoStopTime = localStopTime.toISOString();
+    // Convert to ISO 8601 string (UTC) for backend validation
+    const isoStopTime = localStopTime.toUTC().toISO();
 
     try {
       await stopTaskTracking(currentTrackingRecordIdToStop, isoStopTime);
@@ -410,7 +413,7 @@ const TaskList: React.FC<TaskListProps> = ({
                 {task.deadline && (
                   <p>
                     <strong>{t("tasks.deadline")}:</strong>{" "}
-                    {new Date(task.deadline).toLocaleDateString()}
+                    {DateTime.fromISO(task.deadline, { zone: 'utc' }).setZone(userTimezone).toLocaleString(DateTime.DATE_SHORT)}
                   </p>
                 )}
                 <p>
