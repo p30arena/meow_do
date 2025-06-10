@@ -28,29 +28,6 @@ i18n
     },
   });
 
-// Service Worker registration for PWA updates
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('Service Worker registered with scope:', registration.scope);
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('New content available, please refresh.');
-              }
-            });
-          }
-        });
-      })
-      .catch(error => {
-        console.error('Service Worker registration failed:', error);
-      });
-  });
-}
-
 const rootElement = document.getElementById("root")!;
 const currentLanguage = i18n.language || "en";
 const isRtl = currentLanguage === "ar" || currentLanguage === "fa";
