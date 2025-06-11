@@ -3,6 +3,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const APP_VERSION = 4;
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -10,6 +12,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
+      filename: `sw-v${APP_VERSION}.js`,
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
         cleanupOutdatedCaches: true,
@@ -40,7 +43,7 @@ export default defineConfig({
     }),
   ],
   define: {
-    __APP_VERSION__: 3,
+    __APP_VERSION__: APP_VERSION,
   },
   resolve: {
     alias: {
