@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Checkbox } from "../ui/checkbox";
 
 interface TaskFormProps {
   onSuccess: () => void;
@@ -38,7 +37,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSuccess, onCancel }) => {
     "pending" | "started" | "failed" | "done"
   >("pending");
   const [priority, setPriority] = useState<string>("1");
-  const [isRecurring, setIsRecurring] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,7 +57,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSuccess, onCancel }) => {
           );
           setStatus(fetchedTask.status);
           setPriority(fetchedTask.priority?.toString() || "1");
-          setIsRecurring(fetchedTask.isRecurring);
+          // isRecurring is always false for now
         } catch (err: any) {
           setError(err.message);
         } finally {
@@ -115,7 +113,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSuccess, onCancel }) => {
         deadline: deadlineToSend,
         status,
         priority: parsedPriority,
-        isRecurring,
+        isRecurring: false, // Always set to false
       };
 
       if (task) {
@@ -225,15 +223,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSuccess, onCancel }) => {
               disabled={loading}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="isRecurring"
-              checked={isRecurring}
-              onCheckedChange={(checked: boolean) => setIsRecurring(checked)}
-              disabled={loading}
-            />
-            <Label htmlFor="isRecurring">{t("tasks.recurringTask")}</Label>
-          </div>
+          {/* Removed Recurring Task checkbox as per user request */}
           {error && (
             <p className="text-red-500 text-sm">
               {t("workspace.error")}: {error}

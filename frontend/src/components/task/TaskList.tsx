@@ -13,7 +13,6 @@ import {
 import { ManualTimeRecordForm } from "./ManualTimeRecordForm"; // Import the new component
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
-import { Checkbox } from "../ui/checkbox";
 import { Progress } from "../ui/progress"; // Import Progress component
 import {
   Dialog,
@@ -416,10 +415,6 @@ const TaskList: React.FC<TaskListProps> = ({
                     {DateTime.fromISO(task.deadline, { zone: 'utc' }).setZone(userTimezone).toLocaleString(DateTime.DATE_SHORT)}
                   </p>
                 )}
-                <p>
-                  <strong>{t("tasks.recurringTask")}:</strong>{" "}
-                  <Checkbox checked={task.isRecurring} disabled />
-                </p>
                 {activeTrackingTaskId === task.id && (
                   <p className="text-blue-500">
                     {t("tasks.tracking")}: {durationDisplay}

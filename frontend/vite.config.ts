@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-const APP_VERSION = 5; // Define version as a constant, incremented for new attempt
+const APP_VERSION = 6;
 
 // https://vitejs.dev/config/
 export default defineConfig({
