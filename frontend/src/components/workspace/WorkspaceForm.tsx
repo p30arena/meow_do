@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useParams } from "react-router-dom";
 import {
   createWorkspace,
   updateWorkspace,
-  getUniqueGroupNames, // Import the new API function
+  getUniqueGroupNames,
+  getWorkspaceById, // Import getWorkspaceById
   type Workspace,
 } from "../../api/workspace";
 import { Button } from "../ui/button";
@@ -16,33 +18,42 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 const EMPTY_VALUE = "$null"; // Define magic string for no group
 
 interface WorkspaceFormProps {
-  workspace?: Workspace; // Optional, for editing existing workspace
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
-  workspace,
-  onSuccess,
-  onCancel,
-}: WorkspaceFormProps) => {
+const WorkspaceForm: React.FC<WorkspaceFormProps> = ({ onSuccess, onCancel }) => {
   const { t } = useTranslation();
-  const [name, setName] = useState(workspace?.name || "");
-  const [description, setDescription] = useState(workspace?.description || "");
-  const [groupName, setGroupName] = useState<string>(workspace?.groupName || EMPTY_VALUE);
-  const [selectedGroup, setSelectedGroup] = useState<string>(groupName); // New state for Select's value
+  const { workspaceId } = useParams<{ workspaceId: string }>();
+  const [workspace, setWorkspace] = useState<Workspace | null>(null); // State to hold fetched workspace
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [groupName, setGroupName] = useState<string>(EMPTY_VALUE);
+  const [selectedGroup, setSelectedGroup] = useState<string>(EMPTY_VALUE);
   const [availableGroups, setAvailableGroups] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (workspace) {
-      setName(workspace.name);
-      setDescription(workspace.description || "");
-      setGroupName(workspace.groupName || EMPTY_VALUE);
-      setSelectedGroup(workspace.groupName || EMPTY_VALUE); // Initialize selectedGroup
+    if (workspaceId) {
+      const fetchWorkspace = async () => {
+        setLoading(true);
+        try {
+          const fetchedWorkspace = await getWorkspaceById(workspaceId);
+          setWorkspace(fetchedWorkspace);
+          setName(fetchedWorkspace.name);
+          setDescription(fetchedWorkspace.description || "");
+          setGroupName(fetchedWorkspace.groupName || EMPTY_VALUE);
+          setSelectedGroup(fetchedWorkspace.groupName || EMPTY_VALUE);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchWorkspace();
     }
-  }, [workspace]);
+  }, [workspaceId]);
 
   // Sync selectedGroup with groupName when selectedGroup changes from Select
   useEffect(() => {
@@ -53,15 +64,13 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
     const fetchGroups = async () => {
       try {
         const groups = await getUniqueGroupNames();
-        // Filter out any empty strings from the available groups
         setAvailableGroups(groups.filter(group => group !== ''));
       } catch (err: any) {
         console.error("Failed to fetch unique group names:", err);
-        // Optionally set an error state for the user
       }
     };
     fetchGroups();
-  }, []); // No dependency on workspace.groupName here, useMemo will handle it
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -74,11 +83,9 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
         description, 
         groupName: groupName === EMPTY_VALUE ? null : groupName.trim() === '' ? null : groupName.trim() 
       };
-      if (workspace) {
-        // Update existing workspace
+      if (workspace) { // Use the fetched workspace object
         await updateWorkspace(workspace.id, payload);
       } else {
-        // Create new workspace
         await createWorkspace(payload);
       }
       onSuccess();
