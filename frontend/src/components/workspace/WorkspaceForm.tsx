@@ -35,42 +35,42 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({ onSuccess, onCancel }) =>
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (workspaceId) {
-      const fetchWorkspace = async () => {
-        setLoading(true);
-        try {
-          const fetchedWorkspace = await getWorkspaceById(workspaceId);
+    const fetchGroupsAndWorkspace = async () => {
+      setLoading(true);
+      try {
+        const groups = await getUniqueGroupNames();
+        let filteredGroups = groups.filter(group => group !== '');
+
+        let fetchedWorkspace: Workspace | null = null;
+        if (workspaceId) {
+          fetchedWorkspace = await getWorkspaceById(workspaceId);
           setWorkspace(fetchedWorkspace);
           setName(fetchedWorkspace.name);
           setDescription(fetchedWorkspace.description || "");
-          setGroupName(fetchedWorkspace.groupName || EMPTY_VALUE);
-          setSelectedGroup(fetchedWorkspace.groupName || EMPTY_VALUE);
-        } catch (err: any) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
+          const currentGroupName = fetchedWorkspace.groupName || EMPTY_VALUE;
+          setGroupName(currentGroupName);
+          setSelectedGroup(currentGroupName);
+
+          // If the current workspace's groupName is not in the fetched groups, add it
+          if (currentGroupName !== EMPTY_VALUE && !filteredGroups.includes(currentGroupName)) {
+            filteredGroups = [...filteredGroups, currentGroupName];
+          }
         }
-      };
-      fetchWorkspace();
-    }
-  }, [workspaceId]);
+        setAvailableGroups(filteredGroups);
+      } catch (err: any) {
+        setError(err.message);
+        console.error("Failed to fetch data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchGroupsAndWorkspace();
+  }, [workspaceId]); // Depend on workspaceId to refetch when navigating to edit a different workspace
 
   // Sync selectedGroup with groupName when selectedGroup changes from Select
   useEffect(() => {
     setGroupName(selectedGroup);
   }, [selectedGroup]);
-
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const groups = await getUniqueGroupNames();
-        setAvailableGroups(groups.filter(group => group !== ''));
-      } catch (err: any) {
-        console.error("Failed to fetch unique group names:", err);
-      }
-    };
-    fetchGroups();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
