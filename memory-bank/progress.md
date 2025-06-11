@@ -74,6 +74,9 @@
 *   **Fixed "Invalid DateTime" error in `frontend/src/components/task/TaskTrackingChart.tsx` by changing `DateTime.fromISO` to `DateTime.fromSQL` for parsing the `period` label, as the backend returns a PostgreSQL timestamp format.**
 *   **Fixed "Failed to parse stored user or token: SyntaxError: "undefined" is not valid JSON" by adding a check in `frontend/src/context/AuthContext.tsx` to handle cases where `localStorage.getItem('user')` returns the string `"undefined"`, ensuring it's treated as `null` and cleared from local storage.**
 *   **Fixed "undefined" being stored for user after timezone update by modifying `frontend/src/context/AuthContext.tsx` to use the user object returned by the `updateTimezone` API call, ensuring the latest user data is stored in local storage.**
+*   **Refactored `frontend/src/App.tsx` to use `react-router-dom` for navigation between workspaces, goals, and tasks, replacing state-based conditional rendering with `Routes` and `Route` components.**
+*   **Updated `frontend/src/components/goal/GoalForm.tsx` to use `useParams` for `workspaceId` and `goalId`, and to fetch the goal by `goalId` for editing.**
+*   **Updated `frontend/src/components/task/TaskForm.tsx` to use `useParams` for `goalId` and `taskId`, and to fetch the task by `taskId` for editing.**
 
 ## What's left to build
 

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { DateTime } from 'luxon'; // Import luxon
-import { useAuth } from "../../context/AuthContext"; // Import useAuth
-import { createTask, updateTask, type Task } from "../../api/task";
+import { useParams } from "react-router-dom";
+import { DateTime } from 'luxon';
+import { useAuth } from "../../context/AuthContext";
+import { createTask, updateTask, getTaskById, type Task } from "../../api/task";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -18,62 +19,67 @@ import {
 import { Checkbox } from "../ui/checkbox";
 
 interface TaskFormProps {
-  goalId: string;
-  task?: Task; // Optional, for editing existing task
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const TaskForm: React.FC<TaskFormProps> = ({
-  goalId,
-  task,
-  onSuccess,
-  onCancel,
-}) => {
+const TaskForm: React.FC<TaskFormProps> = ({ onSuccess, onCancel }) => {
   const { t } = useTranslation();
-  const { user } = useAuth(); // Access user from AuthContext
-  const userTimezone = user?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone; // Get user's timezone or system default
+  const { goalId, taskId } = useParams<{ goalId: string; taskId: string }>();
+  const { user } = useAuth();
+  const userTimezone = user?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const [name, setName] = useState(task?.name || "");
-  const [description, setDescription] = useState(task?.description || "");
-  const [timeBudget, setTimeBudget] = useState(
-    task?.timeBudget.toString() || ""
-  );
-  const [deadline, setDeadline] = useState(
-    task?.deadline
-      ? DateTime.fromISO(task.deadline, { zone: 'utc' }).setZone(userTimezone).toFormat("yyyy-MM-dd")
-      : ""
-  );
+  const [task, setTask] = useState<Task | null>(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [timeBudget, setTimeBudget] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [status, setStatus] = useState<
     "pending" | "started" | "failed" | "done"
-  >(task?.status || "pending");
-  const [priority, setPriority] = useState<string>(
-    task?.priority?.toString() || "1"
-  ); // New state for priority
-  const [isRecurring, setIsRecurring] = useState(task?.isRecurring || false);
+  >("pending");
+  const [priority, setPriority] = useState<string>("1");
+  const [isRecurring, setIsRecurring] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (task) {
-      setName(task.name);
-      setDescription(task.description || "");
-      setTimeBudget(task.timeBudget.toString());
-      setDeadline(
-        task.deadline
-          ? DateTime.fromISO(task.deadline, { zone: 'utc' }).setZone(userTimezone).toFormat("yyyy-MM-dd")
-          : ""
-      );
-      setStatus(task.status);
-      setPriority(task.priority?.toString() || "1"); // Set priority from task
-      setIsRecurring(task.isRecurring);
+    if (taskId) {
+      const fetchTask = async () => {
+        setLoading(true);
+        try {
+          const fetchedTask = await getTaskById(taskId);
+          setTask(fetchedTask);
+          setName(fetchedTask.name);
+          setDescription(fetchedTask.description || "");
+          setTimeBudget(fetchedTask.timeBudget.toString());
+          setDeadline(
+            fetchedTask.deadline
+              ? DateTime.fromISO(fetchedTask.deadline, { zone: 'utc' }).setZone(userTimezone).toFormat("yyyy-MM-dd")
+              : ""
+          );
+          setStatus(fetchedTask.status);
+          setPriority(fetchedTask.priority?.toString() || "1");
+          setIsRecurring(fetchedTask.isRecurring);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchTask();
     }
-  }, [task, userTimezone]); // Add userTimezone to dependency array
+  }, [taskId, userTimezone]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (!goalId) {
+      setError("Goal ID is missing.");
+      setLoading(false);
+      return;
+    }
 
     const parsedTimeBudget = parseInt(timeBudget);
     if (isNaN(parsedTimeBudget) || parsedTimeBudget <= 0) {
@@ -84,21 +90,19 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
     const parsedPriority = parseInt(priority);
     if (isNaN(parsedPriority) || parsedPriority < 1 || parsedPriority > 10) {
-      setError(t("tasks.invalidPriority")); // New translation key needed
+      setError(t("tasks.invalidPriority"));
       setLoading(false);
       return;
     }
 
     let deadlineToSend: string | undefined;
     if (deadline) {
-      // Parse the deadline string as a DateTime object in the user's timezone
       const localDeadline = DateTime.fromFormat(deadline, "yyyy-MM-dd", { zone: userTimezone });
       if (!localDeadline.isValid) {
-        setError(t("tasks.invalidDeadlineFormat")); // New translation key needed
+        setError(t("tasks.invalidDeadlineFormat"));
         setLoading(false);
         return;
       }
-      // Convert to UTC and then to ISO string for backend
       deadlineToSend = localDeadline.toUTC().toISO();
     }
 
@@ -110,15 +114,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
         timeBudget: parsedTimeBudget,
         deadline: deadlineToSend,
         status,
-        priority: parsedPriority, // Include priority in payload
+        priority: parsedPriority,
         isRecurring,
       };
 
       if (task) {
-        // Update existing task
         await updateTask(task.id, payload);
       } else {
-        // Create new task
         await createTask(payload);
       }
       onSuccess();

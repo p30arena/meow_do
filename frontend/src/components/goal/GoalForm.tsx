@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { createGoal, updateGoal, type Goal } from "../../api/goal";
+import { useParams } from "react-router-dom";
+import { createGoal, updateGoal, getGoalById, type Goal } from "../../api/goal";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -15,45 +16,56 @@ import {
 } from "../ui/select";
 
 interface GoalFormProps {
-  workspaceId: string;
-  goal?: Goal; // Optional, for editing existing goal
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const GoalForm: React.FC<GoalFormProps> = ({
-  workspaceId,
-  goal,
-  onSuccess,
-  onCancel,
-}) => {
+const GoalForm: React.FC<GoalFormProps> = ({ onSuccess, onCancel }) => {
   const { t } = useTranslation();
-  const [name, setName] = useState(goal?.name || "");
-  const [description, setDescription] = useState(goal?.description || "");
-  const [deadline, setDeadline] = useState(
-    goal?.deadline ? new Date(goal.deadline).toISOString().split("T")[0] : ""
-  );
-  const [status, setStatus] = useState<"pending" | "reached">(
-    goal?.status || "pending"
-  );
+  const { workspaceId, goalId } = useParams<{ workspaceId: string; goalId: string }>();
+  const [goal, setGoal] = useState<Goal | null>(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [status, setStatus] = useState<"pending" | "reached">("pending");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (goal) {
-      setName(goal.name);
-      setDescription(goal.description || "");
-      setDeadline(
-        goal.deadline ? new Date(goal.deadline).toISOString().split("T")[0] : ""
-      );
-      setStatus(goal.status);
+    if (goalId) {
+      const fetchGoal = async () => {
+        setLoading(true);
+        try {
+          const fetchedGoal = await getGoalById(goalId);
+          setGoal(fetchedGoal);
+          setName(fetchedGoal.name);
+          setDescription(fetchedGoal.description || "");
+          setDeadline(
+            fetchedGoal.deadline
+              ? new Date(fetchedGoal.deadline).toISOString().split("T")[0]
+              : ""
+          );
+          setStatus(fetchedGoal.status);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchGoal();
     }
-  }, [goal]);
+  }, [goalId]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (!workspaceId) {
+      setError("Workspace ID is missing.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const payload = {
@@ -65,10 +77,8 @@ const GoalForm: React.FC<GoalFormProps> = ({
       };
 
       if (goal) {
-        // Update existing goal
         await updateGoal(goal.id, payload);
       } else {
-        // Create new goal
         await createGoal(payload);
       }
       onSuccess();

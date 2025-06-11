@@ -190,5 +190,7 @@
   "pwa": {
     "installApp": "Install App",
     "installInstructions": "To install, use 'Add to Home Screen' in your browser's menu."
-  }
+  },
+  "notFound": "Not Found",
+  "pageNotFound": "Page not found."
 }
