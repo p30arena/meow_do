@@ -15,6 +15,7 @@ import { deleteTask } from "./api/task";
 import { useAuth } from "./context/AuthContext";
 import TaskTrackingChart from "./components/task/TaskTrackingChart";
 import { Navbar } from "./components/Navbar";
+import { useLocation } from "react-router-dom"; // Import useLocation
 
 function App() {
   const { t } = useTranslation();
@@ -114,7 +115,7 @@ function App() {
                   <WorkspaceList
                     onCreateNew={() => navigate("/workspaces/new")}
                     onSelectWorkspace={(workspace) =>
-                      navigate(`/workspaces/${workspace.id}`)
+                      navigate(`/workspaces/${workspace.id}`, { state: { workspaceName: workspace.name } })
                     }
                     onEditWorkspace={(workspace) =>
                       navigate(`/workspaces/${workspace.id}/edit`)
@@ -200,6 +201,8 @@ function App() {
 function GoalsView({ onDeleteGoal }: { onDeleteGoal: (goalId: string) => Promise<void> }) {
   const { t } = useTranslation();
   const { workspaceId } = useParams<{ workspaceId: string }>();
+  const { state } = useLocation(); // Import useLocation
+  const workspaceName = state?.workspaceName || ""; // Get workspaceName from state
   const navigate = useNavigate();
 
   if (!workspaceId) {
@@ -209,7 +212,7 @@ function GoalsView({ onDeleteGoal }: { onDeleteGoal: (goalId: string) => Promise
   return (
     <div>
       <div className="flex justify-between items-center mb-4 mt-4">
-        <h2 className="text-2xl font-bold">{t("goalsFor")}:</h2>
+        <h2 className="text-2xl font-bold">{t("goalsFor", { name: workspaceName })}</h2>
         <button onClick={() => navigate(-1)} className="text-blue-500 hover:underline">
           {t("backToWorkspaces")}
         </button>
@@ -221,7 +224,7 @@ function GoalsView({ onDeleteGoal }: { onDeleteGoal: (goalId: string) => Promise
           navigate(`/workspaces/${workspaceId}/goals/${goal.id}/edit`)
         }
         onSelectGoal={(goal) =>
-          navigate(`/workspaces/${workspaceId}/goals/${goal.id}`)
+          navigate(`/workspaces/${workspaceId}/goals/${goal.id}`, { state: { goalName: goal.name } })
         }
         onDeleteGoal={onDeleteGoal}
       />
@@ -235,6 +238,8 @@ function GoalsView({ onDeleteGoal }: { onDeleteGoal: (goalId: string) => Promise
 function TasksView({ onDeleteTask }: { onDeleteTask: (taskId: string) => Promise<void> }) {
   const { t } = useTranslation();
   const { workspaceId, goalId } = useParams<{ workspaceId: string; goalId: string }>();
+  const { state } = useLocation(); // Import useLocation
+  const goalName = state?.goalName || ""; // Get goalName from state
   const navigate = useNavigate();
 
   if (!workspaceId || !goalId) {
@@ -244,7 +249,7 @@ function TasksView({ onDeleteTask }: { onDeleteTask: (taskId: string) => Promise
   return (
     <div>
       <div className="flex justify-between items-center mb-4 mt-4">
-        <h2 className="text-2xl font-bold">{t("tasksFor")}:</h2>
+        <h2 className="text-2xl font-bold">{t("tasksFor", { name: goalName })}</h2>
         <button onClick={() => navigate(-1)} className="text-blue-500 hover:underline">
           {t("backToGoals")}
         </button>

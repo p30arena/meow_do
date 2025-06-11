@@ -75,7 +75,7 @@
     "typeNewGroup": "اكتب اسم مجموعة جديدة أو اختر من الموجودة",
     "runningTask": "مهمة قيد التشغيل"
   },
-  "goalsFor": "أهداف لـ",
+  "goalsFor": "أهداف لـ {{name}}",
   "backToWorkspaces": "العودة إلى مساحات العمل",
   "loadingGoals": "جارٍ تحميل الأهداف...",
   "goals": {
@@ -98,7 +98,7 @@
   "goalName": "اسم الهدف",
   "goalDescription": "وصف الهدف",
   "selectStatus": "اختر حالة",
-  "tasksFor": "مهام لـ",
+  "tasksFor": "مهام لـ {{name}}",
   "backToGoals": "العودة إلى الأهداف",
   "loadingTasks": "جارٍ تحميل المهام...",
   "recurring": "متكرر",

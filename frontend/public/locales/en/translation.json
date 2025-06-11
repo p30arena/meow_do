@@ -75,7 +75,7 @@
     "typeNewGroup": "Type a new group name or select from existing",
     "runningTask": "Running Task"
   },
-  "goalsFor": "Goals for",
+  "goalsFor": "Goals for {{name}}",
   "backToWorkspaces": "Back to Workspaces",
   "loadingGoals": "Loading goals...",
   "goals": {
@@ -98,7 +98,7 @@
   "goalName": "Goal Name",
   "goalDescription": "Goal Description",
   "selectStatus": "Select a status",
-  "tasksFor": "Tasks for",
+  "tasksFor": "Tasks for {{name}}",
   "backToGoals": "Back to Goals",
   "loadingTasks": "Loading tasks...",
   "recurring": "Recurring",

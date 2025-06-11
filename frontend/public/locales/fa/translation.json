@@ -75,7 +75,7 @@
     "typeNewGroup": "نام گروه جدید را تایپ کنید یا از موجود انتخاب کنید",
     "runningTask": "وظیفه در حال اجرا"
   },
-  "goalsFor": "اهداف برای",
+  "goalsFor": "اهداف برای {{name}}",
   "backToWorkspaces": "بازگشت به فضاهای کاری",
   "loadingGoals": "در حال بارگذاری اهداف...",
   "goals": {
@@ -98,7 +98,7 @@
   "goalName": "نام هدف",
   "goalDescription": "توضیحات هدف",
   "selectStatus": "انتخاب وضعیت",
-  "tasksFor": "وظایف برای",
+  "tasksFor": "وظایف برای {{name}}",
   "backToGoals": "بازگشت به اهداف",
   "loadingTasks": "در حال بارگذاری وظایف...",
   "recurring": "تکرار شونده",
