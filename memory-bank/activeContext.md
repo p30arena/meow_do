@@ -26,6 +26,8 @@ The current focus is on implementing new features: user timezone preference, tas
 *   **PWA Service Worker Fixes:**
     *   **Removed manual service worker registration from `frontend/src/main.tsx` to allow `vite-plugin-pwa`'s `injectRegister: 'auto'` to handle it correctly.**
     *   **Configured `devOptions: { enabled: true, type: 'module' }` in `frontend/vite.config.ts` to ensure the service worker is correctly served in development mode, resolving the "unsupported MIME type ('text/html')" error for `sw.js`.**
+    *   **Revised PWA caching strategy: Removed `filename` property from `vite-plugin-pwa` configuration in `frontend/vite.config.ts` as it interferes with internal versioning. Implemented `registerSW` in `frontend/src/main.tsx` to force a page reload when a new service worker version is detected, ensuring immediate updates on the client side.**
+    *   **Declared types for `virtual:pwa-register` in `frontend/src/vite-env.d.ts` to resolve TypeScript errors.**
 *   **Timezone Integration (Frontend):**
     *   **Implemented timezone handling in `frontend/src/components/task/TaskList.tsx` using `luxon` and the user's saved timezone (or system default). This includes:**
         *   **Converting UTC `startTime` from backend to user's local timezone for the tracking timer.**
