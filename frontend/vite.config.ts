@@ -40,7 +40,7 @@ export default defineConfig({
     }),
   ],
   define: {
-    __APP_VERSION__: 2,
+    __APP_VERSION__: 3,
   },
   resolve: {
     alias: {
