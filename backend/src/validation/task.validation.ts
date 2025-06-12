@@ -24,6 +24,7 @@ export const updateTaskSchema = z.object({
 export const startTaskTrackingSchema = z.object({
   taskId: z.string().uuid('Invalid task ID format'),
   userId: z.string().uuid('Invalid user ID format'),
+  startTime: z.string().datetime().optional().transform((str) => (str ? new Date(str) : undefined)), // ISO 8601 string to Date object
 });
 
 export const stopTaskTrackingSchema = z.object({

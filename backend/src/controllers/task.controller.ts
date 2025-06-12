@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
 import { tasks, taskTrackingRecords, users, goals } from '../db/schema'; // Import goals
-import { eq, and, sql, sum } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { createTaskSchema, updateTaskSchema, startTaskTrackingSchema, stopTaskTrackingSchema, createManualTaskRecordSchema } from '../validation/task.validation';
 import { catchAsync } from '../utils/catchAsync';
+import { DateTime } from 'luxon';
 
 export const createTask = catchAsync(async (req: Request, res: Response) => {
   const validatedData = createTaskSchema.parse(req.body);
@@ -129,8 +130,14 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
 
-  // Validate input using the new schema
-  const validatedData = startTaskTrackingSchema.parse({ taskId, userId });
+  // Validate input using the new schema, combining params and body
+  const validatedData = startTaskTrackingSchema.parse({ ...req.body, taskId, userId });
+
+  // Fetch user's timezone
+  const user = await db.select({ timezone: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
+  const userTimezone = user[0]?.timezone || 'UTC'; // Default to UTC if not found
+
+  const actualStartTime = validatedData.startTime || DateTime.now().setZone(userTimezone).toJSDate();
 
   // Check if any other task is currently active for this user
   const activeTaskRecord = await db.select({
@@ -159,7 +166,7 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
   const newTaskTrackingRecord = await db.insert(taskTrackingRecords).values({
     taskId: validatedData.taskId,
     userId: validatedData.userId,
-    startTime: new Date(),
+    startTime: actualStartTime,
   }).returning();
 
   res.status(201).json({ message: 'Task tracking started', record: newTaskTrackingRecord[0] });

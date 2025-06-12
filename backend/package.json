@@ -22,6 +22,7 @@
     "drizzle-orm": "^0.44.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.6.1",
     "pg": "^8.16.0",
     "zod": "^3.25.49"
   },
@@ -29,6 +30,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.18",
     "@types/jsonwebtoken": "^9.0.9",
+    "@types/luxon": "^3.6.2",
     "@types/node": "^22.15.29",
     "@types/pg": "^8.15.4",
     "drizzle-kit": "^0.31.1",
