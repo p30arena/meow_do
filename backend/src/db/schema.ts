@@ -39,8 +39,8 @@ export const taskTrackingRecords = pgTable('task_tracking_records', {
   id: uuid('id').defaultRandom().primaryKey(),
   taskId: uuid('task_id').notNull().references(() => tasks.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }), // Assuming tracking is per user
-  startTime: timestamp('start_time').defaultNow().notNull(),
-  endTime: timestamp('end_time'), // Nullable, for ongoing tasks
+  startTime: timestamp('start_time', { withTimezone: true }).notNull(),
+  endTime: timestamp('end_time', { withTimezone: true }), // Nullable, for ongoing tasks
   duration: integer('duration'), // Duration in seconds, calculated on stop
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

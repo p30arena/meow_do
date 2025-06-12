@@ -36,6 +36,13 @@
       "when": 1749179613952,
       "tag": "0004_flashy_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1749725993836,
+      "tag": "0005_certain_chimera",
+      "breakpoints": true
     }
   ]
 }

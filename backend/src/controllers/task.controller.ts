@@ -228,11 +228,11 @@ export const createManualTaskRecord = catchAsync(async (req: Request, res: Respo
   const validatedData = createManualTaskRecordSchema.parse({ ...req.body, taskId, userId });
 
   // Insert the new manual tracking record
-  // Note: startTime in the DB will be defaultNow() due to schema constraint.
   // The duration is calculated on the frontend and sent here.
   const newManualRecord = await db.insert(taskTrackingRecords).values({
     taskId: validatedData.taskId,
     userId: validatedData.userId,
+    startTime: validatedData.startTime,
     endTime: validatedData.stopTime, // Use stopTime from validated data
     duration: validatedData.duration, // Use duration from validated data
   }).returning();
@@ -296,10 +296,6 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
   })
     .from(taskTrackingRecords)
     .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id));
-
-  if (goalId) {
-    conditions.push(eq(tasks.goalId, goalId as string));
-  }
 
   if (workspaceId) {
     queryBuilder = queryBuilder.innerJoin(goals, eq(tasks.goalId, goals.id));
