@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../db';
 import { workspaces, goals, tasks, taskTrackingRecords } from '../db/schema';
-import { eq, and, count, sum, sql } from 'drizzle-orm';
+import { eq, and, ne, sql } from 'drizzle-orm';
 import { createWorkspaceSchema, updateWorkspaceSchema } from '../validation/workspace.validation';
 import { catchAsync } from '../utils/catchAsync';
 
@@ -68,8 +68,8 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
     hasRunningTask: sql<boolean>`COALESCE(${runningTasksSubquery.hasRunningTask}, FALSE)`.as('hasRunningTask'),
   })
   .from(workspaces)
-  .leftJoin(goals, and(eq(goals.workspaceId, workspaces.id), eq(goals.userId, userId)))
-  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId)))
+  .leftJoin(goals, and(eq(goals.workspaceId, workspaces.id), eq(goals.userId, userId), ne(goals.status, "reached")))
+  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId), ne(tasks.status, "done")))
   .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
   .leftJoin(runningTasksSubquery, eq(workspaces.id, runningTasksSubquery.workspaceId))
   .where(eq(workspaces.userId, userId))

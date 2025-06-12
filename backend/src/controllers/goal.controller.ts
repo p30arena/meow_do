@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
 import { goals, tasks, taskTrackingRecords } from '../db/schema';
-import { eq, and, count, sum, sql } from 'drizzle-orm';
+import { eq, and, ne, sql } from 'drizzle-orm';
 import { createGoalSchema, updateGoalSchema } from '../validation/goal.validation';
 import { catchAsync } from '../utils/catchAsync';
 
@@ -74,7 +74,7 @@ export const getGoals = catchAsync(async (req: Request, res: Response) => {
     hasRunningTask: sql<boolean>`COALESCE(${runningTasksSubquery.hasRunningTask}, FALSE)`.as('hasRunningTask'),
   })
   .from(goals)
-  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId)))
+  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId), ne(tasks.status, "done")))
   .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
   .leftJoin(runningTasksSubquery, eq(goals.id, runningTasksSubquery.goalId))
   .where(and(...conditions))
