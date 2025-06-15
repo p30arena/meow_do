@@ -313,7 +313,9 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-lg font-medium">{workspace.name}</CardTitle>
                       <div className="flex items-center space-x-2">
-                        {/* Placeholder for shared workspace indicator */}
+                        {workspace.isShared && (
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500" title={t('workspace.shared')}></span>
+                        )}
                         {workspace.hasRunningTask && (
                           <span className="relative flex h-3 w-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
