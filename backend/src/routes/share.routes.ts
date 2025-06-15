@@ -5,10 +5,14 @@ import {
   updatePermissions,
   revokeAccess,
   getSharedUsers,
+  getMyInvitations,
 } from '../controllers/share.controller';
 import { protect } from '../middleware/auth.middleware';
 
 const router = Router();
+
+// Get workspaces shared with the current user (invitations)
+router.get('/my-invitations', protect, getMyInvitations);
 
 // Share a workspace with another user
 router.post('/:id/share', protect, shareWorkspace);

@@ -49,7 +49,7 @@ export const shareWorkspace = async (workspaceId: string, payload: ShareWorkspac
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/share`, {
+  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/${workspaceId}/share`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ export const respondToShareInvitation = async (workspaceId: string, shareId: str
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/share/${shareId}/respond`, {
+  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/${workspaceId}/share/${shareId}/respond`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ export const updatePermissions = async (workspaceId: string, userId: string, pay
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/permissions/${userId}`, {
+  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/${workspaceId}/permissions/${userId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ export const revokeAccess = async (workspaceId: string, userId: string): Promise
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/share/${userId}`, {
+  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/${workspaceId}/share/${userId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -151,7 +151,7 @@ export const getSharedUsers = async (workspaceId: string): Promise<SharedUser[]>
     throw new Error('No authentication token found');
   }
 
-  const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/shared-users`, {
+  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/${workspaceId}/shared-users`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -164,6 +164,52 @@ export const getSharedUsers = async (workspaceId: string): Promise<SharedUser[]>
     }
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || 'Failed to fetch shared users');
+  }
+
+  return response.json();
+};
+
+export interface WorkspaceInvitation {
+  id: string;
+  workspaceId: string;
+  sharedWithUserId: string;
+  invitedByUserId: string;
+  status: 'pending' | 'accepted' | 'declined';
+  createdAt: string;
+  workspace: {
+    id: string;
+    userId: string;
+    name: string;
+    description: string | null;
+    groupName: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+  invitedBy: {
+    id: string;
+    username: string;
+  };
+}
+
+export const getMyInvitations = async (): Promise<{ status: string; data: WorkspaceInvitation[] }> => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/my-invitations`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorized();
+    }
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to fetch invitations');
   }
 
   return response.json();

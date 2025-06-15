@@ -28,6 +28,9 @@ import { protect } from './middleware/auth.middleware';
 // User-specific protected routes
 app.put('/api/v1/me/timezone', protect, updateTimezone);
 
+// Share routes for workspace sharing and permissions
+app.use('/api/v1/workspaces-sharing', protect, shareRoutes);
+
 // Workspace routes
 app.use('/api/v1/workspaces', protect, workspaceRoutes);
 
@@ -36,9 +39,6 @@ app.use('/api/v1/goals', protect, goalRoutes);
 
 // Task routes
 app.use('/api/v1/tasks', protect, taskRoutes);
-
-// Share routes for workspace sharing and permissions
-app.use('/api/v1/workspaces', protect, shareRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

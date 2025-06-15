@@ -179,6 +179,7 @@ export const revokeAccess = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({ message: 'Access revoked successfully for the user' });
 });
 
+// Get all users who have access to a specific workspace
 export const getSharedUsers = catchAsync(async (req: Request, res: Response) => {
   const { id: workspaceId } = req.params;
   const userId = req.user?.id;
@@ -213,4 +214,41 @@ export const getSharedUsers = catchAsync(async (req: Request, res: Response) => 
     .where(eq(workspaceShares.workspaceId, workspaceId));
 
   res.status(200).json(sharedUsers);
+});
+
+export const getMyInvitations = catchAsync(async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'User not authenticated',
+    });
+  }
+  const userId = req.user.id;
+  // Fetch all share invitations for the current user
+  const sharedWorkspaces = await db.select({
+    shareId: workspaceShares.id,
+    workspaceId: workspaceShares.workspaceId,
+    status: workspaceShares.status,
+    invitedByUserId: workspaceShares.invitedByUserId,
+    workspace: {
+      id: workspaces.id,
+      name: workspaces.name,
+      description: workspaces.description,
+      groupName: workspaces.groupName,
+      createdAt: workspaces.createdAt,
+      updatedAt: workspaces.updatedAt,
+    },
+    invitedBy: {
+      id: users.id,
+      username: users.username,
+    },
+  }).from(workspaceShares)
+    .innerJoin(workspaces, eq(workspaceShares.workspaceId, workspaces.id))
+    .innerJoin(users, eq(workspaceShares.invitedByUserId, users.id))
+    .where(eq(workspaceShares.sharedWithUserId, userId));
+
+  res.status(200).json({
+    status: 'success',
+    data: sharedWorkspaces,
+  });
 });
