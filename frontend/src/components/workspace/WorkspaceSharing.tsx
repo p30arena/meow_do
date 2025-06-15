@@ -10,9 +10,10 @@ import { shareWorkspace, getSharedUsers, updatePermissions, revokeAccess, type S
 interface WorkspaceSharingProps {
   workspaceId: string;
   isOwner: boolean;
+  workspaceName?: string;
 }
 
-export const WorkspaceSharing: React.FC<WorkspaceSharingProps> = ({ workspaceId, isOwner }) => {
+export const WorkspaceSharing: React.FC<WorkspaceSharingProps> = ({ workspaceId, isOwner, workspaceName }) => {
   const { t } = useTranslation();
   const [identifier, setIdentifier] = useState('');
   const [canList, setCanList] = useState(true);
@@ -128,9 +129,9 @@ export const WorkspaceSharing: React.FC<WorkspaceSharingProps> = ({ workspaceId,
     <div className="space-y-6">
       {isOwner && (
         <Card>
-          <CardHeader>
-            <CardTitle>{t('workspace.shareWorkspace')}</CardTitle>
-          </CardHeader>
+            <CardHeader>
+              <CardTitle>{t('workspace.shareWorkspace', { name: workspaceName || "" })}</CardTitle>
+            </CardHeader>
           <CardContent>
             <form onSubmit={handleShareWorkspace} className="space-y-4">
               <div>

@@ -401,6 +401,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
             <WorkspaceSharing 
               workspaceId={selectedWorkspace.id} 
               isOwner={true} // Placeholder, adjust based on actual API data
+              workspaceName={selectedWorkspace.name}
             />
             <AlertDialogFooter>
               <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
