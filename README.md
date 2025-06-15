@@ -43,6 +43,7 @@ MeowDo aims to provide a comprehensive solution for individuals to manage their 
    - Start/stop tracking with time record insertion and summaries displayed in bar charts using Recharts.
 4. **User Preferences**: Users can specify and store their timezone preference for accurate time displays.
 5. **Manual Time Record Entry**: Allows users to manually input start and stop times for tasks.
+6. **Workspace Sharing**: Users can share workspaces with others, manage permissions (view, edit, delete), and accept or decline invitations to collaborate on shared workspaces.
 
 ## User Experience Goals
 
