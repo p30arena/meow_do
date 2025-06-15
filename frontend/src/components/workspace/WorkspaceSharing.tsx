@@ -222,22 +222,24 @@ export const WorkspaceSharing: React.FC<WorkspaceSharingProps> = ({ workspaceId,
                         />
                         <Label htmlFor={`canDelete-${user.userId}`}>{t('workspace.permissions.canDelete')}</Label>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleUpdatePermissions(user.userId, user.permission)}
-                        disabled={loading}
-                      >
-                        {t('workspace.updatePermissions')}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleRevokeAccess(user.userId)}
-                        disabled={loading}
-                      >
-                        {t('workspace.revokeAccess')}
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleUpdatePermissions(user.userId, user.permission)}
+                          disabled={loading}
+                        >
+                          {t('workspace.updatePermissions')}
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleRevokeAccess(user.userId)}
+                          disabled={loading}
+                        >
+                          {t('workspace.revokeAccess')}
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
