@@ -1,4 +1,9 @@
 {
+  "user": {
+    "profile": "پروفایل",
+    "guest": "مهمان",
+    "noEmail": "ایمیلی ارائه نشده است"
+  },
   "welcome_message": "به میو دو خوش آمدید!",
   "login": {
     "title": "ورود",
@@ -53,7 +58,7 @@
     "saving": "در حال ذخیره...",
     "saveChanges": "ذخیره تغییرات",
     "create": "ایجاد",
-    "confirmDelete": "آیا مطمئن هستید که می خواهید فضای کاری \"{{workspaceName}}\" را حذف کنید؟",
+    "confirmDelete": "آیا مطمئن هستید که می‌خواهید فضای کاری \"{{workspaceName}}\" را حذف کنید؟",
     "openMenu": "باز کردن منو",
     "goals": "اهداف",
     "tasks": "وظایف",
@@ -61,19 +66,42 @@
     "createGroup": "ایجاد گروه جدید",
     "groupName": "نام گروه",
     "enterGroupName": "نام گروه را وارد کنید",
-    "addGroup": "افزودن گروه",
+    "addGroup": "اضافه کردن گروه",
     "ungrouped": "بدون گروه",
     "deleteGroup": "حذف گروه",
     "dragWorkspacesHere": "فضاهای کاری را اینجا بکشید",
     "group": "گروه",
-    "confirmDeleteGroup": "آیا مطمئن هستید که می خواهید گروه \"{{groupName}}\" را حذف کنید؟ همه فضاهای کاری در این گروه بدون گروه خواهند شد.",
+    "confirmDeleteGroup": "آیا مطمئن هستید که می‌خواهید گروه \"{{groupName}}\" را حذف کنید؟ تمام فضاهای کاری در این گروه بدون گروه خواهند شد.",
     "saveRename": "ذخیره تغییر نام",
     "editGroup": "ویرایش گروه",
-    "groupNameExists": "نام گروه از قبل موجود است.",
+    "groupNameExists": "نام گروه از قبل وجود دارد.",
     "optionalGroupName": "نام گروه اختیاری",
     "noGroup": "بدون گروه",
-    "typeNewGroup": "نام گروه جدید را تایپ کنید یا از موجود انتخاب کنید",
-    "runningTask": "وظیفه در حال اجرا"
+    "typeNewGroup": "یک نام گروه جدید تایپ کنید یا از موجود انتخاب کنید",
+    "runningTask": "وظیفه در حال اجرا",
+    "share": "اشتراک‌گذاری",
+    "shareWorkspace": "اشتراک‌گذاری فضای کاری {{name}}",
+    "shareWith": "اشتراک‌گذاری با",
+    "enterUsernameOrEmail": "نام کاربری یا ایمیل را وارد کنید",
+    "sharing": "در حال اشتراک‌گذاری...",
+    "permissions": {
+      "canList": "می‌تواند فهرست کند",
+      "canEdit": "می‌تواند ویرایش کند",
+      "canDelete": "می‌تواند حذف کند"
+    },
+    "sharedUsers": "کاربران مشترک",
+    "loading": "در حال بارگذاری...",
+    "noSharedUsers": "هنوز کاربر مشترکی وجود ندارد.",
+    "updatePermissions": "به‌روزرسانی مجوزها",
+    "revokeAccess": "لغو دسترسی",
+    "invitations": "دعوت‌نامه‌ها",
+    "invitationsDescription": "مشاهده و مدیریت دعوت‌نامه‌های معلق فضای کاری شما.",
+    "loadingInvitations": "در حال بارگذاری دعوت‌نامه‌ها...",
+    "noPendingInvitations": "هیچ دعوت‌نامه معلقی وجود ندارد.",
+    "invitationFor": "دعوت‌نامه برای {{name}}",
+    "invitedBy": "دعوت شده توسط",
+    "accept": "پذیرش",
+    "decline": "رد"
   },
   "goalsFor": "اهداف برای {{name}}",
   "backToWorkspaces": "بازگشت به فضاهای کاری",
@@ -192,5 +220,7 @@
     "installInstructions": "برای نصب، از 'افزودن به صفحه اصلی' در منوی مرورگر خود استفاده کنید."
   },
   "notFound": "یافت نشد",
-  "pageNotFound": "صفحه یافت نشد."
+  "pageNotFound": "صفحه یافت نشد.",
+  "close": "بستن",
+  "deleteError": "خطای حذف."
 }

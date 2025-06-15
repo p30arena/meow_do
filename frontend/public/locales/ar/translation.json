@@ -1,4 +1,9 @@
 {
+  "user": {
+    "profile": "الملف الشخصي",
+    "guest": "ضيف",
+    "noEmail": "لم يتم تقديم بريد إلكتروني"
+  },
   "welcome_message": "مرحباً بك في مياو دو!",
   "login": {
     "title": "تسجيل الدخول",
@@ -38,11 +43,11 @@
     "passwordsMismatch": "كلمات المرور غير متطابقة"
   },
   "workspace": {
-    "loadingWorkspaces": "جارٍ تحميل مساحات العمل...",
+    "loadingWorkspaces": "جارٍ تحميل المساحات العمل...",
     "error": "خطأ",
     "workspaces": "مساحات العمل",
-    "noWorkspacesYet": "لا توجد مساحات عمل بعد. أنشئ أول مساحة عمل لك!",
-    "noDescription": "لا يوجد وصف.",
+    "noWorkspacesYet": "لا توجد مساحات عمل بعد. قم بإنشاء أول واحدة لك!",
+    "noDescription": "لم يتم تقديم وصف.",
     "edit": "تعديل",
     "delete": "حذف",
     "createWorkspace": "إنشاء مساحة عمل جديدة",
@@ -53,7 +58,7 @@
     "saving": "جارٍ الحفظ...",
     "saveChanges": "حفظ التغييرات",
     "create": "إنشاء",
-    "confirmDelete": "هل أنت متأكد أنك تريد حذف مساحة العمل \"{{workspaceName}}\"؟",
+    "confirmDelete": "هل أنت متأكد من أنك تريد حذف مساحة العمل \"{{workspaceName}}\"؟",
     "openMenu": "فتح القائمة",
     "goals": "الأهداف",
     "tasks": "المهام",
@@ -62,18 +67,41 @@
     "groupName": "اسم المجموعة",
     "enterGroupName": "أدخل اسم المجموعة",
     "addGroup": "إضافة مجموعة",
-    "ungrouped": "غير مجمعة",
+    "ungrouped": "غير مصنف",
     "deleteGroup": "حذف المجموعة",
     "dragWorkspacesHere": "اسحب مساحات العمل هنا",
-    "group": "المجموعة",
-    "confirmDeleteGroup": "هل أنت متأكد أنك تريد حذف المجموعة \"{{groupName}}\"؟ ستصبح جميع مساحات العمل في هذه المجموعة غير مجمعة.",
+    "group": "مجموعة",
+    "confirmDeleteGroup": "هل أنت متأكد من أنك تريد حذف المجموعة \"{{groupName}}\"؟ ستصبح جميع مساحات العمل في هذه المجموعة غير مصنفة.",
     "saveRename": "حفظ إعادة التسمية",
     "editGroup": "تعديل المجموعة",
     "groupNameExists": "اسم المجموعة موجود بالفعل.",
     "optionalGroupName": "اسم المجموعة اختياري",
     "noGroup": "لا توجد مجموعة",
     "typeNewGroup": "اكتب اسم مجموعة جديدة أو اختر من الموجودة",
-    "runningTask": "مهمة قيد التشغيل"
+    "runningTask": "مهمة قيد التشغيل",
+    "share": "مشاركة",
+    "shareWorkspace": "مشاركة مساحة العمل {{name}}",
+    "shareWith": "مشاركة مع",
+    "enterUsernameOrEmail": "أدخل اسم المستخدم أو البريد الإلكتروني",
+    "sharing": "جارٍ المشاركة...",
+    "permissions": {
+      "canList": "يمكن العرض",
+      "canEdit": "يمكن التعديل",
+      "canDelete": "يمكن الحذف"
+    },
+    "sharedUsers": "المستخدمون المشتركون",
+    "loading": "جارٍ التحميل...",
+    "noSharedUsers": "لا يوجد مستخدمون مشتركون بعد.",
+    "updatePermissions": "تحديث الأذونات",
+    "revokeAccess": "إلغاء الوصول",
+    "invitations": "الدعوات",
+    "invitationsDescription": "عرض وإدارة دعوات مساحة العمل المعلقة الخاصة بك.",
+    "loadingInvitations": "جارٍ تحميل الدعوات...",
+    "noPendingInvitations": "لا توجد دعوات معلقة.",
+    "invitationFor": "دعوة لـ {{name}}",
+    "invitedBy": "دعا بواسطة",
+    "accept": "قبول",
+    "decline": "رفض"
   },
   "goalsFor": "أهداف لـ {{name}}",
   "backToWorkspaces": "العودة إلى مساحات العمل",
@@ -192,5 +220,7 @@
     "installInstructions": "للتثبيت، استخدم 'إضافة إلى الشاشة الرئيسية' في قائمة متصفحك."
   },
   "notFound": "غير موجود",
-  "pageNotFound": "الصفحة غير موجودة."
+  "pageNotFound": "الصفحة غير موجودة.",
+  "close": "إغلاق",
+  "deleteError": "خطأ في الحذف."
 }

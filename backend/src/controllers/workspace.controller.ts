@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../db';
-import { workspaces, goals, tasks, taskTrackingRecords } from '../db/schema';
+import { workspaces, goals, tasks, taskTrackingRecords, workspaceShares } from '../db/schema';
 import { eq, and, ne, sql } from 'drizzle-orm';
 import { createWorkspaceSchema, updateWorkspaceSchema } from '../validation/workspace.validation';
 import { catchAsync } from '../utils/catchAsync';
@@ -41,7 +41,17 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
   .groupBy(goals.workspaceId)
   .as('running_tasks');
 
-  const allWorkspaces = await db.select({
+  // Subquery to check if a workspace is shared by the owner
+  const sharedByOwnerSubquery = db.select({
+    workspaceId: workspaceShares.workspaceId,
+    isSharedByOwner: sql<boolean>`TRUE`.as('isSharedByOwner'),
+  })
+  .from(workspaceShares)
+  .groupBy(workspaceShares.workspaceId)
+  .as('shared_by_owner');
+
+  // Fetch owned workspaces
+  const ownedWorkspaces = await db.select({
     id: workspaces.id,
     userId: workspaces.userId,
     name: workspaces.name,
@@ -66,19 +76,61 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
       END)::numeric
     `.as('totalProgress'),
     hasRunningTask: sql<boolean>`COALESCE(${runningTasksSubquery.hasRunningTask}, FALSE)`.as('hasRunningTask'),
+    isShared: sql<boolean>`COALESCE(${sharedByOwnerSubquery.isSharedByOwner}, FALSE)`.as('isShared'),
   })
   .from(workspaces)
   .leftJoin(goals, and(eq(goals.workspaceId, workspaces.id), eq(goals.userId, userId), ne(goals.status, "reached")))
   .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId), ne(tasks.status, "done")))
   .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
   .leftJoin(runningTasksSubquery, eq(workspaces.id, runningTasksSubquery.workspaceId))
+  .leftJoin(sharedByOwnerSubquery, eq(workspaces.id, sharedByOwnerSubquery.workspaceId))
   .where(eq(workspaces.userId, userId))
+  .groupBy(workspaces.id, workspaces.name, workspaces.description, workspaces.groupName, workspaces.createdAt, workspaces.updatedAt, workspaces.userId, runningTasksSubquery.hasRunningTask, sharedByOwnerSubquery.isSharedByOwner);
+
+  // Fetch shared workspaces
+  const sharedWorkspaces = await db.select({
+    id: workspaces.id,
+    userId: workspaces.userId,
+    name: workspaces.name,
+    description: workspaces.description,
+    groupName: workspaces.groupName, // Include groupName
+    createdAt: workspaces.createdAt,
+    updatedAt: workspaces.updatedAt,
+    goalCount: sql<number>`COUNT(DISTINCT ${goals.id})::integer`.as('goalCount'),
+    taskCount: sql<number>`COUNT(${tasks.id})::integer`.as('taskCount'),
+    totalProgress: sql<number>`
+      (CASE
+        WHEN SUM(${tasks.timeBudget}) = 0 THEN 0
+        ELSE
+          (
+            SUM(
+              CASE
+                WHEN ${tasks.status} = 'done' THEN ${tasks.timeBudget}
+                ELSE COALESCE(${dailyTrackedTimeSubquery.total_duration_minutes}, 0)
+              END
+            ) * 100.0 / SUM(${tasks.timeBudget})
+          )
+      END)::numeric
+    `.as('totalProgress'),
+    hasRunningTask: sql<boolean>`COALESCE(${runningTasksSubquery.hasRunningTask}, FALSE)`.as('hasRunningTask'),
+    isShared: sql<boolean>`TRUE`.as('isShared'),
+  })
+  .from(workspaces)
+  .innerJoin(workspaceShares, and(eq(workspaceShares.workspaceId, workspaces.id), eq(workspaceShares.sharedWithUserId, userId)))
+  .leftJoin(goals, and(eq(goals.workspaceId, workspaces.id), ne(goals.status, "reached")))
+  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), ne(tasks.status, "done")))
+  .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
+  .leftJoin(runningTasksSubquery, eq(workspaces.id, runningTasksSubquery.workspaceId))
   .groupBy(workspaces.id, workspaces.name, workspaces.description, workspaces.groupName, workspaces.createdAt, workspaces.updatedAt, workspaces.userId, runningTasksSubquery.hasRunningTask);
+
+  // Combine owned and shared workspaces
+  const allWorkspaces = [...ownedWorkspaces, ...sharedWorkspaces];
 
   const formattedWorkspaces = allWorkspaces.map(workspace => ({
     ...workspace,
     totalProgress: workspace.totalProgress != null ? parseFloat(workspace.totalProgress.toString()) : 0,
     hasRunningTask: workspace.hasRunningTask || false, // Ensure it's always a boolean
+    isShared: workspace.isShared || false // Ensure it's always a boolean
   }));
 
   res.status(200).json(formattedWorkspaces);
@@ -86,11 +138,7 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
 
 export const getWorkspaceById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = req.user?.id;
-  if (!userId) {
-    return res.status(401).json({ message: 'Not authorized, user ID missing' });
-  }
-  const workspace = await db.select().from(workspaces).where(and(eq(workspaces.id, id), eq(workspaces.userId, userId)));
+  const workspace = await db.select().from(workspaces).where(eq(workspaces.id, id));
   if (workspace.length === 0) {
     return res.status(404).json({ message: 'Workspace not found' });
   }
@@ -99,12 +147,8 @@ export const getWorkspaceById = catchAsync(async (req: Request, res: Response) =
 
 export const updateWorkspace = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = req.user?.id;
-  if (!userId) {
-    return res.status(401).json({ message: 'Not authorized, user ID missing' });
-  }
   const validatedData = updateWorkspaceSchema.parse(req.body);
-  const updatedWorkspace = await db.update(workspaces).set(validatedData).where(and(eq(workspaces.id, id), eq(workspaces.userId, userId))).returning();
+  const updatedWorkspace = await db.update(workspaces).set(validatedData).where(eq(workspaces.id, id)).returning();
   if (updatedWorkspace.length === 0) {
     return res.status(404).json({ message: 'Workspace not found' });
   }
@@ -113,11 +157,7 @@ export const updateWorkspace = catchAsync(async (req: Request, res: Response) =>
 
 export const deleteWorkspace = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = req.user?.id;
-  if (!userId) {
-    return res.status(401).json({ message: 'Not authorized, user ID missing' });
-  }
-  const deletedWorkspace = await db.delete(workspaces).where(and(eq(workspaces.id, id), eq(workspaces.userId, userId))).returning();
+  const deletedWorkspace = await db.delete(workspaces).where(eq(workspaces.id, id)).returning();
   if (deletedWorkspace.length === 0) {
     return res.status(404).json({ message: 'Workspace not found' });
   }

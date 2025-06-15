@@ -271,7 +271,7 @@ const TaskList: React.FC<TaskListProps> = ({
         await onDeleteTask(taskToDelete.id);
         fetchTasks(); // Re-fetch tasks after deletion
       } catch (err: any) {
-        setError(err.message);
+        setError(err.message || t("deleteError"));
       } finally {
         setLoading(false);
         setTaskToDelete(null); // Clear the task to delete
@@ -493,7 +493,7 @@ const TaskList: React.FC<TaskListProps> = ({
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
+                              <AlertDialogCancel onClick={(e) => { e.stopPropagation(); setTaskToDelete(null); setError(null); }}>{t("cancel")}</AlertDialogCancel>
                               <AlertDialogAction onClick={(e) => { e.stopPropagation(); executeDelete(); }}>
                                 {t("confirm")}
                               </AlertDialogAction>

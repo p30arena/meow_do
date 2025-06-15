@@ -157,7 +157,7 @@ const WorkspaceForm: React.FC<WorkspaceFormProps> = ({ onSuccess, onCancel }) =>
           </div>
           {error && (
             <p className="text-red-500 text-sm">
-              {t("error")}: {error}
+              {t("workspace.error")}: {error}
             </p>
           )}
           <div className="flex justify-end gap-2">

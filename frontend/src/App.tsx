@@ -54,6 +54,7 @@ function App() {
       await deleteGoal(goalId);
     } catch (err: any) {
       console.error("Failed to delete goal:", err);
+      throw err; // Re-throw the error to be caught in the component
     }
   };
 
@@ -62,6 +63,7 @@ function App() {
       await deleteTask(taskId);
     } catch (err: any) {
       console.error("Failed to delete task:", err);
+      throw err; // Re-throw the error to be caught in the component
     }
   };
 
@@ -112,15 +114,17 @@ function App() {
               <Route
                 path="/workspaces"
                 element={
-                  <WorkspaceList
-                    onCreateNew={() => navigate("/workspaces/new")}
-                    onSelectWorkspace={(workspace) =>
-                      navigate(`/workspaces/${workspace.id}`, { state: { workspaceName: workspace.name } })
-                    }
-                    onEditWorkspace={(workspace) =>
-                      navigate(`/workspaces/${workspace.id}/edit`)
-                    }
-                  />
+                  <div>
+                    <WorkspaceList
+                      onCreateNew={() => navigate("/workspaces/new")}
+                      onSelectWorkspace={(workspace) =>
+                        navigate(`/workspaces/${workspace.id}`, { state: { workspaceName: workspace.name } })
+                      }
+                      onEditWorkspace={(workspace) =>
+                        navigate(`/workspaces/${workspace.id}/edit`)
+                      }
+                    />
+                  </div>
                 }
               />
               <Route

@@ -5,6 +5,7 @@ import workspaceRoutes from './routes/workspace.routes';
 import goalRoutes from './routes/goal.routes';
 import taskRoutes from './routes/task.routes';
 import authRoutes from './routes/auth.routes';
+import shareRoutes from './routes/share.routes';
 import { updateTimezone } from './controllers/auth.controller'; // Import updateTimezone
 
 dotenv.config();
@@ -26,6 +27,9 @@ import { protect } from './middleware/auth.middleware';
 
 // User-specific protected routes
 app.put('/api/v1/me/timezone', protect, updateTimezone);
+
+// Share routes for workspace sharing and permissions
+app.use('/api/v1/workspaces-sharing', protect, shareRoutes);
 
 // Workspace routes
 app.use('/api/v1/workspaces', protect, workspaceRoutes);

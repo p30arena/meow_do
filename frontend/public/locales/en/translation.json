@@ -1,4 +1,9 @@
 {
+  "user": {
+    "profile": "Profile",
+    "guest": "Guest",
+    "noEmail": "No email provided"
+  },
   "welcome_message": "Welcome to MeowDo!",
   "login": {
     "title": "Login",
@@ -73,7 +78,30 @@
     "optionalGroupName": "Optional group name",
     "noGroup": "No Group",
     "typeNewGroup": "Type a new group name or select from existing",
-    "runningTask": "Running Task"
+    "runningTask": "Running Task",
+    "share": "Share",
+    "shareWorkspace": "Share Workspace {{name}}",
+    "shareWith": "Share with",
+    "enterUsernameOrEmail": "Enter username or email",
+    "sharing": "Sharing...",
+    "permissions": {
+      "canList": "Can List",
+      "canEdit": "Can Edit",
+      "canDelete": "Can Delete"
+    },
+    "sharedUsers": "Shared Users",
+    "loading": "Loading...",
+    "noSharedUsers": "No shared users yet.",
+    "updatePermissions": "Update Permissions",
+    "revokeAccess": "Revoke Access",
+    "invitations": "Invitations",
+    "invitationsDescription": "View and manage your pending workspace invitations.",
+    "loadingInvitations": "Loading invitations...",
+    "noPendingInvitations": "No pending invitations.",
+    "invitationFor": "Invitation for {{name}}",
+    "invitedBy": "Invited by",
+    "accept": "Accept",
+    "decline": "Decline"
   },
   "goalsFor": "Goals for {{name}}",
   "backToWorkspaces": "Back to Workspaces",
@@ -192,5 +220,7 @@
     "installInstructions": "To install, use 'Add to Home Screen' in your browser's menu."
   },
   "notFound": "Not Found",
-  "pageNotFound": "Page not found."
+  "pageNotFound": "Page not found.",
+  "close": "Close",
+  "deleteError": "Delete Error."
 }

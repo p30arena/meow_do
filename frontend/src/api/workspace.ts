@@ -12,6 +12,7 @@ export interface Workspace {
   taskCount?: number;
   totalProgress?: number;
   hasRunningTask?: boolean;
+  isShared?: boolean; // Indicates if the workspace is shared
 }
 
 interface CreateWorkspacePayload {

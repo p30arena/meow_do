@@ -148,7 +148,7 @@ const GoalForm: React.FC<GoalFormProps> = ({ onSuccess, onCancel }) => {
           </div>
           {error && (
             <p className="text-red-500 text-sm">
-              {t("error")}: {error}
+              {t("workspace.error")}: {error}
             </p>
           )}
           <div className="flex justify-end gap-2">

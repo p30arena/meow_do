@@ -70,7 +70,7 @@ const GoalList: React.FC<GoalListProps> = ({
         await onDeleteGoal(goalToDelete.id);
         fetchGoals(); // Re-fetch goals after deletion
       } catch (err: any) {
-        setError(err.message);
+        setError(err.message || t("deleteError"));
       } finally {
         setLoading(false);
         setGoalToDelete(null); // Clear the goal to delete
@@ -167,7 +167,7 @@ const GoalList: React.FC<GoalListProps> = ({
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
+                              <AlertDialogCancel onClick={(e) => { e.stopPropagation(); setGoalToDelete(null); setError(null); }}>{t("cancel")}</AlertDialogCancel>
                               <AlertDialogAction onClick={(e) => { e.stopPropagation(); executeDelete(); }}>
                                 {t("confirm")}
                               </AlertDialogAction>

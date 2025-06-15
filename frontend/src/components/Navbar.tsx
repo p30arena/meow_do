@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "./ui/button";
@@ -20,10 +20,12 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
 import TimezoneSelector from "./settings/TimezoneSelector"; // Import TimezoneSelector
 import InstallPWAButton from "./InstallPWAButton"; // Import InstallPWAButton
+import WorkspaceInvitations from "./workspace/WorkspaceInvitations"; // Import WorkspaceInvitations
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation(); // Destructure i18n
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
 
   const isRtl = i18n.language === "ar" || i18n.language === "fa"; // Determine RTL
 
@@ -50,11 +52,38 @@ export const Navbar: React.FC = () => {
                         {/* Dynamic side */}
                         <SheetTitle className="sr-only">Main Navigation</SheetTitle>
                         <div className="flex flex-col space-y-4">
+                            <div className="border-b pb-2">
+                                <h3 className="text-sm font-medium">{t("user.profile")}</h3>
+                                <div className="mt-1 text-xs text-muted-foreground">
+                                    <p>{user?.username || t("user.guest")}</p>
+                                    <p>{user?.email || t("user.noEmail")}</p>
+                                </div>
+                            </div>
                             <InstallPWAButton />
                             <LanguageSwitcher />
                             <ThemeToggle />
-              {/* Settings Button for Mobile */}
-              <Sheet>
+                {/* Invitations Button for Mobile */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start">
+                      {t("workspace.invitations")}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="sm:max-w-[425px]">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("workspace.invitations")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("workspace.invitationsDescription")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <WorkspaceInvitations />
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("close")}</AlertDialogCancel>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                {/* Settings Button for Mobile */}
+                <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" className="w-full justify-start">
                     <Settings className="me-2 h-4 w-4" />{" "}
@@ -62,15 +91,22 @@ export const Navbar: React.FC = () => {
                     {t("settings.title")}
                   </Button>
                 </SheetTrigger>
-                <SheetContent
-                  side={isRtl ? "left" : "right"}
-                  className="w-[200px] sm:w-[250px] p-4"
-                >
-                  {" "}
-                  {/* Dynamic side */}
-                  <SheetTitle>{t("settings.title")}</SheetTitle>
-                  <div className="flex flex-col space-y-4">
-                    <TimezoneSelector />
+            <SheetContent
+            side={isRtl ? "left" : "right"}
+            className="w-[200px] sm:w-[250px] p-4"
+          >
+            {" "}
+            {/* Dynamic side */}
+            <SheetTitle>{t("settings.title")}</SheetTitle>
+            <div className="flex flex-col space-y-4">
+              <div className="border-b pb-2">
+                <h3 className="text-sm font-medium">{t("user.profile")}</h3>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  <p>{user?.username || t("user.guest")}</p>
+                  <p>{user?.email || t("user.noEmail")}</p>
+                </div>
+              </div>
+              <TimezoneSelector />
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -91,7 +127,7 @@ export const Navbar: React.FC = () => {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
-                          <AlertDialogAction onClick={logout}>
+                          <AlertDialogAction onClick={() => { logout(); navigate('/'); }}>
                             {t("confirm")}
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -110,8 +146,28 @@ export const Navbar: React.FC = () => {
                 <InstallPWAButton />
                 <LanguageSwitcher />
                 <ThemeToggle />
-        {/* Settings Button for Desktop */}
-        <Sheet>
+                {/* Invitations Button for Desktop */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost">
+                      {t("workspace.invitations")}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="sm:max-w-[425px]">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("workspace.invitations")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("workspace.invitationsDescription")}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <WorkspaceInvitations />
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("close")}</AlertDialogCancel>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                {/* Settings Button for Desktop */}
+                <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost">
               <Settings className="me-2 h-4 w-4" /> {/* Changed mr-2 to me-2 */}
@@ -126,6 +182,13 @@ export const Navbar: React.FC = () => {
             {/* Dynamic side */}
             <SheetTitle>{t("settings.title")}</SheetTitle>
             <div className="flex flex-col space-y-4">
+              <div className="border-b pb-2">
+                <h3 className="text-sm font-medium">{t("user.profile")}</h3>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  <p>{user?.username || t("user.guest")}</p>
+                  <p>{user?.email || t("user.noEmail")}</p>
+                </div>
+              </div>
               <TimezoneSelector />
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -144,9 +207,9 @@ export const Navbar: React.FC = () => {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
-                    <AlertDialogAction onClick={logout}>
-                      {t("confirm")}
-                    </AlertDialogAction>
+              <AlertDialogAction onClick={() => { logout(); navigate('/'); }}>
+                {t("confirm")}
+              </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
