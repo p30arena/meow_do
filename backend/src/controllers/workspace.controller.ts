@@ -41,6 +41,15 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
   .groupBy(goals.workspaceId)
   .as('running_tasks');
 
+  // Subquery to check if a workspace is shared by the owner
+  const sharedByOwnerSubquery = db.select({
+    workspaceId: workspaceShares.workspaceId,
+    isSharedByOwner: sql<boolean>`TRUE`.as('isSharedByOwner'),
+  })
+  .from(workspaceShares)
+  .groupBy(workspaceShares.workspaceId)
+  .as('shared_by_owner');
+
   // Fetch owned workspaces
   const ownedWorkspaces = await db.select({
     id: workspaces.id,
@@ -67,15 +76,16 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
       END)::numeric
     `.as('totalProgress'),
     hasRunningTask: sql<boolean>`COALESCE(${runningTasksSubquery.hasRunningTask}, FALSE)`.as('hasRunningTask'),
-    isShared: sql<boolean>`FALSE`.as('isShared'),
+    isShared: sql<boolean>`COALESCE(${sharedByOwnerSubquery.isSharedByOwner}, FALSE)`.as('isShared'),
   })
   .from(workspaces)
   .leftJoin(goals, and(eq(goals.workspaceId, workspaces.id), eq(goals.userId, userId), ne(goals.status, "reached")))
   .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId), ne(tasks.status, "done")))
   .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
   .leftJoin(runningTasksSubquery, eq(workspaces.id, runningTasksSubquery.workspaceId))
+  .leftJoin(sharedByOwnerSubquery, eq(workspaces.id, sharedByOwnerSubquery.workspaceId))
   .where(eq(workspaces.userId, userId))
-  .groupBy(workspaces.id, workspaces.name, workspaces.description, workspaces.groupName, workspaces.createdAt, workspaces.updatedAt, workspaces.userId, runningTasksSubquery.hasRunningTask);
+  .groupBy(workspaces.id, workspaces.name, workspaces.description, workspaces.groupName, workspaces.createdAt, workspaces.updatedAt, workspaces.userId, runningTasksSubquery.hasRunningTask, sharedByOwnerSubquery.isSharedByOwner);
 
   // Fetch shared workspaces
   const sharedWorkspaces = await db.select({
