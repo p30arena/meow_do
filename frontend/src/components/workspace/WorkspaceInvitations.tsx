@@ -35,7 +35,7 @@ const WorkspaceInvitations: React.FC = () => {
       setLoading(true);
       await respondToShareInvitation(workspaceId, shareId, { response });
       // Remove the invitation from the list after response
-      setInvitations(prev => prev.filter(inv => inv.id !== shareId));
+      setInvitations(prev => prev.filter(inv => inv.shareId !== shareId));
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -71,7 +71,7 @@ const WorkspaceInvitations: React.FC = () => {
       </CardHeader>
       <CardContent>
         {invitations.map(invitation => (
-          <div key={invitation.id} className="mb-4">
+          <div key={invitation.shareId} className="mb-4">
             <h3 className="text-lg font-medium mb-2">{t('workspace.invitationFor', { name: invitation.workspace.name })}</h3>
             <p className="text-sm text-muted-foreground mb-2">{invitation.workspace.description || t('workspace.noDescription')}</p>
             <div className="flex justify-between items-center p-2 border rounded-md">
@@ -79,8 +79,8 @@ const WorkspaceInvitations: React.FC = () => {
                 <p>{t('workspace.invitedBy')}: {invitation.invitedBy.username}</p>
               </div>
               <div className="flex gap-2">
-                <Button onClick={() => handleRespond(invitation.workspaceId, invitation.id, 'accept')}>{t('workspace.accept')}</Button>
-                <Button variant="destructive" onClick={() => handleRespond(invitation.workspaceId, invitation.id, 'decline')}>{t('workspace.decline')}</Button>
+                <Button onClick={() => handleRespond(invitation.workspaceId, invitation.shareId, 'accept')}>{t('workspace.accept')}</Button>
+                <Button variant="destructive" onClick={() => handleRespond(invitation.workspaceId, invitation.shareId, 'decline')}>{t('workspace.decline')}</Button>
               </div>
             </div>
           </div>

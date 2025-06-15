@@ -170,7 +170,7 @@ export const getSharedUsers = async (workspaceId: string): Promise<SharedUser[]>
 };
 
 export interface WorkspaceInvitation {
-  id: string;
+  shareId: string;
   workspaceId: string;
   sharedWithUserId: string;
   invitedByUserId: string;
