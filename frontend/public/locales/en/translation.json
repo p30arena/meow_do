@@ -88,7 +88,14 @@
     "loading": "Loading...",
     "noSharedUsers": "No shared users yet.",
     "updatePermissions": "Update Permissions",
-    "revokeAccess": "Revoke Access"
+    "revokeAccess": "Revoke Access",
+    "invitations": "Invitations",
+    "loadingInvitations": "Loading invitations...",
+    "noPendingInvitations": "No pending invitations.",
+    "invitationFor": "Invitation for {{name}}",
+    "invitedBy": "Invited by",
+    "accept": "Accept",
+    "decline": "Decline"
   },
   "goalsFor": "Goals for {{name}}",
   "backToWorkspaces": "Back to Workspaces",

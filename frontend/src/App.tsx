@@ -6,6 +6,7 @@ import LoginForm from "./components/auth/LoginForm";
 import RegisterForm from "./components/auth/RegisterForm";
 import WorkspaceList from "./components/workspace/WorkspaceList";
 import WorkspaceForm from "./components/workspace/WorkspaceForm";
+import WorkspaceInvitations from "./components/workspace/WorkspaceInvitations";
 import GoalList from "./components/goal/GoalList";
 import GoalForm from "./components/goal/GoalForm";
 import TaskList from "./components/task/TaskList";
@@ -112,15 +113,18 @@ function App() {
               <Route
                 path="/workspaces"
                 element={
-                  <WorkspaceList
-                    onCreateNew={() => navigate("/workspaces/new")}
-                    onSelectWorkspace={(workspace) =>
-                      navigate(`/workspaces/${workspace.id}`, { state: { workspaceName: workspace.name } })
-                    }
-                    onEditWorkspace={(workspace) =>
-                      navigate(`/workspaces/${workspace.id}/edit`)
-                    }
-                  />
+                  <div>
+                    <WorkspaceList
+                      onCreateNew={() => navigate("/workspaces/new")}
+                      onSelectWorkspace={(workspace) =>
+                        navigate(`/workspaces/${workspace.id}`, { state: { workspaceName: workspace.name } })
+                      }
+                      onEditWorkspace={(workspace) =>
+                        navigate(`/workspaces/${workspace.id}/edit`)
+                      }
+                    />
+                    <WorkspaceInvitations />
+                  </div>
                 }
               />
               <Route
