@@ -105,10 +105,10 @@ export const updatePermissions = catchAsync(async (req: Request, res: Response) 
     return res.status(404).json({ message: 'Workspace not found or you do not have permission to manage it' });
   }
 
-  // Verify the target user has access to the workspace
-  const share = await db.select().from(workspaceShares).where(and(eq(workspaceShares.workspaceId, workspaceId), eq(workspaceShares.sharedWithUserId, targetUserId), eq(workspaceShares.status, 'accepted')));
+  // Verify the target user has been shared with the workspace (regardless of acceptance status)
+  const share = await db.select().from(workspaceShares).where(and(eq(workspaceShares.workspaceId, workspaceId), eq(workspaceShares.sharedWithUserId, targetUserId)));
   if (share.length === 0) {
-    return res.status(404).json({ message: 'User does not have access to this workspace or invitation is not accepted' });
+    return res.status(404).json({ message: 'User does not have access to this workspace' });
   }
 
   // Check if permission entry exists, if not create one, otherwise update
