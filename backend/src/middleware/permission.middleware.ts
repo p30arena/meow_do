@@ -84,9 +84,9 @@ export const checkPermission = (resourceType: 'workspace' | 'goal' | 'task' | 't
     if (share.length === 0) {
       return res.status(403).json({ message: 'You do not have access to this resource' });
     } else {
-      // For submitRecord actions (start/stop), allow access even if share is not accepted
+      // Require share to be accepted for all actions to prevent information leakage
       const isAcceptedShare = share.some(s => s.status === 'accepted');
-      if (!isAcceptedShare && action !== 'list' && action !== 'submitRecord') {
+      if (!isAcceptedShare) {
         return res.status(403).json({ message: 'You do not have permission to perform this action as the share is not accepted' });
       }
     }
@@ -107,12 +107,8 @@ export const checkPermission = (resourceType: 'workspace' | 'goal' | 'task' | 't
       // Check workspace-level permissions if resource-specific permissions are not set
       const workspacePermission = await db.select().from(permissions).where(and(eq(permissions.userId, userId), eq(permissions.resourceId, workspaceId), eq(permissions.resourceType, 'workspace')));
       if (workspacePermission.length === 0) {
-        // If no specific workspace permission is defined, allow access with default permissions for shared resources
-        if (action === 'list' || action === 'submitRecord') {
-          return next();
-        } else {
-          return res.status(403).json({ message: 'No permissions defined for this resource, and action is not allowed by default' });
-        }
+        // If no specific workspace permission is defined, deny access by default to ensure security
+        return res.status(403).json({ message: 'No permissions defined for this resource, access denied by default' });
       }
       
       const perm = workspacePermission[0];

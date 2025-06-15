@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
-import { workspaceShares, permissions, users, workspaces } from '../db/schema';
+import { workspaceShares, permissions, users, workspaces, goals, tasks } from '../db/schema';
+import { inArray } from 'drizzle-orm';
 import { eq, and, or } from 'drizzle-orm';
 import { catchAsync } from '../utils/catchAsync';
 
@@ -163,18 +164,42 @@ export const revokeAccess = catchAsync(async (req: Request, res: Response) => {
   // Delete the share entry
   await db.delete(workspaceShares).where(eq(workspaceShares.id, share[0].id));
 
-  // Delete all associated permissions for this user related to the workspace and its resources
+  // Delete permissions for the workspace itself
   await db.delete(permissions).where(
     and(
       eq(permissions.userId, targetUserId),
-      or(
-        and(eq(permissions.resourceId, workspaceId), eq(permissions.resourceType, 'workspace')),
-        // Additional logic could be added here to match goals and tasks under this workspace if needed
-        eq(permissions.resourceType, 'goal'), // This is a placeholder for more specific filtering
-        eq(permissions.resourceType, 'task')  // This is a placeholder for more specific filtering
-      )
+      eq(permissions.resourceId, workspaceId),
+      eq(permissions.resourceType, 'workspace')
     )
   );
+
+  // Delete permissions for goals associated with this workspace
+  const goalsInWorkspace = await db.select({ id: goals.id }).from(goals).where(eq(goals.workspaceId, workspaceId));
+  const goalIds = goalsInWorkspace.map(goal => goal.id);
+  if (goalIds.length > 0) {
+    await db.delete(permissions).where(
+      and(
+        eq(permissions.userId, targetUserId),
+        eq(permissions.resourceType, 'goal'),
+        inArray(permissions.resourceId, goalIds)
+      )
+    );
+  }
+
+  // Delete permissions for tasks associated with goals in this workspace
+  if (goalIds.length > 0) {
+    const tasksInGoals = await db.select({ id: tasks.id }).from(tasks).where(inArray(tasks.goalId, goalIds));
+    const taskIds = tasksInGoals.map(task => task.id);
+    if (taskIds.length > 0) {
+      await db.delete(permissions).where(
+        and(
+          eq(permissions.userId, targetUserId),
+          eq(permissions.resourceType, 'task'),
+          inArray(permissions.resourceId, taskIds)
+        )
+      );
+    }
+  }
 
   res.status(200).json({ message: 'Access revoked successfully for the user' });
 });
@@ -188,15 +213,16 @@ export const getSharedUsers = catchAsync(async (req: Request, res: Response) => 
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
 
-  // Check if the user has access to the workspace (either as owner or shared user)
-  const workspaceAccess = await db.select().from(workspaces).where(
-    and(
-      eq(workspaces.id, workspaceId),
-      or(eq(workspaces.userId, userId), eq(workspaceShares.sharedWithUserId, userId))
-    )
-  ).leftJoin(workspaceShares, and(eq(workspaceShares.workspaceId, workspaceId), eq(workspaceShares.status, 'accepted')));
+  // Check if the user has access to the workspace (either as owner or shared user with accepted status)
+  const workspaceAccessOwner = await db.select().from(workspaces).where(
+    and(eq(workspaces.id, workspaceId), eq(workspaces.userId, userId))
+  );
+  
+  const workspaceAccessShared = await db.select().from(workspaceShares).where(
+    and(eq(workspaceShares.workspaceId, workspaceId), eq(workspaceShares.sharedWithUserId, userId), eq(workspaceShares.status, 'accepted'))
+  );
 
-  if (workspaceAccess.length === 0) {
+  if (workspaceAccessOwner.length === 0 && workspaceAccessShared.length === 0) {
     return res.status(403).json({ message: 'You do not have access to view shared users for this workspace' });
   }
 
