@@ -1,4 +1,9 @@
 {
+  "user": {
+    "profile": "پروفایل",
+    "guest": "مهمان",
+    "noEmail": "ایمیلی ارائه نشده است"
+  },
   "welcome_message": "به میو دو خوش آمدید!",
   "login": {
     "title": "ورود",

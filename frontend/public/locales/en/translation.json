@@ -1,4 +1,9 @@
 {
+  "user": {
+    "profile": "Profile",
+    "guest": "Guest",
+    "noEmail": "No email provided"
+  },
   "welcome_message": "Welcome to MeowDo!",
   "login": {
     "title": "Login",

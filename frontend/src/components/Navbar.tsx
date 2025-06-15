@@ -24,7 +24,7 @@ import WorkspaceInvitations from "./workspace/WorkspaceInvitations"; // Import W
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation(); // Destructure i18n
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   const isRtl = i18n.language === "ar" || i18n.language === "fa"; // Determine RTL
@@ -52,6 +52,13 @@ export const Navbar: React.FC = () => {
                         {/* Dynamic side */}
                         <SheetTitle className="sr-only">Main Navigation</SheetTitle>
                         <div className="flex flex-col space-y-4">
+                            <div className="border-b pb-2">
+                                <h3 className="text-sm font-medium">{t("user.profile")}</h3>
+                                <div className="mt-1 text-xs text-muted-foreground">
+                                    <p>{user?.username || t("user.guest")}</p>
+                                    <p>{user?.email || t("user.noEmail")}</p>
+                                </div>
+                            </div>
                             <InstallPWAButton />
                             <LanguageSwitcher />
                             <ThemeToggle />
@@ -84,15 +91,22 @@ export const Navbar: React.FC = () => {
                     {t("settings.title")}
                   </Button>
                 </SheetTrigger>
-                <SheetContent
-                  side={isRtl ? "left" : "right"}
-                  className="w-[200px] sm:w-[250px] p-4"
-                >
-                  {" "}
-                  {/* Dynamic side */}
-                  <SheetTitle>{t("settings.title")}</SheetTitle>
-                  <div className="flex flex-col space-y-4">
-                    <TimezoneSelector />
+            <SheetContent
+            side={isRtl ? "left" : "right"}
+            className="w-[200px] sm:w-[250px] p-4"
+          >
+            {" "}
+            {/* Dynamic side */}
+            <SheetTitle>{t("settings.title")}</SheetTitle>
+            <div className="flex flex-col space-y-4">
+              <div className="border-b pb-2">
+                <h3 className="text-sm font-medium">{t("user.profile")}</h3>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  <p>{user?.username || t("user.guest")}</p>
+                  <p>{user?.email || t("user.noEmail")}</p>
+                </div>
+              </div>
+              <TimezoneSelector />
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
