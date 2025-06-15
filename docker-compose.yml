@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  database:
+    image: pgvector/pgvector:pg17
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-meowdo_db}
+      POSTGRES_USER: ${DB_USER:-random_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-random_password}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: postgres://${DB_USER:-random_user}:${DB_PASSWORD:-random_password}@database:5432/${DB_NAME:-meowdo_db}
+      JWT_SECRET: ${JWT_SECRET:-random_key}
+      PORT: 3000
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000/api/v1}
+    restart: always
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000/api/v1}
+    ports:
+      - "${FRONTEND_PORT:-5173}:80" # Map container's Nginx port 80 to host's 5173
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  db_data:
+    name: meowdo_db
+
+networks:
+  app-network:
+    driver: bridge
+    name: meowdo_network
