@@ -20,6 +20,7 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
 import TimezoneSelector from "./settings/TimezoneSelector"; // Import TimezoneSelector
 import InstallPWAButton from "./InstallPWAButton"; // Import InstallPWAButton
+import WorkspaceInvitations from "./workspace/WorkspaceInvitations"; // Import WorkspaceInvitations
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation(); // Destructure i18n
@@ -54,8 +55,25 @@ export const Navbar: React.FC = () => {
                             <InstallPWAButton />
                             <LanguageSwitcher />
                             <ThemeToggle />
-              {/* Settings Button for Mobile */}
-              <Sheet>
+                {/* Invitations Button for Mobile */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start">
+                      {t("workspace.invitations")}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="sm:max-w-[425px]">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("workspace.invitations")}</AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <WorkspaceInvitations />
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("close")}</AlertDialogCancel>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                {/* Settings Button for Mobile */}
+                <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="ghost" className="w-full justify-start">
                     <Settings className="me-2 h-4 w-4" />{" "}
@@ -111,8 +129,25 @@ export const Navbar: React.FC = () => {
                 <InstallPWAButton />
                 <LanguageSwitcher />
                 <ThemeToggle />
-        {/* Settings Button for Desktop */}
-        <Sheet>
+                {/* Invitations Button for Desktop */}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost">
+                      {t("workspace.invitations")}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="sm:max-w-[425px]">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("workspace.invitations")}</AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <WorkspaceInvitations />
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("close")}</AlertDialogCancel>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                {/* Settings Button for Desktop */}
+                <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost">
               <Settings className="me-2 h-4 w-4" /> {/* Changed mr-2 to me-2 */}

@@ -214,5 +214,6 @@
     "installInstructions": "To install, use 'Add to Home Screen' in your browser's menu."
   },
   "notFound": "Not Found",
-  "pageNotFound": "Page not found."
+  "pageNotFound": "Page not found.",
+  "close": "Close"
 }
