@@ -216,5 +216,6 @@
   },
   "notFound": "Not Found",
   "pageNotFound": "Page not found.",
-  "close": "Close"
+  "close": "Close",
+  "deleteError": "Delete Error."
 }

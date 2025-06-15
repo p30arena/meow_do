@@ -216,5 +216,6 @@
   },
   "notFound": "یافت نشد",
   "pageNotFound": "صفحه یافت نشد.",
-  "close": "بستن"
+  "close": "بستن",
+  "deleteError": "خطای حذف."
 }
