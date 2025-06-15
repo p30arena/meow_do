@@ -73,11 +73,19 @@ export const checkPermission = (resourceType: 'workspace' | 'goal' | 'task', act
       return res.status(404).json({ message: 'Workspace ID not found for the resource' });
     }
 
-    // Bypass sharing check for stop action to ensure access
-    if (!(req.url.includes('/stop') && resourceType === 'task')) {
-      const share = await db.select().from(workspaceShares).where(and(eq(workspaceShares.workspaceId, workspaceId), eq(workspaceShares.sharedWithUserId, userId)));
-      if (share.length === 0) {
+    // Allow stop action on tasks to bypass share check if no share entry exists
+    const share = await db.select().from(workspaceShares).where(and(eq(workspaceShares.workspaceId, workspaceId), eq(workspaceShares.sharedWithUserId, userId)));
+    if (share.length === 0) {
+      if (req.url.includes('/stop') && resourceType === 'task') {
+        // Proceed to permission check for stop action even if no share entry exists
+      } else {
         return res.status(403).json({ message: 'You do not have access to this resource' });
+      }
+    } else {
+      // Ensure the share is accepted for full access; otherwise, limit to read-only actions unless it's a stop action
+      const isAcceptedShare = share.some(s => s.status === 'accepted');
+      if (!isAcceptedShare && action !== 'list' && !(req.url.includes('/stop') && resourceType === 'task')) {
+        return res.status(403).json({ message: 'You do not have permission to perform this action as the share is not accepted' });
       }
     }
 
