@@ -33,6 +33,7 @@ export const register = catchAsync(async (req: Request, res: Response) => {
       id: newUser[0].id,
       username: newUser[0].username,
       email: newUser[0].email,
+      timezone: newUser[0].timezone,
     },
     token,
   });
@@ -84,6 +85,7 @@ export const login = catchAsync(async (req: Request, res: Response) => {
       id: user[0].id,
       username: user[0].username,
       email: user[0].email,
+      timezone: user[0].timezone,
     },
     token,
   });
