@@ -43,6 +43,13 @@
       "when": 1749725993836,
       "tag": "0005_certain_chimera",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1749961929678,
+      "tag": "0006_bent_stick",
+      "breakpoints": true
     }
   ]
 }

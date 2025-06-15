@@ -72,8 +72,23 @@
     "groupNameExists": "نام گروه از قبل موجود است.",
     "optionalGroupName": "نام گروه اختیاری",
     "noGroup": "بدون گروه",
-    "typeNewGroup": "نام گروه جدید را تایپ کنید یا از موجود انتخاب کنید",
-    "runningTask": "وظیفه در حال اجرا"
+    "typeNewGroup": "یک نام گروه جدید تایپ کنید یا از موجود انتخاب کنید",
+    "runningTask": "وظیفه در حال اجرا",
+    "share": "اشتراک‌گذاری",
+    "shareWorkspace": "اشتراک‌گذاری فضای کاری {{name}}",
+    "shareWith": "اشتراک‌گذاری با",
+    "enterUsernameOrEmail": "نام کاربری یا ایمیل را وارد کنید",
+    "sharing": "در حال اشتراک‌گذاری...",
+    "permissions": {
+      "canList": "می‌تواند فهرست کند",
+      "canEdit": "می‌تواند ویرایش کند",
+      "canDelete": "می‌تواند حذف کند"
+    },
+    "sharedUsers": "کاربران اشتراکی",
+    "loading": "در حال بارگذاری...",
+    "noSharedUsers": "هنوز کاربر اشتراکی وجود ندارد.",
+    "updatePermissions": "به‌روزرسانی مجوزها",
+    "revokeAccess": "لغو دسترسی"
   },
   "goalsFor": "اهداف برای {{name}}",
   "backToWorkspaces": "بازگشت به فضاهای کاری",

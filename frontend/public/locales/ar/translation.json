@@ -73,7 +73,22 @@
     "optionalGroupName": "اسم المجموعة اختياري",
     "noGroup": "لا توجد مجموعة",
     "typeNewGroup": "اكتب اسم مجموعة جديدة أو اختر من الموجودة",
-    "runningTask": "مهمة قيد التشغيل"
+    "runningTask": "مهمة قيد التشغيل",
+    "share": "مشاركة",
+    "shareWorkspace": "مشاركة مساحة العمل {{name}}",
+    "shareWith": "مشاركة مع",
+    "enterUsernameOrEmail": "أدخل اسم المستخدم أو البريد الإلكتروني",
+    "sharing": "جارٍ المشاركة...",
+    "permissions": {
+      "canList": "يمكن العرض",
+      "canEdit": "يمكن التعديل",
+      "canDelete": "يمكن الحذف"
+    },
+    "sharedUsers": "المستخدمون المشتركون",
+    "loading": "جارٍ التحميل...",
+    "noSharedUsers": "لا يوجد مستخدمون مشتركون بعد.",
+    "updatePermissions": "تحديث الأذونات",
+    "revokeAccess": "إلغاء الوصول"
   },
   "goalsFor": "أهداف لـ {{name}}",
   "backToWorkspaces": "العودة إلى مساحات العمل",

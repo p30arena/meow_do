@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "./ui/button";
@@ -24,6 +24,7 @@ import InstallPWAButton from "./InstallPWAButton"; // Import InstallPWAButton
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation(); // Destructure i18n
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const isRtl = i18n.language === "ar" || i18n.language === "fa"; // Determine RTL
 
@@ -91,7 +92,7 @@ export const Navbar: React.FC = () => {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
-                          <AlertDialogAction onClick={logout}>
+                          <AlertDialogAction onClick={() => { logout(); navigate('/'); }}>
                             {t("confirm")}
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -144,9 +145,9 @@ export const Navbar: React.FC = () => {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t("cancel")}</AlertDialogCancel>
-                    <AlertDialogAction onClick={logout}>
-                      {t("confirm")}
-                    </AlertDialogAction>
+              <AlertDialogAction onClick={() => { logout(); navigate('/'); }}>
+                {t("confirm")}
+              </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
-import { tasks, taskTrackingRecords, users, goals } from '../db/schema'; // Import goals
+import { tasks, taskTrackingRecords, users, goals, workspaceShares } from '../db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { createTaskSchema, updateTaskSchema, startTaskTrackingSchema, stopTaskTrackingSchema, createManualTaskRecordSchema } from '../validation/task.validation';
 import { catchAsync } from '../utils/catchAsync';
@@ -30,26 +30,48 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
     sql`${taskTrackingRecords.endTime} IS NULL`
   );
 
-  const mainQueryConditions = [
-    eq(tasks.userId, userId)
-  ];
+  // Fetch owned tasks
+  const ownedConditions = [eq(tasks.userId, userId)];
   if (goalId) {
-    mainQueryConditions.push(eq(tasks.goalId, goalId as string));
+    ownedConditions.push(eq(tasks.goalId, goalId as string));
   }
 
-  const result = await db.select({
+  const ownedResult = await db.select({
     task: tasks,
     activeTracking: taskTrackingRecords,
   })
   .from(tasks)
   .leftJoin(taskTrackingRecords, joinCondition)
-  .where(and(...mainQueryConditions))
+  .where(and(...ownedConditions))
   .orderBy(
     sql`CASE WHEN ${tasks.status} = 'done' THEN 1 ELSE 0 END`,
     tasks.name
   );
 
-  const tasksWithTracking = result.map(row => ({
+  // Fetch shared tasks through shared workspaces
+  const sharedConditions = [];
+  if (goalId) {
+    sharedConditions.push(eq(tasks.goalId, goalId as string));
+  }
+
+  const sharedResult = await db.select({
+    task: tasks,
+    activeTracking: taskTrackingRecords,
+  })
+  .from(tasks)
+  .innerJoin(goals, eq(tasks.goalId, goals.id))
+  .innerJoin(workspaceShares, and(eq(workspaceShares.workspaceId, goals.workspaceId), eq(workspaceShares.sharedWithUserId, userId)))
+  .leftJoin(taskTrackingRecords, joinCondition)
+  .where(and(...sharedConditions))
+  .orderBy(
+    sql`CASE WHEN ${tasks.status} = 'done' THEN 1 ELSE 0 END`,
+    tasks.name
+  );
+
+  // Combine owned and shared tasks
+  const combinedResult = [...ownedResult, ...sharedResult];
+
+  const tasksWithTracking = combinedResult.map(row => ({
     ...row.task,
     activeTracking: row.activeTracking || null,
   }));
@@ -59,11 +81,7 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
 
 export const getTaskById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = req.user?.id;
-  if (!userId) {
-    return res.status(401).json({ message: 'Not authorized, user ID missing' });
-  }
-  const task = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+  const task = await db.select().from(tasks).where(eq(tasks.id, id));
   if (task.length === 0) {
     return res.status(404).json({ message: 'Task not found' });
   }
@@ -72,12 +90,8 @@ export const getTaskById = catchAsync(async (req: Request, res: Response) => {
 
 export const updateTask = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = req.user?.id;
-  if (!userId) {
-    return res.status(401).json({ message: 'Not authorized, user ID missing' });
-  }
   const validatedData = updateTaskSchema.parse(req.body);
-  const updatedTask = await db.update(tasks).set(validatedData).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
+  const updatedTask = await db.update(tasks).set(validatedData).where(eq(tasks.id, id)).returning();
   if (updatedTask.length === 0) {
     return res.status(404).json({ message: 'Task not found' });
   }
@@ -86,11 +100,7 @@ export const updateTask = catchAsync(async (req: Request, res: Response) => {
 
 export const deleteTask = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = req.user?.id;
-  if (!userId) {
-    return res.status(401).json({ message: 'Not authorized, user ID missing' });
-  }
-  const deletedTask = await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
+  const deletedTask = await db.delete(tasks).where(eq(tasks.id, id)).returning();
   if (deletedTask.length === 0) {
     return res.status(404).json({ message: 'Task not found' });
   }
@@ -286,46 +296,100 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
       return res.status(400).json({ message: 'Invalid period specified. Must be "day", "month", "year", or "total".' });
   }
 
-  const conditions = [eq(taskTrackingRecords.userId, userId)];
-
-  if (goalId) {
-    conditions.push(eq(tasks.goalId, goalId as string));
-  }
+  // Base conditions for task tracking records
+  const baseConditions = [eq(taskTrackingRecords.userId, userId)];
 
   if (periodCondition) {
-    conditions.push(periodCondition);
+    baseConditions.push(periodCondition);
   }
 
-  let queryBuilder: any = db.select({ // Explicitly type as any to resolve type issues
+  // Fetch owned task tracking summary
+  const ownedConditions = [...baseConditions];
+  if (goalId) {
+    ownedConditions.push(eq(tasks.goalId, goalId as string));
+  }
+
+  let ownedQueryBuilder: any = db.select({
     taskName: tasks.name,
     totalDurationSeconds: sql<number>`sum(${taskTrackingRecords.duration})::integer`,
     ...(period !== 'total' && { period: periodGroupByColumn }),
   })
     .from(taskTrackingRecords)
-    .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id));
+    .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
+    .where(and(...ownedConditions));
 
   if (workspaceId) {
-    queryBuilder = queryBuilder.innerJoin(goals, eq(tasks.goalId, goals.id));
-    conditions.push(eq(goals.workspaceId, workspaceId as string));
+    ownedQueryBuilder = ownedQueryBuilder.innerJoin(goals, eq(tasks.goalId, goals.id));
+    ownedConditions.push(eq(goals.workspaceId, workspaceId as string));
   }
 
-  // Apply where clause
-  queryBuilder = queryBuilder.where(and(...conditions));
-
-  // Construct final groupBy and orderBy arrays
-  const finalGroupByColumns = [tasks.name];
+  // Construct final groupBy and orderBy arrays for owned tasks
+  const ownedGroupByColumns = [tasks.name];
   if (periodGroupByColumn) {
-    finalGroupByColumns.push(periodGroupByColumn);
+    ownedGroupByColumns.push(periodGroupByColumn);
   }
 
-  const finalOrderByColumns = [tasks.name];
+  const ownedOrderByColumns = [tasks.name];
   if (periodOrderByColumn) {
-    finalOrderByColumns.push(periodOrderByColumn);
+    ownedOrderByColumns.push(periodOrderByColumn);
   }
 
-  const summary = await queryBuilder
-    .groupBy(...finalGroupByColumns)
-    .orderBy(...finalOrderByColumns);
+  const ownedSummary = await ownedQueryBuilder
+    .groupBy(...ownedGroupByColumns)
+    .orderBy(...ownedOrderByColumns);
 
-  res.status(200).json(summary);
+  // Fetch shared task tracking summary through shared workspaces
+  const sharedConditions = [...baseConditions];
+  if (goalId) {
+    sharedConditions.push(eq(tasks.goalId, goalId as string));
+  }
+
+  let sharedQueryBuilder: any = db.select({
+    taskName: tasks.name,
+    totalDurationSeconds: sql<number>`sum(${taskTrackingRecords.duration})::integer`,
+    ...(period !== 'total' && { period: periodGroupByColumn }),
+  })
+    .from(taskTrackingRecords)
+    .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
+    .innerJoin(goals, eq(tasks.goalId, goals.id))
+    .innerJoin(workspaceShares, and(eq(workspaceShares.workspaceId, goals.workspaceId), eq(workspaceShares.sharedWithUserId, userId)))
+    .where(and(...sharedConditions));
+
+  if (workspaceId) {
+    sharedConditions.push(eq(goals.workspaceId, workspaceId as string));
+  }
+
+  // Construct final groupBy and orderBy arrays for shared tasks
+  const sharedGroupByColumns = [tasks.name];
+  if (periodGroupByColumn) {
+    sharedGroupByColumns.push(periodGroupByColumn);
+  }
+
+  const sharedOrderByColumns = [tasks.name];
+  if (periodOrderByColumn) {
+    sharedOrderByColumns.push(periodOrderByColumn);
+  }
+
+  const sharedSummary = await sharedQueryBuilder
+    .groupBy(...sharedGroupByColumns)
+    .orderBy(...sharedOrderByColumns);
+
+  // Combine owned and shared summaries
+  const combinedSummary = [...ownedSummary, ...sharedSummary];
+
+  // Aggregate summaries by taskName and period if necessary
+  const aggregatedSummary = combinedSummary.reduce((acc, curr) => {
+    const key = period !== 'total' ? `${curr.taskName}-${curr.period}` : curr.taskName;
+    if (!acc[key]) {
+      acc[key] = { ...curr };
+    } else {
+      acc[key].totalDurationSeconds += curr.totalDurationSeconds;
+    }
+    return acc;
+  }, {});
+
+  // Convert back to array
+  const finalSummary = Object.values(aggregatedSummary);
+
+  res.status(200).json(finalSummary);
 });

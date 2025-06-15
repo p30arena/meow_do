@@ -73,7 +73,22 @@
     "optionalGroupName": "Optional group name",
     "noGroup": "No Group",
     "typeNewGroup": "Type a new group name or select from existing",
-    "runningTask": "Running Task"
+    "runningTask": "Running Task",
+    "share": "Share",
+    "shareWorkspace": "Share Workspace {{name}}",
+    "shareWith": "Share with",
+    "enterUsernameOrEmail": "Enter username or email",
+    "sharing": "Sharing...",
+    "permissions": {
+      "canList": "Can List",
+      "canEdit": "Can Edit",
+      "canDelete": "Can Delete"
+    },
+    "sharedUsers": "Shared Users",
+    "loading": "Loading...",
+    "noSharedUsers": "No shared users yet.",
+    "updatePermissions": "Update Permissions",
+    "revokeAccess": "Revoke Access"
   },
   "goalsFor": "Goals for {{name}}",
   "backToWorkspaces": "Back to Workspaces",

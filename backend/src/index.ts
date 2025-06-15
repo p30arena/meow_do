@@ -5,6 +5,7 @@ import workspaceRoutes from './routes/workspace.routes';
 import goalRoutes from './routes/goal.routes';
 import taskRoutes from './routes/task.routes';
 import authRoutes from './routes/auth.routes';
+import shareRoutes from './routes/share.routes';
 import { updateTimezone } from './controllers/auth.controller'; // Import updateTimezone
 
 dotenv.config();
@@ -35,6 +36,9 @@ app.use('/api/v1/goals', protect, goalRoutes);
 
 // Task routes
 app.use('/api/v1/tasks', protect, taskRoutes);
+
+// Share routes for workspace sharing and permissions
+app.use('/api/v1/workspaces', protect, shareRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

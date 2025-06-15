@@ -57,3 +57,28 @@ export const goals = pgTable('goals', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+// New table for tracking shared workspaces
+export const workspaceShares = pgTable('workspace_shares', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  sharedWithUserId: uuid('shared_with_user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  invitedByUserId: uuid('invited_by_user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  status: varchar('status', { enum: ['pending', 'accepted', 'declined'] }).default('pending').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// New table for managing permissions on shared resources
+export const permissions = pgTable('permissions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  resourceId: uuid('resource_id').notNull(), // References workspace, goal, or task ID
+  resourceType: varchar('resource_type', { enum: ['workspace', 'goal', 'task'] }).notNull(),
+  canList: boolean('can_list').default(false).notNull(),
+  canEdit: boolean('can_edit').default(false).notNull(),
+  canDelete: boolean('can_delete').default(false).notNull(),
+  canAddTask: boolean('can_add_task').default(false).notNull(), // Only applicable for goals
+  canSubmitRecord: boolean('can_submit_record').default(false).notNull(), // Only applicable for tasks
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});

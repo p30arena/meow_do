@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { MoreVertical } from 'lucide-react';
+import { WorkspaceSharing } from './WorkspaceSharing';
 
 interface WorkspaceListProps {
   onCreateNew: () => void;
@@ -44,6 +45,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
   const [draggingWorkspaceId, setDraggingWorkspaceId] = useState<string | null>(null); // State for dragged workspace ID
   const [editingGroup, setEditingGroup] = useState<string | null>(null); // State to track which group is being edited
   const [editedGroupName, setEditedGroupName] = useState<string>(''); // State for the edited group name
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null); // State for selected workspace
 
   const fetchWorkspaces = async () => {
     try {
@@ -177,6 +179,10 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
     }
   };
 
+  const handleWorkspaceSelect = (workspace: Workspace) => {
+    onSelectWorkspace(workspace);
+  };
+
   if (loading) {
     return <div>{t('workspace.loadingWorkspaces')}</div>;
   }
@@ -301,17 +307,20 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
                     key={workspace.id}
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, workspace.id)}
-                    onClick={() => onSelectWorkspace(workspace)}
+                    onClick={() => handleWorkspaceSelect(workspace)}
                     className="cursor-pointer w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
                   >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-lg font-medium">{workspace.name}</CardTitle>
-                      {workspace.hasRunningTask && (
-                        <span className="relative flex h-3 w-3">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" title={t('workspace.runningTask')}></span>
-                        </span>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {/* Placeholder for shared workspace indicator */}
+                        {workspace.hasRunningTask && (
+                          <span className="relative flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" title={t('workspace.runningTask')}></span>
+                          </span>
+                        )}
+                      </div>
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-muted-foreground">{workspace.description || t('workspace.noDescription')}</p>
@@ -336,6 +345,9 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditWorkspace(workspace); }}>
                               {t('workspace.edit')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedWorkspace(workspace); }}>
+                              {t('workspace.share')}
                             </DropdownMenuItem>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
@@ -377,6 +389,23 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
         </div>
       )}
       <Button className="mt-4" onClick={onCreateNew}>{t('workspace.createWorkspace')}</Button>
+      
+      {selectedWorkspace && (
+        <AlertDialog open={!!selectedWorkspace} onOpenChange={() => setSelectedWorkspace(null)}>
+          <AlertDialogContent className="max-w-3xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('workspace.shareWorkspace', { name: selectedWorkspace.name })}</AlertDialogTitle>
+            </AlertDialogHeader>
+            <WorkspaceSharing 
+              workspaceId={selectedWorkspace.id} 
+              isOwner={true} // Placeholder, adjust based on actual API data
+            />
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 };
