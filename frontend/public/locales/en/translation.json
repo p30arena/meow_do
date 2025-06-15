@@ -90,6 +90,7 @@
     "updatePermissions": "Update Permissions",
     "revokeAccess": "Revoke Access",
     "invitations": "Invitations",
+    "invitationsDescription": "View and manage your pending workspace invitations.",
     "loadingInvitations": "Loading invitations...",
     "noPendingInvitations": "No pending invitations.",
     "invitationFor": "Invitation for {{name}}",

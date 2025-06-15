@@ -65,6 +65,9 @@ export const Navbar: React.FC = () => {
                   <AlertDialogContent className="sm:max-w-[425px]">
                     <AlertDialogHeader>
                       <AlertDialogTitle>{t("workspace.invitations")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("workspace.invitationsDescription")}
+                      </AlertDialogDescription>
                     </AlertDialogHeader>
                     <WorkspaceInvitations />
                     <AlertDialogFooter>
@@ -139,6 +142,9 @@ export const Navbar: React.FC = () => {
                   <AlertDialogContent className="sm:max-w-[425px]">
                     <AlertDialogHeader>
                       <AlertDialogTitle>{t("workspace.invitations")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("workspace.invitationsDescription")}
+                      </AlertDialogDescription>
                     </AlertDialogHeader>
                     <WorkspaceInvitations />
                     <AlertDialogFooter>

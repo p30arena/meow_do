@@ -90,6 +90,7 @@
     "updatePermissions": "به‌روزرسانی مجوزها",
     "revokeAccess": "لغو دسترسی",
     "invitations": "دعوت‌نامه‌ها",
+    "invitationsDescription": "مشاهده و مدیریت دعوت‌نامه‌های معلق فضای کاری شما.",
     "loadingInvitations": "در حال بارگذاری دعوت‌نامه‌ها...",
     "noPendingInvitations": "هیچ دعوت‌نامه معلقی وجود ندارد.",
     "invitationFor": "دعوت‌نامه برای {{name}}",

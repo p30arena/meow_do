@@ -90,6 +90,7 @@
     "updatePermissions": "تحديث الأذونات",
     "revokeAccess": "إلغاء الوصول",
     "invitations": "الدعوات",
+    "invitationsDescription": "عرض وإدارة دعوات مساحة العمل المعلقة الخاصة بك.",
     "loadingInvitations": "جارٍ تحميل الدعوات...",
     "noPendingInvitations": "لا توجد دعوات معلقة.",
     "invitationFor": "دعوة لـ {{name}}",
