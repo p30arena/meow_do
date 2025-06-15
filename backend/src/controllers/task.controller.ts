@@ -168,10 +168,10 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
-  // Stop any existing active tracking records for this task (should not happen if above check passes, but as a safety)
+  // Stop any existing active tracking records for this task for the current user (should not happen if above check passes, but as a safety)
   await db.update(taskTrackingRecords)
-    .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - ${taskTrackingRecords.startTime}))` }) // Calculate duration
-    .where(and(eq(taskTrackingRecords.taskId, validatedData.taskId), sql`${taskTrackingRecords.endTime} IS NULL`));
+    .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - ${taskTrackingRecords.startTime}))` })
+    .where(and(eq(taskTrackingRecords.taskId, validatedData.taskId), eq(taskTrackingRecords.userId, validatedData.userId), sql`${taskTrackingRecords.endTime} IS NULL`));
 
   const newTaskTrackingRecord = await db.insert(taskTrackingRecords).values({
     taskId: validatedData.taskId,
