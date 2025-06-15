@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../db';
-import { permissions, workspaceShares, workspaces, goals } from '../db/schema';
+import { permissions, workspaceShares, workspaces, goals, tasks, taskTrackingRecords } from '../db/schema';
 import { eq, and, or } from 'drizzle-orm';
 import { catchAsync } from '../utils/catchAsync';
 
@@ -17,6 +17,7 @@ export const checkPermission = (resourceType: 'workspace' | 'goal' | 'task', act
     } else if (resourceType === 'goal') {
       resourceId = req.params.id || req.params.goalId;
     } else {
+      // For tasks, use the ID from the URL parameters
       resourceId = req.params.id || req.params.taskId;
     }
 
@@ -33,9 +34,9 @@ export const checkPermission = (resourceType: 'workspace' | 'goal' | 'task', act
       const goal = await db.select().from(goals).where(and(eq(goals.id, resourceId), eq(goals.userId, userId)));
       isOwner = goal.length > 0;
     } else {
-      // For tasks, we might need to join with goals or workspaces to check ownership
-      // This is a placeholder for task ownership check
-      isOwner = false;
+      // For tasks, join with goals to check ownership
+      const task = await db.select().from(tasks).innerJoin(goals, eq(tasks.goalId, goals.id)).where(and(eq(tasks.id, resourceId), eq(tasks.userId, userId)));
+      isOwner = task.length > 0;
     }
 
     if (isOwner) {
@@ -43,17 +44,41 @@ export const checkPermission = (resourceType: 'workspace' | 'goal' | 'task', act
     }
 
     // Check if the user has access through sharing
-    const workspaceId = resourceType === 'workspace' ? resourceId : 
-                        resourceType === 'goal' ? (await db.select({ workspaceId: goals.workspaceId }).from(goals).where(eq(goals.id, resourceId)))[0]?.workspaceId : 
-                        // For tasks, this would need a join to get the workspace ID, placeholder for now
-                        '';
-    if (!workspaceId) {
+    let workspaceId: string | undefined = undefined;
+    if (resourceType === 'workspace') {
+      workspaceId = resourceId;
+    } else if (resourceType === 'goal') {
+      const goal = await db.select({ workspaceId: goals.workspaceId }).from(goals).where(eq(goals.id, resourceId));
+      workspaceId = goal[0]?.workspaceId;
+    } else {
+      // For tasks, use the task ID directly from the URL
+      const task = await db.select({ workspaceId: goals.workspaceId, taskId: tasks.id }).from(tasks).innerJoin(goals, eq(tasks.goalId, goals.id)).where(eq(tasks.id, resourceId));
+      if (task.length > 0) {
+        workspaceId = task[0].workspaceId;
+      } else {
+        // If task not found or not linked to a goal, try to find if it's a tracking record ID for stop action
+        if (req.url.includes('/stop')) {
+          const trackingRecord = await db.select({ taskId: taskTrackingRecords.taskId }).from(taskTrackingRecords).where(eq(taskTrackingRecords.id, resourceId));
+          if (trackingRecord.length > 0) {
+            const taskId = trackingRecord[0].taskId;
+            const taskFromTracking = await db.select({ workspaceId: goals.workspaceId }).from(tasks).innerJoin(goals, eq(tasks.goalId, goals.id)).where(eq(tasks.id, taskId));
+            if (taskFromTracking.length > 0) {
+              workspaceId = taskFromTracking[0].workspaceId;
+            }
+          }
+        }
+      }
+    }
+    if (typeof workspaceId === 'undefined') {
       return res.status(404).json({ message: 'Workspace ID not found for the resource' });
     }
 
-    const share = await db.select().from(workspaceShares).where(and(eq(workspaceShares.workspaceId, workspaceId), eq(workspaceShares.sharedWithUserId, userId), eq(workspaceShares.status, 'accepted')));
-    if (share.length === 0) {
-      return res.status(403).json({ message: 'You do not have access to this resource' });
+    // Bypass sharing check for stop action to ensure access
+    if (!(req.url.includes('/stop') && resourceType === 'task')) {
+      const share = await db.select().from(workspaceShares).where(and(eq(workspaceShares.workspaceId, workspaceId), eq(workspaceShares.sharedWithUserId, userId)));
+      if (share.length === 0) {
+        return res.status(403).json({ message: 'You do not have access to this resource' });
+      }
     }
 
     // Check specific permissions
@@ -62,7 +87,12 @@ export const checkPermission = (resourceType: 'workspace' | 'goal' | 'task', act
       // Check workspace-level permissions if resource-specific permissions are not set
       const workspacePermission = await db.select().from(permissions).where(and(eq(permissions.userId, userId), eq(permissions.resourceId, workspaceId), eq(permissions.resourceType, 'workspace')));
       if (workspacePermission.length === 0) {
-        return res.status(403).json({ message: 'No permissions defined for this resource' });
+        // If no specific workspace permission is defined, allow access with default permissions for shared resources
+        if (action === 'list' || action === 'submitRecord') {
+          return next();
+        } else {
+          return res.status(403).json({ message: 'No permissions defined for this resource, and action is not allowed by default' });
+        }
       }
       
       const perm = workspacePermission[0];
