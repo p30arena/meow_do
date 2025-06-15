@@ -52,7 +52,7 @@ createRoot(rootElement).render(
         <BaseThemeProvider> {/* Re-add BaseThemeProvider */}
           <ThemeManager> {/* Re-add ThemeManager */}
             <AuthProvider>
-              <BrowserRouter>
+              <BrowserRouter future={{ v7_startTransition: true }}>
                 <App />
               </BrowserRouter>
             </AuthProvider>
