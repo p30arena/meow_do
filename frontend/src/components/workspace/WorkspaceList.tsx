@@ -368,7 +368,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({ onCreateNew, onSelectWork
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel onClick={(e) => e.stopPropagation()}>{t('cancel')}</AlertDialogCancel>
+                                    <AlertDialogCancel onClick={(e) => { e.stopPropagation(); setWorkspaceToDelete(null); setError(null); }}>{t('cancel')}</AlertDialogCancel>
                                     <AlertDialogAction onClick={(e) => { e.stopPropagation(); executeDelete(); }}>{t('confirm')}</AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
