@@ -107,8 +107,8 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
   })
   .from(workspaces)
   .innerJoin(workspaceShares, and(eq(workspaceShares.workspaceId, workspaces.id), eq(workspaceShares.sharedWithUserId, userId)))
-  .leftJoin(goals, and(eq(goals.workspaceId, workspaces.id), eq(goals.userId, userId), ne(goals.status, "reached")))
-  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId), ne(tasks.status, "done")))
+  .leftJoin(goals, and(eq(goals.workspaceId, workspaces.id), ne(goals.status, "reached")))
+  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), ne(tasks.status, "done")))
   .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
   .leftJoin(runningTasksSubquery, eq(workspaces.id, runningTasksSubquery.workspaceId))
   .groupBy(workspaces.id, workspaces.name, workspaces.description, workspaces.groupName, workspaces.createdAt, workspaces.updatedAt, workspaces.userId, runningTasksSubquery.hasRunningTask);

@@ -118,7 +118,7 @@ export const getGoals = catchAsync(async (req: Request, res: Response) => {
   })
   .from(goals)
   .innerJoin(workspaceShares, and(eq(workspaceShares.workspaceId, goals.workspaceId), eq(workspaceShares.sharedWithUserId, userId)))
-  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), eq(tasks.userId, userId), ne(tasks.status, "done")))
+  .leftJoin(tasks, and(eq(tasks.goalId, goals.id), ne(tasks.status, "done")))
   .leftJoin(dailyTrackedTimeSubquery, eq(tasks.id, dailyTrackedTimeSubquery.taskId))
   .leftJoin(runningTasksSubquery, eq(goals.id, runningTasksSubquery.goalId))
   .where(and(...sharedConditions))
