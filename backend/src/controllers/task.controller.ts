@@ -221,11 +221,12 @@ export const stopTask = catchAsync(async (req: Request, res: Response) => {
     .where(eq(taskTrackingRecords.id, validatedData.trackingId))
     .returning();
 
-  // As a safety measure, stop any other active records for the same task
+  // As a safety measure, stop any other active records for the same task for the current user
   await db.update(taskTrackingRecords)
     .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - ${taskTrackingRecords.startTime}))` })
     .where(and(
       eq(taskTrackingRecords.taskId, recordToStop[0].taskId),
+      eq(taskTrackingRecords.userId, userId),
       sql`${taskTrackingRecords.endTime} IS NULL`,
       sql`${taskTrackingRecords.id} != ${validatedData.trackingId}` // Exclude the current record
     ));
