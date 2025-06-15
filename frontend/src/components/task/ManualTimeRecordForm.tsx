@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { DateTime } from 'luxon';
+import { useAuth } from "../../context/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -26,8 +28,12 @@ export const ManualTimeRecordForm: React.FC<ManualTimeRecordFormProps> = ({
   onRecordCreated,
 }) => {
   const { t } = useTranslation();
-  const [startTime, setStartTime] = useState("");
-  const [stopTime, setStopTime] = useState("");
+  // Set initial startTime and stopTime to current time in user's timezone on first render
+  const { user } = useAuth();
+  const userTimezone = user?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const now = DateTime.now().setZone(userTimezone);
+  const [startTime, setStartTime] = useState(now.minus({ minutes: 1 }).toFormat("yyyy-MM-dd'T'HH:mm"));
+  const [stopTime, setStopTime] = useState(now.toFormat("yyyy-MM-dd'T'HH:mm"));
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -37,24 +43,29 @@ export const ManualTimeRecordForm: React.FC<ManualTimeRecordFormProps> = ({
     setLoading(true);
 
     try {
-      const start = new Date(startTime);
-      const stop = new Date(stopTime);
+      // Parse datetime inputs using Luxon with user's preferred timezone
+      const start = DateTime.fromFormat(startTime, "yyyy-MM-dd'T'HH:mm", { zone: userTimezone });
+      const stop = DateTime.fromFormat(stopTime, "yyyy-MM-dd'T'HH:mm", { zone: userTimezone });
 
-      if (isNaN(start.getTime()) || isNaN(stop.getTime())) {
+      if (!start.isValid || !stop.isValid) {
         setError(t("tasks.manualRecord.invalidTimeFormat"));
         return;
       }
 
-      if (stop <= start) {
+      if (stop.diff(start, 'minutes').minutes <= 0) {
         setError(t("tasks.manualRecord.stopTimeBeforeStartTime"));
         return;
       }
 
-      const duration = Math.floor((stop.getTime() - start.getTime()) / 1000); // Duration in seconds
+      const duration = Math.floor(stop.diff(start, 'seconds').seconds); // Duration in seconds
+
+      // Convert to UTC for backend storage
+      const startUtc = start.toUTC().toISO();
+      const stopUtc = stop.toUTC().toISO();
 
       await createManualTaskRecord(taskId, {
-        startTime: start.toISOString(),
-        stopTime: stop.toISOString(),
+        startTime: startUtc,
+        stopTime: stopUtc,
         duration,
       });
 
