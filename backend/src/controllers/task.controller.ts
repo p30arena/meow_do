@@ -44,6 +44,7 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
   .leftJoin(taskTrackingRecords, joinCondition)
   .where(and(...ownedConditions))
   .orderBy(
+    sql`${tasks.priority} DESC`,
     sql`CASE
       WHEN ${tasks.status} = 'started' THEN 0
       WHEN ${tasks.status} = 'pending' THEN 1
@@ -70,6 +71,7 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
   .leftJoin(taskTrackingRecords, joinCondition)
   .where(and(...sharedConditions))
   .orderBy(
+    sql`${tasks.priority} DESC`,
     sql`CASE
       WHEN ${tasks.status} = 'started' THEN 0
       WHEN ${tasks.status} = 'pending' THEN 1
