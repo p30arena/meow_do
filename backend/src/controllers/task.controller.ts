@@ -44,7 +44,13 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
   .leftJoin(taskTrackingRecords, joinCondition)
   .where(and(...ownedConditions))
   .orderBy(
-    sql`CASE WHEN ${tasks.status} = 'done' THEN 1 ELSE 0 END`,
+    sql`CASE
+      WHEN ${tasks.status} = 'started' THEN 0
+      WHEN ${tasks.status} = 'pending' THEN 1
+      WHEN ${tasks.status} = 'failed' THEN 2
+      WHEN ${tasks.status} = 'done' THEN 3
+      ELSE 4
+    END`,
     tasks.name
   );
 
@@ -64,7 +70,13 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
   .leftJoin(taskTrackingRecords, joinCondition)
   .where(and(...sharedConditions))
   .orderBy(
-    sql`CASE WHEN ${tasks.status} = 'done' THEN 1 ELSE 0 END`,
+    sql`CASE
+      WHEN ${tasks.status} = 'started' THEN 0
+      WHEN ${tasks.status} = 'pending' THEN 1
+      WHEN ${tasks.status} = 'failed' THEN 2
+      WHEN ${tasks.status} = 'done' THEN 3
+      ELSE 4
+    END`,
     tasks.name
   );
 
