@@ -107,15 +107,26 @@ const TaskList: React.FC<TaskListProps> = ({
     return groupedTasks;
   };
 
-  const TaskListDivider = ({ title }: { title: string }) => {
-    const { t } = useTranslation();
-    return (
-      <div className="w-full flex items-center my-4">
-        <div className="bg-gray-300 h-0.5 w-full"></div>
-        <div className="bg-blue-500 text-white px-2 py-1 rounded rtl:mr-2 ltr:ml-2">{t(`tasks.statuses.${title.toLowerCase()}`)}</div>
-      </div>
-    );
+const TaskListDivider = ({ title }: { title: string }) => {
+  const { t } = useTranslation();
+
+  const statusColors: { [key: string]: string } = {
+    "Running": "bg-green-500",
+    "Started": "bg-yellow-500",
+    "Pending": "bg-blue-500",
+    "Failed": "bg-red-500",
+    "Done": "bg-gray-500",
   };
+
+  const bgColorClass = statusColors[title] || "bg-gray-300"; // Default to gray if status is not found
+
+  return (
+    <div className="w-full flex items-center my-4">
+      <div className="bg-gray-300 h-0.5 w-full"></div>
+      <div className={`${bgColorClass} text-white px-2 py-1 rounded rtl:mr-2 ltr:ml-2`}>{t(`tasks.statuses.${title.toLowerCase()}`)}</div>
+    </div>
+  );
+};
 
   const fetchTasks = async () => {
     try {
