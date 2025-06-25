@@ -191,6 +191,13 @@
       "stopTimeBeforeStartTime": "وقت التوقف لا يمكن أن يكون قبل وقت البدء.",
       "failedToCreateRecord": "فشل إنشاء سجل يدوي: {{message}}",
       "adding": "جارٍ الإضافة..."
+    },
+    "statuses": {
+      "running": "جاري",
+      "started": "بدأ",
+      "pending": "قيد الانتظار",
+      "failed": "فشل",
+      "done": "انتهى"
     }
   },
   "cancel": "إلغاء",

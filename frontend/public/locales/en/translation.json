@@ -191,6 +191,13 @@
       "stopTimeBeforeStartTime": "Stop time cannot be before start time.",
       "failedToCreateRecord": "Failed to create manual record: {{message}}",
       "adding": "Adding..."
+    },
+    "statuses": {
+      "running": "Running",
+      "started": "Started",
+      "pending": "Pending",
+      "failed": "Failed",
+      "done": "Done"
     }
   },
   "cancel": "Cancel",

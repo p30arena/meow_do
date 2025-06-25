@@ -191,6 +191,13 @@
       "stopTimeBeforeStartTime": "زمان توقف نمی‌تواند قبل از زمان شروع باشد.",
       "failedToCreateRecord": "ایجاد رکورد دستی ناموفق بود: {{message}}",
       "adding": "در حال افزودن..."
+    },
+    "statuses": {
+      "running": "در حال اجرا",
+      "started": "شروع شده",
+      "pending": "در انتظار",
+      "failed": "ناموفق",
+      "done": "انجام شده"
     }
   },
   "cancel": "لغو",
