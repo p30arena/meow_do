@@ -24,10 +24,13 @@ The current focus is on implementing new features: user timezone preference, tas
 *   **Resolved `missingKey` error for `tasks.overallSpent` by adding the translation key to `en/translation.json`, `ar/translation.json`, and `fa/translation.json`.**
 *   **Fixed "Invalid DateTime" error in `frontend/src/components/task/TaskTrackingChart.tsx` by changing `DateTime.fromISO` to `DateTime.fromSQL` for parsing the `period` label, as the backend returns a PostgreSQL timestamp format.**
 *   **PWA Service Worker Fixes:**
-    *   **Removed manual service worker registration from `frontend/src/main.tsx` to allow `vite-plugin-pwa`'s `injectRegister: 'auto'` to handle it correctly.**
-    *   **Configured `devOptions: { enabled: true, type: 'module' }` in `frontend/vite.config.ts` to ensure the service worker is correctly served in development mode, resolving the "unsupported MIME type ('text/html')" error for `sw.js`.**
-    *   **Revised PWA caching strategy: Removed `filename` property from `vite-plugin-pwa` configuration in `frontend/vite.config.ts` as it interferes with internal versioning. Implemented `registerSW` in `frontend/src/main.tsx` to force a page reload when a new service worker version is detected, ensuring immediate updates on the client side.**
-    *   **Declared types for `virtual:pwa-register` in `frontend/src/vite-env.d.ts` to resolve TypeScript errors.**
+    *   **Improved PWA update experience by replacing the forced reload with a user-friendly toast notification. This was achieved by:**
+        *   Adding `no-cache` headers for `sw.js` in the Nginx configuration to prevent aggressive caching.
+        *   Creating a new `UpdatePrompt.tsx` component using `shadcn/ui`'s `Toast` to inform the user when an update is available.
+        *   Integrating the `useRegisterSW` hook from `virtual:pwa-register/react` into `App.tsx` to manage the update state.
+        *   Removing the old `registerSW` call from `main.tsx`.
+        *   Adding i18n keys for the new update prompt in all languages.
+        *   Declaring types for `virtual:pwa-register/react` in `frontend/src/vite-env.d.ts` to resolve TypeScript errors.
 *   **Timezone Integration (Frontend):**
     *   **Implemented timezone handling in `frontend/src/components/task/TaskList.tsx` using `luxon` and the user's saved timezone (or system default). This includes:**
         *   **Converting UTC `startTime` from backend to user's local timezone for the tracking timer.**

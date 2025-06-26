@@ -14,17 +14,6 @@ import { StyleSheetManager } from "styled-components";
 import rtlPlugin from "stylis-plugin-rtl";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./context/AuthContext";
-import { registerSW } from 'virtual:pwa-register'; // NEW: Import registerSW
-
-// Force refresh when a new service worker is detected
-registerSW({
-  onNeedRefresh() {
-    window.location.reload(); // Force a full page reload
-  },
-  onOfflineReady() {
-    console.log('App is ready to work offline');
-  },
-});
 
 // i18n configuration
 i18n

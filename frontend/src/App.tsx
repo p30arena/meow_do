@@ -16,9 +16,17 @@ import { useAuth } from "./context/AuthContext";
 import TaskTrackingChart from "./components/task/TaskTrackingChart";
 import { Navbar } from "./components/Navbar";
 import { useLocation } from "react-router-dom"; // Import useLocation
+import { useRegisterSW } from 'virtual:pwa-register/react';
+import { UpdatePrompt } from "./components/UpdatePrompt";
+import { Toaster } from "./components/ui/toaster";
 
 function App() {
   const { t } = useTranslation();
+  const {
+    offlineReady: [offlineReady, setOfflineReady],
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW();
   const { user, setToken, setUser, isAuthReady } = useAuth();
   const navigate = useNavigate();
 
@@ -67,8 +75,19 @@ function App() {
     }
   };
 
+  const closePrompt = () => {
+    setOfflineReady(false);
+    setNeedRefresh(false);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
+      <Toaster />
+      <UpdatePrompt
+        open={offlineReady || needRefresh}
+        onOpenChange={closePrompt}
+        onUpdate={() => updateServiceWorker(true)}
+      />
       {!user || !isAuthReady ? (
         <Routes>
           <Route

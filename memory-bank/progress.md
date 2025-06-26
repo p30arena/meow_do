@@ -67,8 +67,13 @@
     *   `vite-plugin-pwa` has been installed and configured in `frontend/vite.config.ts` to handle service worker generation and registration.
     *   `frontend/src/components/InstallPWAButton.tsx` has been created to manage the PWA installation prompt, now using i18n for the button text, correctly hiding when the app is installed, and displaying instructional text when the `beforeinstallprompt` event is not available. The React Hooks order error in this component has been resolved.
     *   `InstallPWAButton` has been integrated into `frontend/src/components/Navbar.tsx`.
-    *   **Revised PWA caching strategy: Removed `filename` property from `vite-plugin-pwa` configuration in `frontend/vite.config.ts` as it interferes with internal versioning. Implemented `registerSW` in `frontend/src/main.tsx` to force a page reload when a new service worker version is detected, ensuring immediate updates on the client side.**
-    *   **Declared types for `virtual:pwa-register` in `frontend/src/vite-env.d.ts` to resolve TypeScript errors.**
+    *   **Improved PWA update experience by replacing the forced reload with a user-friendly toast notification. This was achieved by:**
+        *   Adding `no-cache` headers for `sw.js` in the Nginx configuration to prevent aggressive caching.
+        *   Creating a new `UpdatePrompt.tsx` component using `shadcn/ui`'s `Toast` to inform the user when an update is available.
+        *   Integrating the `useRegisterSW` hook from `virtual:pwa-register/react` into `App.tsx` to manage the update state.
+        *   Removing the old `registerSW` call from `main.tsx`.
+        *   Adding i18n keys for the new update prompt in all languages.
+        *   Declaring types for `virtual:pwa-register/react` in `frontend/src/vite-env.d.ts` to resolve TypeScript errors.
 *   **i18n `noDescription` Key:** Confirmed that the `noDescription` key is present in `fa/translation.json`, `en/translation.json`, and `ar/translation.json`. The `i18next::translator: missingKey fa translation noDescription noDescription` error persists, indicating a potential issue with `i18next` configuration, caching, or how the key is being used in `WorkspaceList.tsx`, rather than a missing translation key itself.
 *   **Refactored `frontend/src/components/task/TaskList.tsx` to ensure `getTaskTrackingSummary` is called efficiently, clarifying that the backend API supports 'day' and 'total' periods, not a single 'all' period for comprehensive data. The `TaskTrackingSummary` interface in `frontend/src/api/task.ts` was updated to reflect that the `period` field is optional.**
 *   **Enhanced `frontend/src/components/task/TaskList.tsx` to display the overall total spent time for each individual task within its task card, in minutes. This involved adding a new state (`overallTaskSummaries`) and an additional call to `getTaskTrackingSummary` with `period: "total"` to fetch this data.**

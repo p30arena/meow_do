@@ -224,7 +224,10 @@
   },
   "pwa": {
     "installApp": "Install App",
-    "installInstructions": "To install, use 'Add to Home Screen' in your browser's menu."
+    "installInstructions": "To install, use 'Add to Home Screen' in your browser's menu.",
+    "updateAvailable": "A new version is available.",
+    "update": "Update",
+    "dismiss": "Dismiss"
   },
   "notFound": "Not Found",
   "pageNotFound": "Page not found.",
