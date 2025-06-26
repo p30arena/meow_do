@@ -127,6 +127,7 @@ The current focus is on implementing new features: user timezone preference, tas
 *   **Refactored `frontend/src/App.tsx` to use `react-router-dom` for navigation between workspaces, goals, and tasks, replacing state-based conditional rendering with `Routes` and `Route` components.**
 *   **Updated `frontend/src/components/goal/GoalForm.tsx` to use `useParams` for `workspaceId` and `goalId`, and to fetch the goal by `goalId` for editing.**
 *   **Updated `frontend/src/components/task/TaskForm.tsx` to use `useParams` for `goalId` and `taskId`, and to fetch the task by `taskId` for editing.**
+*   **Added "Vazirmatn" font for Farsi language support.**
 
 ## What's left to build
 

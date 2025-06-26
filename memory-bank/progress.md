@@ -80,6 +80,7 @@
 *   **Updated `frontend/src/components/goal/GoalForm.tsx` to use `useParams` for `workspaceId` and `goalId`, and to fetch the goal by `goalId` for editing.**
 *   **Updated `frontend/src/components/task/TaskForm.tsx` to use `useParams` for `goalId` and `taskId`, and to fetch the task by `taskId` for editing.**
 *   **Updated `frontend/src/components/workspace/WorkspaceForm.tsx` to use `useParams` for `workspaceId` and to fetch the workspace by `workspaceId` for editing, resolving the issue where the edit form was not pre-filled.**
+*   **Added "Vazirmatn" font for Farsi language support.**
 
 ## What's left to build
 

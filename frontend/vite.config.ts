@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-const APP_VERSION = 10;
+const APP_VERSION = 11;
 
 // https://vitejs.dev/config/
 export default defineConfig({
