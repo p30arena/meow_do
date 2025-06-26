@@ -101,7 +101,8 @@
     "invitationFor": "دعوة لـ {{name}}",
     "invitedBy": "دعا بواسطة",
     "accept": "قبول",
-    "decline": "رفض"
+    "decline": "رفض",
+    "shared": "مشترك"
   },
   "goalsFor": "أهداف لـ {{name}}",
   "backToWorkspaces": "العودة إلى مساحات العمل",

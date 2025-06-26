@@ -101,7 +101,8 @@
     "invitationFor": "Invitation for {{name}}",
     "invitedBy": "Invited by",
     "accept": "Accept",
-    "decline": "Decline"
+    "decline": "Decline",
+    "shared": "Shared"
   },
   "goalsFor": "Goals for {{name}}",
   "backToWorkspaces": "Back to Workspaces",

@@ -101,7 +101,8 @@
     "invitationFor": "دعوت‌نامه برای {{name}}",
     "invitedBy": "دعوت شده توسط",
     "accept": "پذیرش",
-    "decline": "رد"
+    "decline": "رد",
+    "shared": "مشترک"
   },
   "goalsFor": "اهداف برای {{name}}",
   "backToWorkspaces": "بازگشت به فضاهای کاری",
