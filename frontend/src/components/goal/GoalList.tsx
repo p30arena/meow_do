@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
+import DescriptionViewer from "../common/DescriptionViewer";
 
 interface GoalListProps {
   workspaceId: string;
@@ -121,9 +122,7 @@ const GoalList: React.FC<GoalListProps> = ({
                 )}
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {goal.description || t("goals.noDescription")}
-                </p>
+                <DescriptionViewer description={goal.description} />
                 <div className="mt-2 text-sm text-gray-500">
                   <p>
                     <strong>{t("status")}:</strong>{" "}

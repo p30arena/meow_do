@@ -30,7 +30,7 @@ const AlertDialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
 >(({ className, ...props }, ref) => (
   <AlertDialogPortal>
-    <AlertDialogOverlay />
+    <AlertDialogOverlay onClick={(e) => e.stopPropagation()} /> {/* alertdialog must not be dismissable */}
     <AlertDialogPrimitive.Content
       ref={ref}
       className={cn(

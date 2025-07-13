@@ -43,6 +43,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
+import DescriptionViewer from "../common/DescriptionViewer";
 
 interface TaskListProps {
   workspaceId: string;
@@ -430,9 +431,7 @@ const TaskList: React.FC<TaskListProps> = ({
                           <CardTitle>{task.name}</CardTitle>
                         </CardHeader>
                         <CardContent className="w-full overflow-hidden">
-                          <p>
-                            {task.description || t("workspace.noDescription")}
-                          </p>
+                          <DescriptionViewer description={task.description} />
                           <p>
                             <strong>{t("tasks.timeBudget")}:</strong>{" "}
                             {task.timeBudget} {t("tasks.minutes")}

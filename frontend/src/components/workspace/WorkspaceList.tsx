@@ -31,6 +31,7 @@ import {
 } from "../ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { WorkspaceSharing } from "./WorkspaceSharing";
+import DescriptionViewer from "../common/DescriptionViewer";
 
 interface WorkspaceListProps {
   onCreateNew: () => void;
@@ -401,9 +402,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground">
-                        {workspace.description || t("workspace.noDescription")}
-                      </p>
+                      <DescriptionViewer description={workspace.description} />
                       <div className="mt-2 text-sm text-gray-500">
                         <p>
                           {t("workspace.goals")}: {workspace.goalCount ?? 0}
