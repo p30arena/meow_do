@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from "react";
 import mermaid from "mermaid";
+import { useTheme } from "next-themes";
 
 interface MermaidProps {
   chart: string;
 }
 
 const Mermaid: React.FC<MermaidProps> = ({ chart }) => {
+  const { theme } = useTheme();
   const [svg, setSvg] = useState("");
 
   useEffect(() => {
-    mermaid.initialize({ startOnLoad: false, theme: "default" });
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: theme === "dark" ? "dark" : "default",
+    });
     const renderMermaid = async () => {
       try {
         const { svg: renderedSvg } = await mermaid.render(
@@ -27,7 +32,7 @@ const Mermaid: React.FC<MermaidProps> = ({ chart }) => {
     if (chart) {
       renderMermaid();
     }
-  }, [chart]);
+  }, [chart, theme]);
 
   if (!svg) {
     return <div>Loading diagram...</div>;

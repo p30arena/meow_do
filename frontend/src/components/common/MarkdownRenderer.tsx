@@ -13,20 +13,29 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ children }) => {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          code({ node, className, children, ...props }) {
-            const match = /language-(\w+)/.exec(className || "");
-            const isInline = !className; // A simple heuristic
+          pre: ({ node, children, ...props }) => {
+            const child = React.Children.only(children);
 
-            if (!isInline && match && match[1] === "mermaid") {
-              return (
-                <Mermaid chart={String(children).replace(/\n$/, "")} />
-              );
+            if (
+              React.isValidElement<{
+                className?: string;
+                children?: React.ReactNode;
+              }>(child)
+            ) {
+              const { className, children: codeContent } = child.props;
+              const language = className?.replace("language-", "") || "";
+
+              if (language === "mermaid") {
+                return (
+                  <pre className="not-prose" {...props}>
+                    <Mermaid
+                      chart={String(codeContent).replace(/\n$/, "")}
+                    />
+                  </pre>
+                );
+              }
             }
-            return (
-              <code className={className} {...props}>
-                {children}
-              </code>
-            );
+            return <pre {...props}>{children}</pre>;
           },
         }}
       >
