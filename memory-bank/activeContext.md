@@ -136,6 +136,12 @@ The current focus is on implementing new features: user timezone preference, tas
     *   Creating a reusable `MarkdownRenderer` component.
     *   Creating a `DescriptionViewer` component to display a truncated description with a "Read more" button that opens a dialog to show the full Markdown content.
     *   Fixing a series of event propagation bugs to ensure that interacting with the "Read more" button or the dialog does not unintentionally trigger click events on the parent card.
+*   **Added support for Mermaid diagrams in Markdown descriptions.**
+    *   Installed the `mermaid` library.
+    *   Created a dedicated `Mermaid` component to handle rendering.
+    *   Updated the `MarkdownRenderer` to detect and render `mermaid` code blocks.
+    *   Fixed a bug where Mermaid errors were rendered at the bottom of the page.
+*   **Fixed Markdown styling issues by installing and configuring the `@tailwindcss/typography` plugin.**
 
 ## What's left to build
 
