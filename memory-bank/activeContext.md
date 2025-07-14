@@ -131,6 +131,11 @@ The current focus is on implementing new features: user timezone preference, tas
 *   **Updated `frontend/src/components/goal/GoalForm.tsx` to use `useParams` for `workspaceId` and `goalId`, and to fetch the goal by `goalId` for editing.**
 *   **Updated `frontend/src/components/task/TaskForm.tsx` to use `useParams` for `goalId` and `taskId`, and to fetch the task by `taskId` for editing.**
 *   **Added "Vazirmatn" font for Farsi language support.**
+*   **Implemented Markdown rendering for workspace, goal, and task descriptions. This includes:**
+    *   Adding `react-markdown` and `remark-gfm` to the frontend dependencies.
+    *   Creating a reusable `MarkdownRenderer` component.
+    *   Creating a `DescriptionViewer` component to display a truncated description with a "Read more" button that opens a dialog to show the full Markdown content.
+    *   Fixing a series of event propagation bugs to ensure that interacting with the "Read more" button or the dialog does not unintentionally trigger click events on the parent card.
 
 ## What's left to build
 

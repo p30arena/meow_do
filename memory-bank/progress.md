@@ -86,6 +86,7 @@
 *   **Updated `frontend/src/components/task/TaskForm.tsx` to use `useParams` for `goalId` and `taskId`, and to fetch the task by `taskId` for editing.**
 *   **Updated `frontend/src/components/workspace/WorkspaceForm.tsx` to use `useParams` for `workspaceId` and to fetch the workspace by `workspaceId` for editing, resolving the issue where the edit form was not pre-filled.**
 *   **Added "Vazirmatn" font for Farsi language support.**
+*   **Implemented Markdown rendering for descriptions in workspaces, goals, and tasks, including a "Read more" dialog and fixes for all related event propagation bugs.**
 
 ## What's left to build
 

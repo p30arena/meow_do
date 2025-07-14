@@ -18,7 +18,7 @@ interface DescriptionViewerProps {
 
 const DescriptionViewer: React.FC<DescriptionViewerProps> = ({
   description,
-  truncateLength = 100,
+  truncateLength = 50,
 }) => {
   const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
