@@ -23,10 +23,12 @@ const TimezoneSelector: React.FC = () => {
 
   useEffect(() => {
     // Generate a list of common timezones from the imported data
-    const allTimezones = timezonesData.map((tz: TimeZone) => ({
-      value: tz.tzCode, // Assuming 'tzCode' is the timezone identifier
-      label: tz.label, // Assuming 'label' is the display name
-    }));
+    const allTimezones = timezonesData
+      .map((tz: TimeZone) => ({
+        value: tz.tzCode,
+        label: tz.label,
+      }))
+      .filter((tz: TimezoneOption) => tz.value !== 'UTC');
     setTimezones(allTimezones.sort((a: TimezoneOption, b: TimezoneOption) => a.label.localeCompare(b.label)));
 
     if (user?.timezone) {

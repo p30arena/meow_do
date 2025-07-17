@@ -53,38 +53,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
 
-    let initialUser: User | null = null;
-    let initialToken: string | null = null;
-
-    if (storedUser && storedToken) {
-      if (storedUser === 'undefined') {
-        console.warn('Stored user is "undefined", clearing local storage.');
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-      } else {
-        try {
-          initialUser = JSON.parse(storedUser);
-          initialToken = storedToken;
-          setUserState(initialUser);
-          setTokenState(initialToken);
-        } catch (error) {
-          console.error('Failed to parse stored user or token:', error);
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-        }
+    if (storedUser && storedToken && storedUser !== 'undefined') {
+      try {
+        setUserState(JSON.parse(storedUser));
+        setTokenState(storedToken);
+      } catch (error) {
+        console.error('Failed to parse stored user or token:', error);
+        logout();
       }
     }
-    setIsAuthReady(true); // Set ready after initial load attempt
+    setIsAuthReady(true);
+  }, [logout]);
 
-    // Automatically set timezone if not already set
-    const autoSetTimezone = async (user: User, token: string) => {
-      const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (user && token && (!user.timezone || user.timezone === 'UTC')) {
+  useEffect(() => {
+    const autoSetTimezone = async () => {
+      if (userState && tokenState && (!userState.timezone || userState.timezone === 'UTC')) {
         try {
-          const response = await updateTimezone(localTimezone, token);
-          // Update user state and local storage with the new timezone
+          const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const response = await updateTimezone(localTimezone, tokenState);
           if (response && response.user) {
-            setAuthUser(response.user); // Use the user object from the API response
+            setAuthUser(response.user);
           } else {
             console.error('Timezone update response did not contain user data:', response);
           }
@@ -94,10 +82,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     };
 
-    if (initialUser && initialToken) {
-      autoSetTimezone(initialUser, initialToken);
-    }
-  }, [setAuthUser, setAuthToken, logout]); // Add memoized setters to dependency array
+    autoSetTimezone();
+  }, [userState, tokenState, setAuthUser]);
 
 
   return (
