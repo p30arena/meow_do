@@ -16,5 +16,4 @@ RUN npm run build
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Define the command to run the app
-CMD ["sh", "-c", "npm run drizzle:migrate && npm start"]
+CMD ["sh", "-c", "if [ \"${DB_DRIVER:-postgres}\" = \"sqlite\" ]; then npm start; else npm run drizzle:migrate && npm start; fi"]

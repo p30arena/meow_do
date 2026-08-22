@@ -85,7 +85,7 @@ export const checkPermission = (resourceType: 'workspace' | 'goal' | 'task' | 't
       return res.status(403).json({ message: 'You do not have access to this resource' });
     } else {
       // Require share to be accepted for all actions to prevent information leakage
-      const isAcceptedShare = share.some(s => s.status === 'accepted');
+      const isAcceptedShare = share.some((s: { status: string }) => s.status === 'accepted');
       if (!isAcceptedShare) {
         return res.status(403).json({ message: 'You do not have permission to perform this action as the share is not accepted' });
       }

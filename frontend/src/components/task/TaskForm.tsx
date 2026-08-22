@@ -225,11 +225,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ onSuccess, onCancel }) => {
           </div>
           {/* Removed Recurring Task checkbox as per user request */}
           {error && (
-            <p className="text-red-500 text-sm">
+            <p className="text-sm text-destructive" role="alert">
               {t("workspace.error")}: {error}
             </p>
           )}
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col-reverse justify-end gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"

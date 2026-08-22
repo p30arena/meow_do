@@ -175,7 +175,7 @@ export const revokeAccess = catchAsync(async (req: Request, res: Response) => {
 
   // Delete permissions for goals associated with this workspace
   const goalsInWorkspace = await db.select({ id: goals.id }).from(goals).where(eq(goals.workspaceId, workspaceId));
-  const goalIds = goalsInWorkspace.map(goal => goal.id);
+  const goalIds = goalsInWorkspace.map((goal: { id: string }) => goal.id);
   if (goalIds.length > 0) {
     await db.delete(permissions).where(
       and(
@@ -189,7 +189,7 @@ export const revokeAccess = catchAsync(async (req: Request, res: Response) => {
   // Delete permissions for tasks associated with goals in this workspace
   if (goalIds.length > 0) {
     const tasksInGoals = await db.select({ id: tasks.id }).from(tasks).where(inArray(tasks.goalId, goalIds));
-    const taskIds = tasksInGoals.map(task => task.id);
+    const taskIds = tasksInGoals.map((task: { id: string }) => task.id);
     if (taskIds.length > 0) {
       await db.delete(permissions).where(
         and(

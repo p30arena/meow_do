@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "echo \"VITE_API_BASE_URL: $VITE_API_BASE_URL\" && vite build",
     "lint": "eslint .",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "test": "node --test scripts/*.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

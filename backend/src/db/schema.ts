@@ -10,6 +10,14 @@ export const workspaces = pgTable('workspaces', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+export const workspaceGroups = pgTable('workspace_groups', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 256 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   username: varchar('username', { length: 256 }).notNull().unique(),

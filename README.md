@@ -140,9 +140,13 @@ graph TD
 - **Code Editor**: VS Code (recommended extensions: ESLint, Prettier, Tailwind CSS IntelliSense, Drizzle Kit)
 
 ### Backend Specific
-- **Database Setup**: Local PostgreSQL or Dockerized container.
-- **Environment Variables**: `.env` file for sensitive information.
-- **Migrations**: Drizzle Kit for schema migrations.
+
+- **Database options:** PostgreSQL (default) or SQLite for local, single-process deployments.
+- **PostgreSQL setup:** Local PostgreSQL or the Dockerized database service.
+- **SQLite setup:** Set `DB_DRIVER=sqlite` and `SQLITE_PATH=./data/meowdo.sqlite`. The backend creates the database and tables on startup.
+- **SQLite limitations:** SQLite mode is intended for one backend process and local development/small deployments. PostgreSQL remains recommended for concurrent multi-instance production deployments and the full sharing workload.
+- **Environment variables:** Store `.env` values locally; never commit credentials.
+- **Migrations:** PostgreSQL uses Drizzle migrations. SQLite uses the startup schema initializer and preserves data at `SQLITE_PATH`.
 
 ### Frontend Specific
 - **Vite Configuration**: Standard setup for React with TypeScript.

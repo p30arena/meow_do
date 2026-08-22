@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { db } from '../db';
-import { workspaces, goals, tasks, taskTrackingRecords, workspaceShares } from '../db/schema';
-import { eq, and, ne, sql } from 'drizzle-orm';
+import { db, driver, type TransactionClient } from '../db';
+import { workspaces, workspaceGroups, goals, tasks, taskTrackingRecords, workspaceShares } from '../db/schema';
+import { eq, and, ne, sql, inArray } from 'drizzle-orm';
+import { z } from 'zod';
 import { createWorkspaceSchema, updateWorkspaceSchema } from '../validation/workspace.validation';
 import { catchAsync } from '../utils/catchAsync';
 
@@ -20,7 +21,25 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
-
+  if (driver === 'sqlite') {
+    const owned = await db.select().from(workspaces).where(eq(workspaces.userId, userId));
+    const formatted = await Promise.all(owned.map(async (workspace: typeof workspaces.$inferSelect) => {
+      const workspaceGoals = await db.select({ id: goals.id }).from(goals).where(eq(goals.workspaceId, workspace.id));
+      const goalIds = workspaceGoals.map((goal: { id: string }) => goal.id);
+      const workspaceTasks = goalIds.length > 0
+        ? await db.select({ id: tasks.id, timeBudget: tasks.timeBudget, status: tasks.status }).from(tasks).where(inArray(tasks.goalId, goalIds))
+        : [];
+      return {
+        ...workspace,
+        goalCount: workspaceGoals.length,
+        taskCount: workspaceTasks.length,
+        totalProgress: 0,
+        hasRunningTask: false,
+        isShared: false,
+      };
+    }));
+    return res.status(200).json(formatted);
+  }
   const dailyTrackedTimeSubquery = db.select({
     taskId: taskTrackingRecords.taskId,
     total_duration_minutes: sql<number>`SUM(${taskTrackingRecords.duration})::numeric / 60`.as('total_duration_minutes'),
@@ -174,5 +193,62 @@ export const getUniqueGroupNames = catchAsync(async (req: Request, res: Response
     .from(workspaces)
     .where(and(eq(workspaces.userId, userId), sql`${workspaces.groupName} IS NOT NULL`));
 
-  res.status(200).json(groupNames.map(g => g.groupName));
+  res.status(200).json(groupNames.map((g: { groupName: string | null }) => g.groupName));
+});
+export const getWorkspaceGroups = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  const groups = await db.select().from(workspaceGroups).where(eq(workspaceGroups.userId, userId)).orderBy(workspaceGroups.name);
+  res.status(200).json(groups);
+});
+
+export const createWorkspaceGroup = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  const name = z.string().trim().min(1).max(256).parse(req.body.name);
+  const existing = await db.select({ id: workspaceGroups.id }).from(workspaceGroups).where(and(eq(workspaceGroups.userId, userId), eq(workspaceGroups.name, name)));
+  if (existing.length > 0) return res.status(409).json({ message: 'Group name already exists' });
+  const [group] = await db.insert(workspaceGroups).values({ userId, name }).returning();
+  res.status(201).json(group);
+});
+
+export const renameWorkspaceGroup = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  const name = z.string().trim().min(1).max(256).parse(req.body.name);
+  const [group] = await db.select().from(workspaceGroups).where(and(eq(workspaceGroups.id, req.params.id), eq(workspaceGroups.userId, userId)));
+  if (!group) return res.status(404).json({ message: 'Group not found' });
+  const duplicate = await db.select({ id: workspaceGroups.id }).from(workspaceGroups).where(and(eq(workspaceGroups.userId, userId), eq(workspaceGroups.name, name), ne(workspaceGroups.id, group.id)));
+  if (duplicate.length > 0) return res.status(409).json({ message: 'Group name already exists' });
+  if (driver === 'sqlite') {
+    db.transaction((tx: TransactionClient) => {
+      tx.update(workspaces).set({ groupName: name, updatedAt: new Date() }).where(and(eq(workspaces.userId, userId), eq(workspaces.groupName, group.name))).run();
+      tx.update(workspaceGroups).set({ name, updatedAt: new Date() }).where(eq(workspaceGroups.id, group.id)).run();
+    });
+    return res.status(200).json({ ...group, name });
+  }
+  const updated = await db.transaction(async (tx: TransactionClient) => {
+    await tx.update(workspaces).set({ groupName: name, updatedAt: new Date() }).where(and(eq(workspaces.userId, userId), eq(workspaces.groupName, group.name)));
+    return tx.update(workspaceGroups).set({ name, updatedAt: new Date() }).where(eq(workspaceGroups.id, group.id)).returning();
+  });
+  res.status(200).json(updated[0]);
+});
+
+export const deleteWorkspaceGroup = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  const [group] = await db.select().from(workspaceGroups).where(and(eq(workspaceGroups.id, req.params.id), eq(workspaceGroups.userId, userId)));
+  if (!group) return res.status(404).json({ message: 'Group not found' });
+  if (driver === 'sqlite') {
+    db.transaction((tx: TransactionClient) => {
+      tx.update(workspaces).set({ groupName: null, updatedAt: new Date() }).where(and(eq(workspaces.userId, userId), eq(workspaces.groupName, group.name))).run();
+      tx.delete(workspaceGroups).where(eq(workspaceGroups.id, group.id)).run();
+    });
+    return res.status(204).send();
+  }
+  await db.transaction(async (tx: TransactionClient) => {
+    await tx.update(workspaces).set({ groupName: null, updatedAt: new Date() }).where(and(eq(workspaces.userId, userId), eq(workspaces.groupName, group.name)));
+    await tx.delete(workspaceGroups).where(eq(workspaceGroups.id, group.id));
+  });
+  res.status(204).send();
 });

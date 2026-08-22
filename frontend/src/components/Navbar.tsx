@@ -30,9 +30,9 @@ export const Navbar: React.FC = () => {
   const isRtl = i18n.language === "ar" || i18n.language === "fa"; // Determine RTL
 
   return (
-    <nav className="bg-primary text-primary-foreground p-4 flex items-center justify-between w-full fixed top-0 z-50">
-      <Link to="/" className="text-lg font-bold flex items-center">
-        <img src="/logo.png" alt="MeowDo Logo" className="w-8 h-8 rounded-full mx-2" />
+    <nav className="sticky top-0 z-50 flex min-h-16 w-full items-center justify-between gap-3 bg-primary p-4 text-primary-foreground">
+      <Link to="/" className="flex min-w-0 items-center text-lg font-bold">
+        <img src="/logo.png" alt="" className="mx-2 h-8 w-8 shrink-0 rounded-full" />
         MeowDo
       </Link>
 
@@ -40,13 +40,13 @@ export const Navbar: React.FC = () => {
             <div className="md:hidden">
                 <Sheet>
                     <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <Menu className="h-6 w-6" />
+                        <Button variant="ghost" size="icon" aria-label={t("navigation.openMenu")}>
+                            <Menu className="h-6 w-6" aria-hidden="true" />
                         </Button>
                     </SheetTrigger>
                     <SheetContent
                         side={isRtl ? "left" : "right"}
-                        className="w-[200px] sm:w-[250px] p-4"
+                        className="w-[min(24rem,calc(100vw-2rem))] p-4"
                     >
                         {" "}
                         {/* Dynamic side */}
@@ -93,7 +93,7 @@ export const Navbar: React.FC = () => {
                 </SheetTrigger>
             <SheetContent
             side={isRtl ? "left" : "right"}
-            className="w-[200px] sm:w-[250px] p-4"
+            className="w-[min(24rem,calc(100vw-2rem))] p-4"
           >
             {" "}
             {/* Dynamic side */}
@@ -176,7 +176,7 @@ export const Navbar: React.FC = () => {
           </SheetTrigger>
           <SheetContent
             side={isRtl ? "left" : "right"}
-            className="w-[200px] sm:w-[250px] p-4"
+            className="w-[min(24rem,calc(100vw-2rem))] p-4"
           >
             {" "}
             {/* Dynamic side */}

@@ -101,6 +101,10 @@ dist
 
 # vuepress build output
 .vuepress/dist
+backend/data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 
 # vuepress v2.x temp and cache directory
 .temp

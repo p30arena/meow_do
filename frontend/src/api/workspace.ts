@@ -15,6 +15,48 @@ export interface Workspace {
   isShared?: boolean; // Indicates if the workspace is shared
 }
 
+export interface WorkspaceGroup {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const getWorkspaceGroups = async (): Promise<WorkspaceGroup[]> => {
+  const response = await fetch(`${API_BASE_URL}/workspaces/groups`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  });
+  if (!response.ok) throw new Error('Failed to fetch workspace groups');
+  return response.json();
+};
+
+export const createWorkspaceGroup = async (name: string): Promise<WorkspaceGroup> => {
+  const response = await fetch(`${API_BASE_URL}/workspaces/groups`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) throw new Error((await response.json()).message || 'Failed to create group');
+  return response.json();
+};
+
+export const renameWorkspaceGroup = async (id: string, name: string): Promise<WorkspaceGroup> => {
+  const response = await fetch(`${API_BASE_URL}/workspaces/groups/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) throw new Error((await response.json()).message || 'Failed to rename group');
+  return response.json();
+};
+
+export const deleteWorkspaceGroup = async (id: string): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/workspaces/groups/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  });
+  if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete group');
+};
 interface CreateWorkspacePayload {
   name: string;
   description?: string;

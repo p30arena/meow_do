@@ -12,6 +12,7 @@ import {
   createManualTaskRecord, // Import the new controller
 } from '../controllers/task.controller';
 import { protect } from '../middleware/auth.middleware';
+import { driver } from '../db';
 import { checkPermission } from '../middleware/permission.middleware';
 
 const router: Router = express.Router(); // Task routes
@@ -25,8 +26,8 @@ router.delete('/:id', protect, checkPermission('task', 'delete'), deleteTask);
 
 router.get('/daily-budget/:goalId', protect, getDailyTimeBudgetForGoal);
 
-router.post('/:id/start', protect, checkPermission('task', 'submitRecord'), startTask);
-router.post('/:id/stop', protect, checkPermission('task_tracking_records', 'submitRecord'), stopTask);
+router.post('/:id/start', protect, ...(driver === 'sqlite' ? [startTask] : [checkPermission('task', 'submitRecord'), startTask]));
+router.post('/:id/stop', protect, ...(driver === 'sqlite' ? [stopTask] : [checkPermission('task_tracking_records', 'submitRecord'), stopTask]));
 router.post('/:taskId/manual-record', protect, checkPermission('task', 'submitRecord'), createManualTaskRecord); // New route for manual records
 
 export default router;

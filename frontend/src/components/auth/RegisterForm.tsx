@@ -101,7 +101,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
               {...formRegister("username")}
             />
             {errors.username && (
-              <p className="text-red-500 text-sm">{errors.username.message}</p>
+              <p className="text-sm text-destructive" role="alert">{errors.username.message}</p>
             )}
           </div>
           <div className="grid gap-2">
@@ -113,7 +113,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
               {...formRegister("email")}
             />
             {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
+              <p className="text-sm text-destructive" role="alert">{errors.email.message}</p>
             )}
           </div>
           <div className="grid gap-2">
@@ -124,7 +124,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
               {...formRegister("password")}
             />
             {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password.message}</p>
+              <p className="text-sm text-destructive" role="alert">{errors.password.message}</p>
             )}
           </div>
           <div className="grid gap-2">
@@ -137,12 +137,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
               {...formRegister("confirmPassword")}
             />
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm">
+              <p className="text-sm text-destructive" role="alert">
                 {errors.confirmPassword.message}
               </p>
             )}
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? t("register.registering") : t("register.signUp")}
           </Button>

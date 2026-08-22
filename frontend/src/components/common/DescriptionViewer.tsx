@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
@@ -9,7 +9,7 @@ import {
   AlertDialogCancel,
 } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
-import MarkdownRenderer from "./MarkdownRenderer";
+const MarkdownRenderer = lazy(() => import("./MarkdownRenderer"));
 
 interface DescriptionViewerProps {
   description?: string | null;
@@ -60,7 +60,9 @@ const DescriptionViewer: React.FC<DescriptionViewerProps> = ({
             <AlertDialogTitle>{t("fullDescription")}</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="max-h-[60vh] overflow-y-auto p-4">
-            <MarkdownRenderer>{description}</MarkdownRenderer>
+            <Suspense fallback={<p role="status">{t("loading")}</p>}>
+              <MarkdownRenderer>{description}</MarkdownRenderer>
+            </Suspense>
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("close")}</AlertDialogCancel>

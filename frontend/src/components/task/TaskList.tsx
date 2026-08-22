@@ -192,8 +192,8 @@ const TaskList: React.FC<TaskListProps> = ({
       } else {
         stopTimer();
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
       stopTimer();
     } finally {
       setLoading(false);
@@ -340,40 +340,47 @@ const TaskList: React.FC<TaskListProps> = ({
   };
 
   const executeDelete = async () => {
-    if (taskToDelete) {
-      setLoading(true);
-      setError(null);
-      try {
-        await onDeleteTask(taskToDelete.id);
-        fetchTasks();
-      } catch (err: any) {
-        setError(err.message || t("deleteError"));
-      } finally {
-        setLoading(false);
-        setTaskToDelete(null);
-      }
+    if (!taskToDelete) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      await onDeleteTask(taskToDelete.id);
+      await fetchTasks();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("deleteError"));
+    } finally {
+      setLoading(false);
+      setTaskToDelete(null);
     }
   };
 
   const isOver24Hours = totalTimeBudget > 24 * 60;
 
-  if (loading) {
-    return <div>{t("loadingTasks")}</div>;
+  if (loading && tasks.length === 0) {
+    return <div role="status" aria-live="polite">{t("loadingTasks")}</div>;
   }
 
-  if (error) {
+  if (error && tasks.length === 0) {
     return (
-      <div>
-        {t("workspace.error")}: {error}
+      <div className="flex flex-col items-start gap-3" role="alert">
+        <p>{t("workspace.error")}: {error}</p>
+        <Button variant="outline" onClick={() => void fetchTasks()}>{t("retry")}</Button>
       </div>
     );
   }
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">{t("tasks.title")}</h2>
+      {error && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm" role="alert">
+          <span>{t("workspace.error")}: {error}</span>
+          <Button variant="outline" size="sm" onClick={() => setError(null)}>{t("close")}</Button>
+        </div>
+      )}
+      <h2 className="mb-4 text-2xl font-bold">{t("tasks.title")}</h2>
       {isOver24Hours && (
-        <p className="text-red-500 mb-4">
+        <p className="mb-4 text-destructive" role="alert">
           {t("tasks.timeBudgetWarning", {
             hours: Math.floor(totalTimeBudget / 60),
             minutes: totalTimeBudget % 60,
@@ -457,11 +464,9 @@ const TaskList: React.FC<TaskListProps> = ({
                                   <span className="text-sm font-medium">
                                     {t("tasks.dailyProgress")}:
                                   </span>
-                                  <span className="text-sm font-medium">
-                                    {individualDailyTimeSpent}{" "}
-                                    {t("tasks.minutes")} / {task.timeBudget}{" "}
-                                    {t("tasks.minutes")} (
-                                    {individualDailyPercentage.toFixed(0)}%)
+                                  <span className={`text-sm font-medium ${individualDailyPercentage > 100 ? "text-destructive" : "text-muted-foreground"}`}>
+                                    {individualDailyTimeSpent} {t("tasks.minutes")} / {task.timeBudget} {t("tasks.minutes")} ({individualDailyPercentage.toFixed(0)}%)
+                                    {individualDailyPercentage > 100 && <span className="ms-1 font-semibold">({t("tasks.overBudget")})</span>}
                                   </span>
                                 </div>
                                 <Progress
@@ -509,7 +514,7 @@ const TaskList: React.FC<TaskListProps> = ({
                             </p>
                           )}
                           {activeTrackingTaskId === task.id && (
-                            <p className="text-blue-500">
+                            <p className="text-primary" role="status">
                               {t("tasks.tracking")}: {durationDisplay}
                             </p>
                           )}
@@ -589,7 +594,7 @@ const TaskList: React.FC<TaskListProps> = ({
                                         e.stopPropagation();
                                         confirmDelete(task);
                                       }}
-                                      className="text-red-600"
+                                      className="text-destructive"
                                     >
                                       {t("workspace.delete")}
                                     </DropdownMenuItem>
@@ -665,7 +670,7 @@ const TaskList: React.FC<TaskListProps> = ({
                 className="col-span-3"
               />
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
           </div>
           <DialogFooter>
             <DialogClose asChild>

@@ -32,6 +32,7 @@
     "errorOccurred": "An error occurred during registration."
   },
   "auth": {
+    "loadingSession": "Restoring your session...",
     "alreadyHaveAccount": "Already have an account? Sign In",
     "dontHaveAccount": "Don't have an account? Sign Up",
     "loggedInMessage": "You are logged in!",
@@ -39,6 +40,8 @@
     "confirmLogoutTitle": "Confirm Logout",
     "confirmLogoutDescription": "Are you sure you want to log out?"
   },
+  "retry": "Retry",
+  "loading": "Loading...",
   "validation": {
     "invalidEmail": "Invalid email address",
     "passwordMinLength": "Password must be at least {{min}} characters long",
@@ -72,12 +75,12 @@
     "addGroup": "Add Group",
     "ungrouped": "Ungrouped",
     "deleteGroup": "Delete Group",
-    "dragWorkspacesHere": "Drag workspaces here",
+    "dragWorkspacesHere": "Choose a group or drag workspaces here",
+    "moveToGroup": "Move to group",
     "group": "Group",
     "confirmDeleteGroup": "Are you sure you want to delete group \"{{groupName}}\"? All workspaces in this group will become ungrouped.",
     "saveRename": "Save Rename",
     "editGroup": "Edit Group",
-    "groupNameExists": "Group name already exists.",
     "optionalGroupName": "Optional group name",
     "noGroup": "No Group",
     "typeNewGroup": "Type a new group name or select from existing",
@@ -139,6 +142,7 @@
   "tasks": {
     "title": "Tasks",
     "timeBudgetWarning": "Warning: Total time budget ({{hours}}h {{minutes}}m) exceeds 24 hours!",
+    "overBudget": "over budget",
     "totalDailyBudget": "Total Daily Budget",
     "totalOverallSpent": "Total Overall Spent",
     "dailyProgress": "Daily Progress",
@@ -223,8 +227,10 @@
     "title": "Settings"
   },
   "theme": {
-    "toggleLightDarkMode": "Toggle light/dark mode",
-    "selectBaseTheme": "Select base theme"
+    "selectMode": "Select color mode",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   },
   "pwa": {
     "installApp": "Install App",
@@ -236,5 +242,9 @@
   "notFound": "Not Found",
   "pageNotFound": "Page not found.",
   "close": "Close",
-  "deleteError": "Delete Error."
+  "deleteError": "Delete Error.",
+  "navigation": {
+    "openMenu": "Open navigation menu"
+  },
+  "breadcrumb": "Breadcrumb"
 }

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { getGoalsByWorkspaceId, type Goal } from "../../api/goal";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,18 +45,20 @@ const GoalList: React.FC<GoalListProps> = ({
   const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null); // State to hold goal to delete
 
   const fetchGoals = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const data = await getGoalsByWorkspaceId(workspaceId);
       setGoals(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchGoals();
+    void fetchGoals();
   }, [workspaceId]);
 
   const confirmDelete = (goal: Goal) => {
@@ -64,52 +66,60 @@ const GoalList: React.FC<GoalListProps> = ({
   };
 
   const executeDelete = async () => {
-    if (goalToDelete) {
-      setLoading(true);
-      setError(null);
-      try {
-        await onDeleteGoal(goalToDelete.id);
-        fetchGoals(); // Re-fetch goals after deletion
-      } catch (err: any) {
-        setError(err.message || t("deleteError"));
-      } finally {
-        setLoading(false);
-        setGoalToDelete(null); // Clear the goal to delete
-      }
+    if (!goalToDelete) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      await onDeleteGoal(goalToDelete.id);
+      await fetchGoals();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("deleteError"));
+    } finally {
+      setLoading(false);
+      setGoalToDelete(null);
     }
   };
 
-  if (loading) {
-    return <div>{t("loadingGoals")}</div>;
+  if (loading && goals.length === 0) {
+    return <div role="status" aria-live="polite">{t("loadingGoals")}</div>;
   }
 
-  if (error) {
+  if (error && goals.length === 0) {
     return (
-      <div>
-        {t("workspace.error")}: {error}
+      <div className="flex flex-col items-start gap-3" role="alert">
+        <p>{t("workspace.error")}: {error}</p>
+        <Button variant="outline" onClick={() => void fetchGoals()}>{t("retry")}</Button>
       </div>
     );
   }
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">{t("goals.title")}</h2>
-      <Button className="my-4" onClick={onCreateNew}>
+      {error && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm" role="alert">
+          <span>{t("workspace.error")}: {error}</span>
+          <Button variant="outline" size="sm" onClick={() => setError(null)}>{t("close")}</Button>
+        </div>
+      )}
+      <h2 className="mb-4 text-2xl font-bold">{t("goals.title")}</h2>
+      <Button className="my-4" onClick={onCreateNew} disabled={loading}>
         {t("createGoal")}
       </Button>
       {goals.length === 0 ? (
         <p>{t("goals.noGoalsYet")}</p>
       ) : (
-        <div className="flex flex-wrap gap-4 justify-start">
+        <div className="flex flex-wrap justify-start gap-4">
           {goals.map((goal) => (
             <Card
               key={goal.id}
-              onClick={() => onSelectGoal(goal)}
-              className="cursor-pointer w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
+              className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-medium">
-                  {goal.name}
+                  <Link className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to={`/workspaces/${workspaceId}/goals/${goal.id}`}>
+                    {goal.name}
+                  </Link>
                 </CardTitle>
                 {goal.hasRunningTask && (
                   <span className="relative flex h-3 w-3">
@@ -123,88 +133,40 @@ const GoalList: React.FC<GoalListProps> = ({
               </CardHeader>
               <CardContent>
                 <DescriptionViewer description={goal.description} />
-                <div className="mt-2 text-sm text-gray-500">
-                  <p>
-                    <strong>{t("status")}:</strong>{" "}
-                    {t(`goalStatus.${goal.status}`)}
-                  </p>
+                <div className="mt-2 text-sm text-muted-foreground">
+                  <p><strong>{t("status")}:</strong> {t(`goalStatus.${goal.status}`)}</p>
                   {goal.deadline && (
-                    <p>
-                      <strong>{t("deadline")}:</strong>{" "}
-                      {new Date(goal.deadline).toLocaleDateString()}
-                    </p>
+                    <p><strong>{t("deadline")}:</strong> {new Date(goal.deadline).toLocaleDateString()}</p>
                   )}
-                  <p>
-                    {t("goals.tasks")}: {goal.taskCount ?? 0}
-                  </p>
-                  <p>
-                    {t("goals.progress")}:{" "}
-                    {goal.totalProgress != null && !isNaN(goal.totalProgress)
-                      ? `${goal.totalProgress.toFixed(0)}%`
-                      : "0%"}
-                  </p>
+                  <p>{t("goals.tasks")}: {goal.taskCount ?? 0}</p>
+                  <p>{t("goals.progress")}: {goal.totalProgress != null && !isNaN(goal.totalProgress) ? `${goal.totalProgress.toFixed(0)}%` : "0%"}</p>
                 </div>
                 <div className="mt-4 flex justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">
-                          {t("workspace.openMenu")}
-                        </span>
+                      <Button variant="ghost" className="h-9 w-9 p-0">
+                        <span className="sr-only">{t("workspace.openMenu")}</span>
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEditGoal(goal);
-                        }}
-                      >
-                        {t("workspace.edit")}
-                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEditGoal(goal)}>{t("workspace.edit")}</DropdownMenuItem>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <DropdownMenuItem
-                            onSelect={(e) => e.preventDefault()}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              confirmDelete(goal);
-                            }}
-                            className="text-red-600"
-                          >
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => confirmDelete(goal)} className="text-destructive">
                             {t("workspace.delete")}
                           </DropdownMenuItem>
                         </AlertDialogTrigger>
                         {goalToDelete && (
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                {t("goals.confirmDelete", {
-                                  goalName: goalToDelete.name,
-                                })}
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {t("confirmDeleteDescription")}
-                              </AlertDialogDescription>
+                              <AlertDialogTitle>{t("goals.confirmDelete", { goalName: goalToDelete.name })}</AlertDialogTitle>
+                              <AlertDialogDescription>{t("confirmDeleteDescription")}</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setGoalToDelete(null);
-                                  setError(null);
-                                }}
-                              >
-                                {t("cancel")}
-                              </AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  executeDelete();
-                                }}
-                              >
-                                {t("confirm")}
+                              <AlertDialogCancel onClick={() => { setGoalToDelete(null); setError(null); }}>{t("cancel")}</AlertDialogCancel>
+                              <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => void executeDelete()}>
+                                {t("workspace.delete")}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>

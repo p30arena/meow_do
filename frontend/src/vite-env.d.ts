@@ -6,14 +6,14 @@ declare module 'virtual:pwa-register' {
     onNeedRefresh?: () => void
     onOfflineReady?: () => void
     onRegistered?: (registration: ServiceWorkerRegistration | undefined) => void
-    onRegisterError?: (error: any) => void
+    onRegisterError?: (error: unknown) => void
   }
 
   export function registerSW(options?: RegisterSWOptions): (reloadPage?: boolean) => Promise<void>
 }
 
 declare module 'virtual:pwa-register/react' {
-  // @ts-ignore ignore when react is not installed
+  // @ts-expect-error react types may be unavailable to the virtual module
   import type { Dispatch, SetStateAction } from 'react'
 
   export type RegisterSWOptions = {
@@ -21,7 +21,7 @@ declare module 'virtual:pwa-register/react' {
     onNeedRefresh?: () => void
     onOfflineReady?: () => void
     onRegistered?: (registration: ServiceWorkerRegistration | undefined) => void
-    onRegisterError?: (error: any) => void
+    onRegisterError?: (error: unknown) => void
   }
 
   export function useRegisterSW(options?: RegisterSWOptions): {

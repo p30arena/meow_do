@@ -49,15 +49,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      console.log("Attempting login with:", {
-        email: data.email,
-        password: data.password,
-      });
       const loginData = await login(data.email, data.password);
       onLoginSuccess(loginData);
-    } catch (err: any) {
-      setError(err.message || t("login.errorOccurred"));
-      console.error("Login error:", err);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : t("login.errorOccurred");
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -80,20 +76,28 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
               id="email"
               type="email"
               placeholder="m@example.com"
+              aria-invalid={Boolean(errors.email)}
+              aria-describedby={errors.email ? "login-email-error" : undefined}
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
+              <p id="login-email-error" className="text-sm text-destructive" role="alert">{errors.email.message}</p>
             )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">{t("login.password")}</Label>
-            <Input id="password" type="password" {...register("password")} />
+            <Input
+              id="password"
+              type="password"
+              aria-invalid={Boolean(errors.password)}
+              aria-describedby={errors.password ? "login-password-error" : undefined}
+              {...register("password")}
+            />
             {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password.message}</p>
+              <p id="login-password-error" className="text-sm text-destructive" role="alert">{errors.password.message}</p>
             )}
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? t("login.loggingIn") : t("login.signIn")}
           </Button>

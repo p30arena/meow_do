@@ -671,9 +671,43 @@ The remediation is complete only when:
 - Keyboard, touch, screen-reader, RTL, zoom, reduced-motion, and contrast checks are recorded.
 - Obsolete router-state navigation, client-only group handling, removed themes, fixed palette utilities, and generated lint targets are deleted rather than retained as compatibility paths.
 
+## Implementation status
+
+Implemented in the current branch:
+
+- Session-ready shell, protected-route recovery, deterministic resource titles, breadcrumbs, and explicit parent navigation.
+- Credential-log removal, stale-content preservation, retry/error states, accessible form errors, native hierarchy links, and non-drag workspace movement.
+- Responsive navbar/sheets, semantic status colors, destructive action styling, over-budget task messaging, and simplified appearance controls.
+- Persisted workspace groups with transactional rename/delete backend operations and migration `backend/drizzle/0007_workspace_groups.sql`.
+- Optional SQLite backend mode selected with `DB_DRIVER=sqlite` and `SQLITE_PATH`; PostgreSQL remains the default.
+- SQLite startup schema creation, UUID/time compatibility functions, authenticated workspace/goal/task flows, group transactions, task tracking, and adapter smoke coverage.
+- Route-level lazy loading, on-demand Markdown/Mermaid rendering, reduced PWA precache, and enforced bundle budgets.
+- Clean frontend/backend compilation gates plus regression tests for bundle budgets and SQLite boot/auth/workspace behavior.
+
+Remaining verification limitation:
+
+- The browser harness timed out before creating a tab, so visual keyboard, screen-reader, touch, RTL, zoom, reduced-motion, contrast, and authenticated end-to-end checks still require execution in a working browser environment.
+
+## Database support
+
+PostgreSQL remains the recommended production database. SQLite is now supported for local and single-process deployments:
+
+```bash
+cd backend
+npm ci
+DB_DRIVER=sqlite SQLITE_PATH=./data/meowdo.sqlite JWT_SECRET=local-secret npm run dev
+```
+
+The SQLite database and tables are created automatically. Do not run `drizzle:migrate` in SQLite mode; that command is PostgreSQL-specific. SQLite mode intentionally targets one backend process. Use PostgreSQL for multi-instance deployments and high-concurrency sharing workloads.
+
 ## Verification record
 
-- `frontend: npm run build` — passed. Vite emitted a large-chunk warning; PWA precache measured 6,712.12 KiB.
-- `frontend: npm run lint` — failed with 51 errors and 11 warnings; details summarized above.
-- Local Vite server — started successfully after installing locked dependencies.
-- Browser surface review — blocked by the browser harness timing out before tab creation; no visual or end-to-end claims in this report are presented as directly observed.
+- `frontend: npm run build` — passed. Vite still reports a large-chunk warning for optional rich-rendering dependencies.
+- `frontend: npm run lint` — passed with generated `dist`/`dev-dist` assets excluded.
+- `frontend: npm test` — passed, including the bundle-budget regression test.
+- `frontend: npm run check:bundle` — passed: initial entry `200,313 B` gzip, largest async chunk `140,941 B` gzip, precache `1,071,901 B`.
+- `backend: npm run build` — passed.
+- `backend: npm test` — passed SQLite boot, registration, authenticated workspace listing, and cleanup.
+- English, Arabic, and Farsi locale JSON — parsed successfully.
+- Local Vite server — started successfully and returned the application shell over HTTP.
+- Browser surface review — blocked by the browser harness timing out before tab creation; no visual or end-to-end claims are presented as directly observed.

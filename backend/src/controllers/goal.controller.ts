@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db } from '../db';
+import { db, driver } from '../db';
 import { goals, tasks, taskTrackingRecords, workspaceShares } from '../db/schema';
 import { eq, and, ne, sql } from 'drizzle-orm';
 import { createGoalSchema, updateGoalSchema } from '../validation/goal.validation';
@@ -21,7 +21,17 @@ export const getGoals = catchAsync(async (req: Request, res: Response) => {
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
-
+  if (driver === 'sqlite') {
+    const conditions = workspaceId
+      ? and(eq(goals.userId, userId), eq(goals.workspaceId, workspaceId as string))
+      : eq(goals.userId, userId);
+    const ownedGoals = await db.select().from(goals).where(conditions);
+    const formatted = await Promise.all(ownedGoals.map(async (goal: typeof goals.$inferSelect) => {
+      const goalTasks = await db.select({ id: tasks.id, timeBudget: tasks.timeBudget }).from(tasks).where(eq(tasks.goalId, goal.id));
+      return { ...goal, taskCount: goalTasks.length, totalProgress: 0, hasRunningTask: false };
+    }));
+    return res.status(200).json(formatted);
+  }
   const dailyTrackedTimeSubquery = db.select({
     taskId: taskTrackingRecords.taskId,
     total_duration_minutes: sql<number>`SUM(${taskTrackingRecords.duration})::numeric / 60`.as('total_duration_minutes'),

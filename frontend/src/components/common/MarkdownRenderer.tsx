@@ -1,8 +1,8 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import Mermaid from "./Mermaid";
 
+const Mermaid = lazy(() => import("./Mermaid"));
 interface MarkdownRendererProps {
   children: string;
 }
@@ -13,7 +13,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ children }) => {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          pre: ({ node, children, ...props }) => {
+          pre: ({ children, ...props }) => {
             const child = React.Children.only(children);
 
             if (
@@ -28,9 +28,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ children }) => {
               if (language === "mermaid") {
                 return (
                   <pre className="not-prose" {...props}>
-                    <Mermaid
-                      chart={String(codeContent).replace(/\n$/, "")}
-                    />
+                    <Suspense fallback={<p role="status">Loading diagram…</p>}>
+                      <Mermaid chart={String(codeContent).replace(/\n$/, "")} />
+                    </Suspense>
                   </pre>
                 );
               }

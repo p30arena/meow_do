@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import {
+  createWorkspaceGroup,
+  deleteWorkspaceGroup,
+  getWorkspaceGroups,
   getWorkspaces,
+  renameWorkspaceGroup,
   deleteWorkspace,
   updateWorkspace,
   type Workspace,
@@ -10,8 +15,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input"; // Import Input component
-import { Label } from "../ui/label"; // Import Label component
-import { XCircle, Pencil } from "lucide-react"; // Import XCircle and Pencil icons
+import { MoreVertical, Pencil, XCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,11 +31,17 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
 import { WorkspaceSharing } from "./WorkspaceSharing";
 import DescriptionViewer from "../common/DescriptionViewer";
+interface WorkspaceGroup {
+  id: string;
+  name: string;
+}
 
 interface WorkspaceListProps {
   onCreateNew: () => void;
@@ -53,39 +63,33 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
     null,
   ); // State to hold workspace to delete
   const [groups, setGroups] = useState<string[]>([]); // State to manage frontend groups
+  const [groupRecords, setGroupRecords] = useState<WorkspaceGroup[]>([]);
   const [newGroupName, setNewGroupName] = useState<string>(""); // State for new group input
   const [draggingWorkspaceId, setDraggingWorkspaceId] = useState<string | null>(
     null,
   ); // State for dragged workspace ID
   const [editingGroup, setEditingGroup] = useState<string | null>(null); // State to track which group is being edited
   const [editedGroupName, setEditedGroupName] = useState<string>(""); // State for the edited group name
-  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
-    null,
-  ); // State for selected workspace
-
   const fetchWorkspaces = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const data = await getWorkspaces();
+      const [data, persistedGroups] = await Promise.all([getWorkspaces(), getWorkspaceGroups()]);
       setWorkspaces(data);
-      // Extract unique group names from fetched workspaces
-      const uniqueGroups = Array.from(
-        new Set(data.map((ws) => ws.groupName).filter(Boolean) as string[]),
-      );
-      setGroups(["Ungrouped", ...uniqueGroups.sort()]); // Add 'Ungrouped' and sort
-    } catch (err: any) {
-      setError(err.message);
+      setGroupRecords(persistedGroups);
+      const workspaceGroupNames = data.map((ws) => ws.groupName).filter(Boolean) as string[];
+      const uniqueGroups = Array.from(new Set([...persistedGroups.map((group) => group.name), ...workspaceGroupNames]));
+      setGroups(["Ungrouped", ...uniqueGroups.sort()]);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (token) {
-      // Only fetch if token is available
-      fetchWorkspaces();
-    }
-  }, [token]); // Re-run when token changes
-
+    if (token) void fetchWorkspaces();
+  }, [token]);
   const updateWorkspaceGroup = async (
     workspaceId: string,
     groupName: string | null,
@@ -94,10 +98,9 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
     setError(null);
     try {
       await updateWorkspace(workspaceId, { groupName });
-      fetchWorkspaces(); // Re-fetch workspaces after update
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
+      await fetchWorkspaces();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
       setLoading(false);
     }
   };
@@ -130,29 +133,31 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
     setDraggingWorkspaceId(null);
   };
 
-  const handleAddGroup = () => {
-    if (newGroupName.trim() && !groups.includes(newGroupName.trim())) {
-      setGroups((prev) => [...prev, newGroupName.trim()].sort());
+  const handleAddGroup = async () => {
+    const name = newGroupName.trim();
+    if (!name || groups.includes(name)) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await createWorkspaceGroup(name);
       setNewGroupName("");
+      await fetchWorkspaces();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
+      setLoading(false);
     }
   };
 
   const handleDeleteGroup = async (groupToDelete: string) => {
-    // Find all workspaces in this group and set their groupName to null
-    const workspacesInGroup = workspaces.filter(
-      (ws) => ws.groupName === groupToDelete,
-    );
+    const group = groupRecords.find((record) => record.name === groupToDelete);
+    if (!group) return;
     setLoading(true);
     setError(null);
     try {
-      for (const ws of workspacesInGroup) {
-        await updateWorkspace(ws.id, { groupName: null });
-      }
-      fetchWorkspaces(); // Re-fetch all workspaces to update UI
-      setGroups((prev) => prev.filter((group) => group !== groupToDelete)); // Remove group from frontend state
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
+      await deleteWorkspaceGroup(group.id);
+      await fetchWorkspaces();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
       setLoading(false);
     }
   };
@@ -179,18 +184,14 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const workspacesInGroup = workspaces.filter(
-        (ws) => ws.groupName === oldGroupName,
-      );
-      for (const ws of workspacesInGroup) {
-        await updateWorkspace(ws.id, { groupName: editedGroupName.trim() });
-      }
-      fetchWorkspaces(); // Re-fetch all workspaces to update UI
+      const group = groupRecords.find((record) => record.name === oldGroupName);
+      if (!group) throw new Error(t("workspace.error"));
+      await renameWorkspaceGroup(group.id, editedGroupName.trim());
+      await fetchWorkspaces();
       setEditingGroup(null);
       setEditedGroupName("");
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
       setLoading(false);
     }
   };
@@ -200,43 +201,36 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
   };
 
   const executeDelete = async () => {
-    if (workspaceToDelete) {
-      setLoading(true);
-      setError(null);
-      try {
-        await deleteWorkspace(workspaceToDelete.id);
-        fetchWorkspaces(); // Re-fetch workspaces after deletion
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-        setWorkspaceToDelete(null); // Clear the workspace to delete
-      }
+    if (!workspaceToDelete) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteWorkspace(workspaceToDelete.id);
+      await fetchWorkspaces();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
+    } finally {
+      setLoading(false);
+      setWorkspaceToDelete(null);
     }
   };
 
-  const handleWorkspaceSelect = (workspace: Workspace) => {
-    onSelectWorkspace(workspace);
-  };
-
-  if (loading) {
-    return <div>{t("workspace.loadingWorkspaces")}</div>;
+  if (loading && workspaces.length === 0) {
+    return <div role="status" aria-live="polite">{t("workspace.loadingWorkspaces")}</div>;
   }
-
-  if (error) {
+  if (error && workspaces.length === 0) {
     return (
-      <div>
-        {t("workspace.error")}: {error}
+      <div className="flex flex-col items-start gap-3" role="alert">
+        <p>{t("workspace.error")}: {error}</p>
+        <Button variant="outline" onClick={() => void fetchWorkspaces()}>{t("retry")}</Button>
       </div>
     );
   }
-
   const groupedWorkspaces = workspaces.reduce(
     (acc, workspace) => {
       const group = workspace.groupName || "Ungrouped";
-      if (!acc[group]) {
-        acc[group] = [];
-      }
+      if (!acc[group]) acc[group] = [];
       acc[group].push(workspace);
       return acc;
     },
@@ -245,8 +239,14 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">{t("workspace.workspaces")}</h2>
-      <Button className="my-4" onClick={onCreateNew}>
+      {error && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm" role="alert">
+          <span>{t("workspace.error")}: {error}</span>
+          <Button variant="outline" size="sm" onClick={() => setError(null)}>{t("close")}</Button>
+        </div>
+      )}
+      <h2 className="mb-4 text-2xl font-bold">{t("workspace.workspaces")}</h2>
+      <Button className="my-4" onClick={onCreateNew} disabled={loading}>
         {t("workspace.createWorkspace")}
       </Button>
 
@@ -325,7 +325,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEditGroup(groupName)}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-muted-foreground hover:text-foreground"
                       >
                         <Pencil className="h-5 w-5" />
                         <span className="sr-only">
@@ -338,7 +338,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-red-500 hover:text-red-700"
+                          className="text-destructive hover:text-destructive/80"
                         >
                           <XCircle className="h-5 w-5" />
                           <span className="sr-only">
@@ -359,10 +359,8 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteGroup(groupName)}
-                          >
-                            {t("confirm")}
+                          <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => handleDeleteGroup(groupName)}>
+                            {t("workspace.deleteGroup")}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -376,34 +374,32 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                     key={workspace.id}
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, workspace.id)}
-                    onClick={() => handleWorkspaceSelect(workspace)}
-                    className="cursor-pointer w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
+                    className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
                   >
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-lg font-medium">
-                        {workspace.name}
+                    <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                      <CardTitle className="break-words text-lg font-medium">
+                        <Link className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to={`/workspaces/${workspace.id}`}>
+                          {workspace.name}
+                        </Link>
                       </CardTitle>
                       <div className="flex items-center space-x-2">
                         {workspace.isShared && (
-                          <span
-                            className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"
-                            title={t("workspace.shared")}
-                          ></span>
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" title={t("workspace.shared")}>
+                            <span aria-hidden="true" className="inline-flex h-3 w-3 rounded-full bg-primary" />
+                            <span className="sr-only">{t("workspace.shared")}</span>
+                          </span>
                         )}
                         {workspace.hasRunningTask && (
-                          <span className="relative flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span
-                              className="relative inline-flex rounded-full h-3 w-3 bg-green-500"
-                              title={t("workspace.runningTask")}
-                            ></span>
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" title={t("workspace.runningTask")}>
+                            <span aria-hidden="true" className="inline-flex h-3 w-3 rounded-full bg-green-500" />
+                            <span className="sr-only">{t("workspace.runningTask")}</span>
                           </span>
                         )}
                       </div>
                     </CardHeader>
                     <CardContent>
                       <DescriptionViewer description={workspace.description} />
-                      <div className="mt-2 text-sm text-gray-500">
+                      <div className="mt-2 text-sm text-muted-foreground">
                         <p>
                           {t("workspace.goals")}: {workspace.goalCount ?? 0}
                         </p>
@@ -450,6 +446,19 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                             >
                               {t("workspace.share")}
                             </DropdownMenuItem>
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger>{t("workspace.moveToGroup")}</DropdownMenuSubTrigger>
+                              <DropdownMenuSubContent>
+                                {groups.map((targetGroup) => (
+                                  <DropdownMenuItem
+                                    key={targetGroup}
+                                    onClick={() => void updateWorkspaceGroup(workspace.id, targetGroup === "Ungrouped" ? null : targetGroup)}
+                                  >
+                                    {targetGroup === "Ungrouped" ? t("workspace.ungrouped") : targetGroup}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuSubContent>
+                            </DropdownMenuSub>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <DropdownMenuItem
@@ -458,7 +467,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                                     e.stopPropagation();
                                     confirmDelete(workspace);
                                   }}
-                                  className="text-red-600"
+                                  className="text-destructive"
                                 >
                                   {t("workspace.delete")}
                                 </DropdownMenuItem>
@@ -467,31 +476,21 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>
-                                      {t("workspace.confirmDelete", {
-                                        workspaceName: workspaceToDelete.name,
-                                      })}
+                                      {t("workspace.confirmDelete", { workspaceName: workspaceToDelete.name })}
                                     </AlertDialogTitle>
                                     <AlertDialogDescription>
                                       {t("confirmDeleteDescription")}
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setWorkspaceToDelete(null);
-                                        setError(null);
-                                      }}
-                                    >
+                                    <AlertDialogCancel onClick={() => { setWorkspaceToDelete(null); setError(null); }}>
                                       {t("cancel")}
                                     </AlertDialogCancel>
                                     <AlertDialogAction
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        executeDelete();
-                                      }}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      onClick={() => void executeDelete()}
                                     >
-                                      {t("confirm")}
+                                      {t("workspace.delete")}
                                     </AlertDialogAction>
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
@@ -504,7 +503,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                   </Card>
                 ))}
                 {groupedWorkspaces[groupName]?.length === 0 && (
-                  <p className="text-gray-500 text-center w-full py-4">
+                  <p className="w-full py-4 text-center text-muted-foreground">
                     {t("workspace.dragWorkspacesHere")}
                   </p>
                 )}

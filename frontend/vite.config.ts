@@ -14,7 +14,15 @@ export default defineConfig({
       injectRegister: "auto",
       // Removed filename: `sw-v${APP_VERSION}.js`, as per user feedback
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
+        globPatterns: ["**/index-*.js", "**/*.{css,html,ico,webmanifest}"],
+        globIgnores: [
+          "**/assets/DescriptionViewer-*.js",
+          "**/assets/Mermaid-*.js",
+          "**/assets/*Diagram-*.js",
+          "**/assets/cytoscape*.js",
+          "**/assets/katex-*.js",
+          "**/assets/treemap-*.js",
+        ],
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,

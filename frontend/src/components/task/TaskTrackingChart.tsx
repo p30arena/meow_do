@@ -79,7 +79,7 @@ const TaskTrackingChart: React.FC<TaskTrackingChartProps> = ({ workspaceId, goal
   }
 
   if (error) {
-    return <Card><CardContent className="text-red-500">{t('workspace.error')}: {error}</CardContent></Card>;
+    return <Card><CardContent className="text-destructive" role="alert">{t('workspace.error')}: {error}</CardContent></Card>;
   }
 
   return (

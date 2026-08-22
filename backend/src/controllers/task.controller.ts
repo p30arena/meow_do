@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { db } from '../db';
+import { db, driver } from '../db';
 import { tasks, taskTrackingRecords, users, goals, workspaceShares } from '../db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, isNull, sql } from 'drizzle-orm';
 import { createTaskSchema, updateTaskSchema, startTaskTrackingSchema, stopTaskTrackingSchema, createManualTaskRecordSchema } from '../validation/task.validation';
 import { catchAsync } from '../utils/catchAsync';
 import { DateTime } from 'luxon';
@@ -12,22 +12,41 @@ export const createTask = catchAsync(async (req: Request, res: Response) => {
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
-  const newTask = await db.insert(tasks).values({ ...validatedData, userId }).returning();
+  const payload = driver === 'sqlite'
+    ? {
+        ...validatedData,
+        userId,
+        isRecurring: validatedData.isRecurring ? 1 : 0,
+        deadline: validatedData.deadline?.toISOString(),
+      }
+    : { ...validatedData, userId };
+  const newTask = await db.insert(tasks).values(payload).returning();
   res.status(201).json(newTask[0]);
 });
 
 export const getTasks = catchAsync(async (req: Request, res: Response) => {
   const { goalId } = req.query;
   const userId = req.user?.id;
-
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  }
+
+  if (driver === 'sqlite') {
+    const conditions = goalId
+      ? and(eq(tasks.userId, userId), eq(tasks.goalId, goalId as string))
+      : eq(tasks.userId, userId);
+    const ownedTasks = await db.select().from(tasks).where(conditions).orderBy(tasks.priority, tasks.name);
+    const tasksWithTracking = await Promise.all(ownedTasks.map(async (task: typeof tasks.$inferSelect) => {
+      const active = await db.select().from(taskTrackingRecords).where(and(eq(taskTrackingRecords.taskId, task.id), eq(taskTrackingRecords.userId, userId), isNull(taskTrackingRecords.endTime)));
+      return { ...task, activeTracking: active[0] ?? null };
+    }));
+    return res.status(200).json(tasksWithTracking);
   }
 
   const joinCondition = and(
     eq(taskTrackingRecords.taskId, tasks.id),
     eq(taskTrackingRecords.userId, userId),
-    sql`${taskTrackingRecords.endTime} IS NULL`
+    isNull(taskTrackingRecords.endTime)
   );
 
   // Fetch owned tasks
@@ -133,7 +152,7 @@ export const getDailyTimeBudgetForGoal = catchAsync(async (req: Request, res: Re
     .innerJoin(goals, and(eq(tasks.goalId, goals.id), eq(goals.userId, userId)))
     .where(eq(tasks.goalId, goalId));
 
-  const totalTimeBudgetMinutes = tasksForGoal.reduce((sum, task) => sum + task.timeBudget, 0);
+  const totalTimeBudgetMinutes = tasksForGoal.reduce((sum: number, task: { timeBudget: number }) => sum + task.timeBudget, 0);
   const totalTimeBudgetHours = totalTimeBudgetMinutes / 60;
 
   const warning = totalTimeBudgetHours > 24 ? 'Warning: Total time budget exceeds 24 hours for this goal.' : undefined;
@@ -157,7 +176,14 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
   // Validate input using the new schema, combining params and body
   const validatedData = startTaskTrackingSchema.parse({ ...req.body, taskId, userId });
 
-  // Fetch user's timezone
+  if (driver === 'sqlite') {
+    const newTaskTrackingRecord = await db.insert(taskTrackingRecords).values({
+      taskId: validatedData.taskId,
+      userId: validatedData.userId,
+      startTime: new Date(),
+    }).returning();
+    return res.status(201).json({ message: 'Task tracking started', record: newTaskTrackingRecord[0] });
+  }
   const user = await db.select({ timezone: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
   const userTimezone = user[0]?.timezone || 'UTC'; // Default to UTC if not found
 
@@ -172,7 +198,7 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
     .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
     .where(and(
       eq(taskTrackingRecords.userId, userId),
-      sql`${taskTrackingRecords.endTime} IS NULL`
+      isNull(taskTrackingRecords.endTime),
     ));
 
   if (activeTaskRecord.length > 0) {
@@ -182,7 +208,7 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
-  // Stop any existing active tracking records for this task for the current user (should not happen if above check passes, but as a safety)
+
   await db.update(taskTrackingRecords)
     .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - ${taskTrackingRecords.startTime}))` })
     .where(and(eq(taskTrackingRecords.taskId, validatedData.taskId), eq(taskTrackingRecords.userId, validatedData.userId), sql`${taskTrackingRecords.endTime} IS NULL`));
@@ -216,34 +242,34 @@ export const stopTask = catchAsync(async (req: Request, res: Response) => {
   if (recordToStop.length === 0) {
     return res.status(404).json({ message: 'Tracking record not found' });
   }
-
   if (recordToStop[0].endTime !== null) {
     return res.status(400).json({ message: 'Task tracking record is already stopped' });
   }
-
-  const startTime = recordToStop[0].startTime;
+  const startTime = recordToStop[0].startTime instanceof Date
+    ? recordToStop[0].startTime
+    : new Date(String(recordToStop[0].startTime));
   const actualStopTime = validatedData.stopTime || new Date();
 
   if (actualStopTime < startTime) {
     return res.status(400).json({ message: 'Stop time cannot be before start time' });
   }
 
-  const duration = Math.floor((actualStopTime.getTime() - startTime.getTime()) / 1000); // Duration in seconds
-
+  const duration = Math.floor((actualStopTime.getTime() - startTime.getTime()) / 1000);
   const updatedRecord = await db.update(taskTrackingRecords)
     .set({ endTime: actualStopTime, duration, updatedAt: new Date() })
     .where(eq(taskTrackingRecords.id, validatedData.trackingId))
     .returning();
 
-  // As a safety measure, stop any other active records for the same task for the current user
-  await db.update(taskTrackingRecords)
-    .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - ${taskTrackingRecords.startTime}))` })
-    .where(and(
-      eq(taskTrackingRecords.taskId, recordToStop[0].taskId),
-      eq(taskTrackingRecords.userId, userId),
-      sql`${taskTrackingRecords.endTime} IS NULL`,
-      sql`${taskTrackingRecords.id} != ${validatedData.trackingId}` // Exclude the current record
-    ));
+  if (driver === 'postgres') {
+    await db.update(taskTrackingRecords)
+      .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - ${taskTrackingRecords.startTime}))` })
+      .where(and(
+        eq(taskTrackingRecords.taskId, recordToStop[0].taskId),
+        eq(taskTrackingRecords.userId, userId),
+        sql`${taskTrackingRecords.endTime} IS NULL`,
+        sql`${taskTrackingRecords.id} != ${validatedData.trackingId}`,
+      ));
+  }
 
   res.status(200).json({ message: 'Task tracking stopped', record: updatedRecord[0] });
 });
@@ -280,10 +306,20 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
 
-  // Fetch user's timezone
-  const user = await db.select({ timezone: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
-  const userTimezone = user[0]?.timezone || 'UTC'; // Default to UTC if not found
+  if (driver === 'sqlite') {
+    const rows = await db.select({ taskName: tasks.name, duration: taskTrackingRecords.duration })
+      .from(taskTrackingRecords)
+      .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
+      .where(and(eq(taskTrackingRecords.userId, userId), ...(goalId ? [eq(tasks.goalId, goalId as string)] : [])));
+    const totals = new Map<string, number>();
+    for (const row of rows as Array<{ taskName: string; duration: number | null }>) {
+      totals.set(row.taskName, (totals.get(row.taskName) ?? 0) + (row.duration ?? 0));
+    }
+    return res.status(200).json(Array.from(totals, ([taskName, totalDurationSeconds]) => ({ taskName, totalDurationSeconds })));
+  }
 
+  const user = await db.select({ timezone: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
+  const userTimezone = user[0]?.timezone || 'UTC';
   let periodGroupByColumn: any = null;
   let periodOrderByColumn: any = null;
   let periodCondition: any = null;
