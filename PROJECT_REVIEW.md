@@ -707,7 +707,7 @@ The SQLite database and tables are created automatically. Do not run `drizzle:mi
 - `frontend: npm test` — passed, including the bundle-budget regression test.
 - `frontend: npm run check:bundle` — passed: initial entry `200,313 B` gzip, largest async chunk `140,941 B` gzip, precache `1,071,901 B`.
 - `backend: npm run build` — passed.
-- `backend: npm test` — passed SQLite boot, registration, authenticated workspace listing, and cleanup.
+- `backend: npm test` — passed SQLite registration, group create/rename, workspace/goal/task creation, permission-protected task start/stop, and tracking summary.
 - English, Arabic, and Farsi locale JSON — parsed successfully.
 - Local Vite server — started successfully and returned the application shell over HTTP.
 - Browser surface review — blocked by the browser harness timing out before tab creation; no visual or end-to-end claims are presented as directly observed.
