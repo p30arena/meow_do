@@ -37,5 +37,5 @@ export const createManualTaskRecordSchema = z.object({
   userId: z.string().uuid('Invalid user ID format'),
   startTime: z.string().datetime('Invalid start time format').transform((str) => new Date(str)), // ISO 8601 string to Date object
   stopTime: z.string().datetime('Invalid stop time format').transform((str) => new Date(str)), // ISO 8601 string to Date object
-  duration: z.number().int().min(0, 'Duration must be a non-negative integer'), // Duration in seconds
+  // Duration is computed server-side from startTime/stopTime; any client value is ignored.
 });

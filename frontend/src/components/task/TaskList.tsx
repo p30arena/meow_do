@@ -257,15 +257,10 @@ const TaskList: React.FC<TaskListProps> = ({
       await startTaskTracking(taskId);
       fetchTasks();
     } catch (err: any) {
-      if (
-        err.response &&
-        err.response.status === 400 &&
-        err.response.data &&
-        err.response.data.activeTask
-      ) {
+      if (err?.status === 400 && err?.data?.activeTask) {
         setError(
           t("tasks.anotherTaskActive", {
-            taskName: err.response.data.activeTask.taskName,
+            taskName: err.data.activeTask.taskName,
           }),
         );
       } else {

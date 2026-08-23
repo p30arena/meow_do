@@ -1,5 +1,4 @@
-import { API_BASE_URL } from '../config';
-import { handleUnauthorized } from '../lib/utils';
+import { request } from './client';
 
 export interface Task {
   id: string;
@@ -30,7 +29,6 @@ export interface CreateTaskPayload {
 export interface CreateManualTaskRecordPayload {
   startTime: string; // ISO date string
   stopTime: string; // ISO date string
-  duration: number; // in seconds
 }
 
 export interface UpdateTaskPayload {
@@ -43,51 +41,15 @@ export interface UpdateTaskPayload {
   isRecurring?: boolean;
 }
 
-export const createTask = async (payload: CreateTaskPayload): Promise<Task> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks`, {
+export const createTask = async (payload: CreateTaskPayload): Promise<Task> =>
+  request<Task>('/tasks', { method: 'POST', body: payload, errorMessage: 'Failed to create task' });
+
+export const createManualTaskRecord = async (taskId: string, payload: CreateManualTaskRecordPayload): Promise<{ message: string; record: TaskTrackingRecord }> =>
+  request(`/tasks/${taskId}/manual-record`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
+    body: payload,
+    errorMessage: `Failed to create manual record for task ID ${taskId}`,
   });
-
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to create task');
-  }
-  return response.json();
-};
-
-export const createManualTaskRecord = async (taskId: string, payload: CreateManualTaskRecordPayload): Promise<TaskTrackingRecord> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/manual-record`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to create manual record for task ID ${taskId}`);
-  }
-  return response.json();
-};
 
 export interface TaskTrackingRecord {
   id: string;
@@ -106,57 +68,25 @@ export interface TaskTrackingSummary {
   period?: string; // ISO date string for the start of the period (day, month, year), optional for 'total'
 }
 
-export const startTaskTracking = async (taskId: string): Promise<TaskTrackingRecord> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/start`, {
+export const startTaskTracking = async (taskId: string): Promise<{ message: string; record: TaskTrackingRecord }> =>
+  request(`/tasks/${taskId}/start`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+    body: {},
+    errorMessage: `Failed to start tracking for task ID ${taskId}`,
   });
 
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to start tracking for task ID ${taskId}`);
-  }
-  return response.json();
-};
-
-export const stopTaskTracking = async (trackingId: string, stopTime?: string): Promise<TaskTrackingRecord> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks/${trackingId}/stop`, {
+export const stopTaskTracking = async (trackingId: string, stopTime?: string): Promise<{ message: string; record: TaskTrackingRecord }> =>
+  request(`/tasks/${trackingId}/stop`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({ stopTime }),
+    body: { stopTime },
+    errorMessage: `Failed to stop tracking for record ID ${trackingId}`,
   });
-
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to stop tracking for record ID ${trackingId}`);
-  }
-  return response.json();
-};
 
 export const getTaskTrackingSummary = async (
   period: 'day' | 'month' | 'year' | 'total', // Add 'total' as a valid period
   workspaceId?: string,
   goalId?: string
 ): Promise<TaskTrackingSummary[]> => {
-  const token = localStorage.getItem('token');
   let queryString = `period=${period}`;
   if (workspaceId) {
     queryString += `&workspaceId=${workspaceId}`;
@@ -164,111 +94,30 @@ export const getTaskTrackingSummary = async (
   if (goalId) {
     queryString += `&goalId=${goalId}`;
   }
-
-  const response = await fetch(`${API_BASE_URL}/tasks/summary?${queryString}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+  return request<TaskTrackingSummary[]>(`/tasks/summary?${queryString}`, {
+    errorMessage: `Failed to fetch task tracking summary for period ${period}`,
   });
-
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to fetch task tracking summary for period ${period}`);
-  }
-  return response.json();
 };
 
-export const getTasksByGoalId = async (goalId: string): Promise<Task[]> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks?goalId=${goalId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+export const getTasksByGoalId = async (goalId: string): Promise<Task[]> =>
+  request<Task[]>(`/tasks?goalId=${goalId}`, {
+    errorMessage: `Failed to fetch tasks for goal ID ${goalId}`,
   });
 
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to fetch tasks for goal ID ${goalId}`);
-  }
-  return response.json();
-};
-
-export const getTaskById = async (id: string): Promise<Task> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+export const getTaskById = async (id: string): Promise<Task> =>
+  request<Task>(`/tasks/${id}`, {
+    errorMessage: `Failed to fetch task with ID ${id}`,
   });
 
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to fetch task with ID ${id}`);
-  }
-  return response.json();
-};
-
-export const updateTask = async (id: string, payload: UpdateTaskPayload): Promise<Task> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+export const updateTask = async (id: string, payload: UpdateTaskPayload): Promise<Task> =>
+  request<Task>(`/tasks/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
+    body: payload,
+    errorMessage: `Failed to update task with ID ${id}`,
   });
 
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to update task with ID ${id}`);
-  }
-  return response.json();
-};
-
-export const deleteTask = async (id: string): Promise<void> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+export const deleteTask = async (id: string): Promise<void> =>
+  request<void>(`/tasks/${id}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+    errorMessage: `Failed to delete task with ID ${id}`,
   });
-
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to delete task with ID ${id}`);
-  }
-};

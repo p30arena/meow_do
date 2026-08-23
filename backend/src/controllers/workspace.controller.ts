@@ -23,20 +23,25 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
   }
   if (driver === 'sqlite') {
     const owned = await db.select().from(workspaces).where(eq(workspaces.userId, userId));
-    const formatted = await Promise.all(owned.map(async (workspace: typeof workspaces.$inferSelect) => {
-      const workspaceGoals = await db.select({ id: goals.id }).from(goals).where(eq(goals.workspaceId, workspace.id));
-      const goalIds = workspaceGoals.map((goal: { id: string }) => goal.id);
-      const workspaceTasks = goalIds.length > 0
-        ? await db.select({ id: tasks.id, timeBudget: tasks.timeBudget, status: tasks.status }).from(tasks).where(inArray(tasks.goalId, goalIds))
-        : [];
-      return {
-        ...workspace,
-        goalCount: workspaceGoals.length,
-        taskCount: workspaceTasks.length,
-        totalProgress: 0,
-        hasRunningTask: false,
-        isShared: false,
-      };
+    // Aggregate counts in bulk instead of one query per workspace (N+1)
+    const goalRows = await db.select({ workspaceId: goals.workspaceId, count: sql<number>`COUNT(*)` })
+      .from(goals)
+      .where(eq(goals.userId, userId))
+      .groupBy(goals.workspaceId);
+    const taskRows = await db.select({ workspaceId: goals.workspaceId, count: sql<number>`COUNT(*)` })
+      .from(tasks)
+      .innerJoin(goals, eq(tasks.goalId, goals.id))
+      .where(eq(goals.userId, userId))
+      .groupBy(goals.workspaceId);
+    const goalsPerWorkspace = new Map(goalRows.map((row: { workspaceId: string; count: number }) => [row.workspaceId, row.count]));
+    const tasksPerWorkspace = new Map(taskRows.map((row: { workspaceId: string; count: number }) => [row.workspaceId, row.count]));
+    const formatted = owned.map((workspace: typeof workspaces.$inferSelect) => ({
+      ...workspace,
+      goalCount: goalsPerWorkspace.get(workspace.id) ?? 0,
+      taskCount: tasksPerWorkspace.get(workspace.id) ?? 0,
+      totalProgress: 0,
+      hasRunningTask: false,
+      isShared: false,
     }));
     return res.status(200).json(formatted);
   }

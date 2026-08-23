@@ -13,7 +13,6 @@ declare module 'virtual:pwa-register' {
 }
 
 declare module 'virtual:pwa-register/react' {
-  // @ts-expect-error react types may be unavailable to the virtual module
   import type { Dispatch, SetStateAction } from 'react'
 
   export type RegisterSWOptions = {
@@ -30,5 +29,3 @@ declare module 'virtual:pwa-register/react' {
     updateServiceWorker: (reloadPage?: boolean) => Promise<void>
   }
 }
-
-declare const __APP_VERSION__: string;

@@ -57,16 +57,13 @@ export const ManualTimeRecordForm: React.FC<ManualTimeRecordFormProps> = ({
         return;
       }
 
-      const duration = Math.floor(stop.diff(start, 'seconds').seconds); // Duration in seconds
-
-      // Convert to UTC for backend storage
+      // Convert to UTC for backend storage; duration is computed server-side
       const startUtc = start.toUTC().toISO();
       const stopUtc = stop.toUTC().toISO();
 
       await createManualTaskRecord(taskId, {
         startTime: startUtc,
         stopTime: stopUtc,
-        duration,
       });
 
       onRecordCreated();

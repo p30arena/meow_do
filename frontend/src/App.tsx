@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import i18n from "i18next";
 import {
   Link,
-  NavigateFunction,
+  Navigate,
   Route,
   Routes,
   useLocation,
@@ -156,6 +156,7 @@ function AuthenticatedRoutes({
   onDeleteGoal: (goalId: string) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -167,7 +168,6 @@ function AuthenticatedRoutes({
           element={
             <WorkspaceList
               onCreateNew={() => navigate("/workspaces/new")}
-              onSelectWorkspace={(workspace) => navigate(`/workspaces/${workspace.id}`)}
               onEditWorkspace={(workspace) => navigate(`/workspaces/${workspace.id}/edit`)}
             />
           }
@@ -183,20 +183,20 @@ function AuthenticatedRoutes({
         <Route path="/workspaces/:workspaceId" element={<GoalsView onDeleteGoal={onDeleteGoal} />} />
         <Route
           path="/workspaces/:workspaceId/goals/new"
-          element={<GoalForm onSuccess={() => navigateFromParams(navigate, "workspaceId")} onCancel={() => navigateFromParams(navigate, "workspaceId")} />}
+          element={<GoalFormRoute />}
         />
         <Route
           path="/workspaces/:workspaceId/goals/:goalId/edit"
-          element={<GoalForm onSuccess={() => navigateFromParams(navigate, "workspaceId")} onCancel={() => navigateFromParams(navigate, "workspaceId")} />}
+          element={<GoalFormRoute />}
         />
         <Route path="/workspaces/:workspaceId/goals/:goalId" element={<TasksView onDeleteTask={onDeleteTask} />} />
         <Route
           path="/workspaces/:workspaceId/goals/:goalId/tasks/new"
-          element={<TaskForm onSuccess={() => navigateFromParams(navigate, "goalId")} onCancel={() => navigateFromParams(navigate, "goalId")} />}
+          element={<TaskFormRoute />}
         />
         <Route
           path="/workspaces/:workspaceId/goals/:goalId/tasks/:taskId/edit"
-          element={<TaskForm onSuccess={() => navigateFromParams(navigate, "goalId")} onCancel={() => navigateFromParams(navigate, "goalId")} />}
+          element={<TaskFormRoute />}
         />
         <Route path="*" element={<NoMatch />} />
       </Routes>
@@ -204,21 +204,20 @@ function AuthenticatedRoutes({
   );
 }
 
-function navigateFromParams(navigate: NavigateFunction, parent: "workspaceId" | "goalId") {
-  const path = window.location.pathname;
-  const match = parent === "workspaceId"
-    ? path.match(/\/workspaces\/([^/]+)/)
-    : path.match(/\/goals\/([^/]+)/);
-  if (!match?.[1]) {
-    navigate("/workspaces");
-    return;
-  }
-  if (parent === "workspaceId") {
-    navigate(`/workspaces/${match[1]}`);
-    return;
-  }
-  const workspaceMatch = path.match(/\/workspaces\/([^/]+)/);
-  navigate(`/workspaces/${workspaceMatch?.[1] ?? ""}/goals/${match[1]}`);
+function GoalFormRoute() {
+  const { workspaceId } = useParams<{ workspaceId: string }>();
+  const navigate = useNavigate();
+  if (!workspaceId) return <NoMatch />;
+  const backToWorkspace = `/workspaces/${workspaceId}`;
+  return <GoalForm onSuccess={() => navigate(backToWorkspace)} onCancel={() => navigate(backToWorkspace)} />;
+}
+
+function TaskFormRoute() {
+  const { workspaceId, goalId } = useParams<{ workspaceId: string; goalId: string }>();
+  const navigate = useNavigate();
+  if (!workspaceId || !goalId) return <NoMatch />;
+  const backToGoal = `/workspaces/${workspaceId}/goals/${goalId}`;
+  return <TaskForm onSuccess={() => navigate(backToGoal)} onCancel={() => navigate(backToGoal)} />;
 }
 
 function ResourceHeader({ workspaceId, goalId }: { workspaceId?: string; goalId?: string }) {
@@ -267,7 +266,7 @@ function GoalsView({ onDeleteGoal }: { onDeleteGoal: (goalId: string) => Promise
       <div className="mb-4 flex justify-start">
         <Link className="text-primary underline-offset-4 hover:underline" to="/workspaces">{t("backToWorkspaces")}</Link>
       </div>
-      <GoalList workspaceId={workspaceId} onCreateNew={() => navigate(`/workspaces/${workspaceId}/goals/new`)} onEditGoal={(goal) => navigate(`/workspaces/${workspaceId}/goals/${goal.id}/edit`)} onSelectGoal={(goal) => navigate(`/workspaces/${workspaceId}/goals/${goal.id}`)} onDeleteGoal={onDeleteGoal} />
+      <GoalList workspaceId={workspaceId} onCreateNew={() => navigate(`/workspaces/${workspaceId}/goals/new`)} onEditGoal={(goal) => navigate(`/workspaces/${workspaceId}/goals/${goal.id}/edit`)} onDeleteGoal={onDeleteGoal} />
       <div className="mt-8"><TaskTrackingChart workspaceId={workspaceId} /></div>
     </div>
   );

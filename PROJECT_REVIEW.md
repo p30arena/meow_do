@@ -24,20 +24,42 @@ Second review pass covering backend, frontend, and infrastructure end to end. Ea
 | 14 | P2 | **Weak input limits** — register schema had no maximum lengths (bcrypt silently truncates beyond 72 bytes). | `username ≤ 64`, `email ≤ 256`, `password ≤ 72`. Timezone capped at 64 chars. |
 | 15 | P3 | **Hygiene**: obsolete `version:` key in `docker-compose.yml`; non-reproducible `npm install` in backend Dockerfile; nginx served no security headers. | Removed key; switched to `npm ci`; added `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` (duplicated into locations that set their own `add_header`, since nginx does not inherit server-level headers there). |
 
+### Round 2 — 2026-08-23 (deferred items fixed)
+
+All items previously listed as "noted, not fixed" were addressed in a follow-up pass, verified by a two-iteration review/fix loop (independent re-review after each fix batch):
+
+| # | Item | Resolution |
+|---|------|------------|
+| 1 | JWT lifetime 90d, no revocation/refresh | Lifetime reduced to 30d; new `POST /api/v1/auth/refresh` issues fresh tokens; AuthContext decodes token expiry client-side and auto-refreshes when <7 days remain, logs out expired tokens, and guards against a refresh completing after logout. |
+| 2 | Login timing reveals registered emails | Unknown-email logins now run a dummy bcrypt compare so response cost matches real attempts; message was already uniform ("Invalid credentials"). |
+| 3 | Manual records trusted client duration | Duration is now computed server-side from start/stop times; client-sent values are ignored; inverted ranges rejected with 400. |
+| 4 | SQLite N+1 queries in list endpoints | `getWorkspaces`/`getGoals`/`getTasks` SQLite branches rewritten to grouped/bulk queries. Workspace/goal counts intentionally scope to the requesting user's rows, matching Postgres branch semantics. |
+| 5 | Frontend api boilerplate (~200 lines duplicated) | New shared `request()` wrapper (`src/api/client.ts`) handling base URL, auth header, 401 redirect, error extraction, and 204s; all six api modules refactored onto it with unchanged signatures. Errors are now `ApiError` instances carrying `status`/`data`, which also revived TaskList's friendly "another task is active" message (previously dead code checking axios-style error shapes). |
+| 6 | `navigateFromParams` parsed `window.location.pathname` manually | Replaced with param-aware `GoalFormRoute`/`TaskFormRoute` route components using `useParams`. |
+
+### Additional defects found by the review loop (also fixed)
+
+- **Missing `Navigate` import in App.tsx** — `<Navigate>` rendered on unknown/public fallback routes would crash at runtime (latent since the routing refactor; invisible to vite build because it skips typechecking).
+- **`AuthenticatedRoutes` referenced `t` without `useTranslation()`** — same latent-crash class.
+- **WorkspaceList share dialog broken** — `selectedWorkspace` state was never declared though used by menu + dialog; `Label` imported nowhere but used.
+- **GoalList missing `Button` import** — every button usage would crash.
+- **Stale compiled artifacts shadowing sources** — untracked `.js`/`.d.ts` emissions sat next to sources in `src/`, hooks, and even `vite.config.js` (which Vite resolves *before* `vite.config.ts`). Deleted; tsconfigs switched from `composite` to `noEmit` so stray `tsc` runs can never emit into `src` again.
+- **`createManualTaskRecord` had no ownership check** — any authenticated user could attach tracking records to any task. Now mirrors `createTask`: owner or accepted share with task-level `canSubmitRecord` / workspace-level `canEdit`.
+- **SQLite task ordering diverged from Postgres** — aligned to status CASE → priority DESC → name.
+- **Root frontend tsconfig owned `src` with no jsx/strict settings** — made a pure solution file; added `npm run typecheck` script so type errors surface independently of the vite build (the build script does not run tsc).
+
 ### Noted, not fixed (deliberate)
 
-- **JWT lifetime is 90 days** with no revocation/refresh. Acceptable for a self-hosted app; revisit if it ever becomes multi-tenant SaaS.
-- **Email enumeration**: register/login responses distinguish known emails. Fixing requires uniform responses + timing normalization; left as-is for usability.
-- **Client-supplied duration on manual records** is trusted (validated non-negative int). Low risk since it only affects the submitting user's own stats.
-- **SQLite list endpoints use N+1 queries** (`getWorkspaces`/`getGoals`/`getTasks`). SQLite mode is positioned as a lightweight/local mode; Postgres path uses proper joins.
-- **Frontend api layer duplicates token/fetch boilerplate** across six files. A small `request()` wrapper would remove ~200 lines; cosmetic.
-- **`navigateFromParams` parses `window.location.pathname` manually** instead of using route context. Works correctly today; refactor candidate.
+- **Register responses distinguish known emails.** Login is timing-normalized and message-uniform; register keeps its explicit conflict message as a usability tradeoff (generic messages would strand legitimate signups).
+- **SQLite list endpoints return owned resources only** (no shared-workspace merge like Postgres). SQLite mode remains positioned as a lightweight/local mode; parity tracked for a future pass if sharing on SQLite becomes a real use case.
+- **SQLite mode hardcodes `totalProgress: 0` / `hasRunningTask: false`** rather than computing progress aggregates.
 
 ### Verification performed
 
 - `backend`: `tsc` clean; SQLite smoke test passes (register → group → workspace → goal → task → start → stop → summary).
-- `frontend`: ESLint clean; bundle-size test passes; production build succeeds.
-- Live API checks against a running SQLite-mode server: all 11 passed, covering the new error handler, timezone validation, ownership guards, tracking parity, and rate limiting.
+- `frontend`: ESLint clean; **new `typecheck` script clean**; bundle-size test passes; production build succeeds.
+- Live API checks against a running SQLite-mode server: 14/14 passed, covering refresh flow, server-computed durations, list shapes/counts after the N+1 rewrite, active-tracking surfacing, single-active enforcement, and generic login errors.
+- Two independent re-review passes over the full diff; every finding triaged and either fixed or explicitly documented above.
 
 ---
 

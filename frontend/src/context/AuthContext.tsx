@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from 'react';
 import { updateTimezone } from '../api/user';
+import { refreshToken } from '../api/auth';
+import { getTokenPayload } from '../lib/utils';
 
 interface User {
   id: string;
@@ -57,13 +59,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         setUserState(JSON.parse(storedUser));
         setTokenState(storedToken);
+
+        // Refresh the token when it is expired or about to expire (within 7 days).
+        const payload = getTokenPayload(storedToken);
+        const expiresAtMs = payload?.exp ? payload.exp * 1000 : 0;
+        if (expiresAtMs <= Date.now()) {
+          logout();
+        } else if (expiresAtMs <= Date.now() + 7 * 24 * 60 * 60 * 1000) {
+          refreshToken(storedToken)
+            .then(({ token }) => {
+              // Bail if the user logged out while the request was in flight
+              if (localStorage.getItem('token') === storedToken) {
+                setAuthToken(token);
+              }
+            })
+            .catch((error) => {
+              // Network hiccups are tolerable; the next API call will recover.
+              console.error('Failed to refresh session token:', error);
+            });
+        }
       } catch (error) {
         console.error('Failed to parse stored user or token:', error);
         logout();
       }
     }
     setIsAuthReady(true);
-  }, [logout]);
+  }, [logout, setAuthToken]);
 
   useEffect(() => {
     const autoSetTimezone = async () => {

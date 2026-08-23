@@ -1,5 +1,4 @@
-import { API_BASE_URL } from '../config';
-import { handleUnauthorized } from '../lib/utils';
+import { request } from './client';
 
 export interface Workspace {
   id: string;
@@ -22,41 +21,29 @@ export interface WorkspaceGroup {
   updatedAt: string;
 }
 
-export const getWorkspaceGroups = async (): Promise<WorkspaceGroup[]> => {
-  const response = await fetch(`${API_BASE_URL}/workspaces/groups`, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-  });
-  if (!response.ok) throw new Error('Failed to fetch workspace groups');
-  return response.json();
-};
+export const getWorkspaceGroups = async (): Promise<WorkspaceGroup[]> =>
+  request<WorkspaceGroup[]>('/workspaces/groups', { errorMessage: 'Failed to fetch workspace groups' });
 
-export const createWorkspaceGroup = async (name: string): Promise<WorkspaceGroup> => {
-  const response = await fetch(`${API_BASE_URL}/workspaces/groups`, {
+export const createWorkspaceGroup = async (name: string): Promise<WorkspaceGroup> =>
+  request<WorkspaceGroup>('/workspaces/groups', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
-    body: JSON.stringify({ name }),
+    body: { name },
+    errorMessage: 'Failed to create group',
   });
-  if (!response.ok) throw new Error((await response.json()).message || 'Failed to create group');
-  return response.json();
-};
 
-export const renameWorkspaceGroup = async (id: string, name: string): Promise<WorkspaceGroup> => {
-  const response = await fetch(`${API_BASE_URL}/workspaces/groups/${id}`, {
+export const renameWorkspaceGroup = async (id: string, name: string): Promise<WorkspaceGroup> =>
+  request<WorkspaceGroup>(`/workspaces/groups/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
-    body: JSON.stringify({ name }),
+    body: { name },
+    errorMessage: 'Failed to rename group',
   });
-  if (!response.ok) throw new Error((await response.json()).message || 'Failed to rename group');
-  return response.json();
-};
 
-export const deleteWorkspaceGroup = async (id: string): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/workspaces/groups/${id}`, {
+export const deleteWorkspaceGroup = async (id: string): Promise<void> =>
+  request<void>(`/workspaces/groups/${id}`, {
     method: 'DELETE',
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    errorMessage: 'Failed to delete group',
   });
-  if (!response.ok) throw new Error((await response.json()).message || 'Failed to delete group');
-};
+
 interface CreateWorkspacePayload {
   name: string;
   description?: string;
@@ -69,135 +56,35 @@ interface UpdateWorkspacePayload {
   groupName?: string | null; // New: Optional group name
 }
 
-export const createWorkspace = async (payload: CreateWorkspacePayload): Promise<Workspace> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/workspaces`, {
+export const createWorkspace = async (payload: CreateWorkspacePayload): Promise<Workspace> =>
+  request<Workspace>('/workspaces', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
+    body: payload,
+    errorMessage: 'Failed to create workspace',
   });
 
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized'); // Throw an error to stop further execution
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to create workspace');
-  }
-  return response.json();
-};
-
-export const getUniqueGroupNames = async (): Promise<string[]> => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    throw new Error('Authentication token not found');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/workspaces/groups/unique`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+export const getUniqueGroupNames = async (): Promise<string[]> =>
+  request<string[]>('/workspaces/groups/unique', {
+    errorMessage: 'Failed to fetch unique group names',
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to fetch unique group names');
-  }
+export const getWorkspaces = async (): Promise<Workspace[]> =>
+  request<Workspace[]>('/workspaces', { errorMessage: 'Failed to fetch workspaces' });
 
-  return response.json();
-};
-
-export const getWorkspaces = async (): Promise<Workspace[]> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/workspaces`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+export const getWorkspaceById = async (id: string): Promise<Workspace> =>
+  request<Workspace>(`/workspaces/${id}`, {
+    errorMessage: `Failed to fetch workspace with ID ${id}`,
   });
 
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to fetch workspaces');
-  }
-  return response.json();
-};
-
-export const getWorkspaceById = async (id: string): Promise<Workspace> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/workspaces/${id}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to fetch workspace with ID ${id}`);
-  }
-  return response.json();
-};
-
-export const updateWorkspace = async (id: string, payload: UpdateWorkspacePayload): Promise<Workspace> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/workspaces/${id}`, {
+export const updateWorkspace = async (id: string, payload: UpdateWorkspacePayload): Promise<Workspace> =>
+  request<Workspace>(`/workspaces/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
+    body: payload,
+    errorMessage: `Failed to update workspace with ID ${id}`,
   });
 
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to update workspace with ID ${id}`);
-  }
-  return response.json();
-};
-
-export const deleteWorkspace = async (id: string): Promise<void> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/workspaces/${id}`, {
+export const deleteWorkspace = async (id: string): Promise<void> =>
+  request<void>(`/workspaces/${id}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
+    errorMessage: `Failed to delete workspace with ID ${id}`,
   });
-
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to delete workspace with ID ${id}`);
-  }
-};

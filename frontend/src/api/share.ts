@@ -1,5 +1,4 @@
-import { API_BASE_URL } from '../config';
-import { handleUnauthorized } from '../lib/utils';
+import { request } from './client';
 
 export interface ShareWorkspacePayload {
   identifier: string;
@@ -43,131 +42,37 @@ export interface SharedUser {
   } | null;
 }
 
-export const shareWorkspace = async (workspaceId: string, payload: ShareWorkspacePayload): Promise<{ message: string; share: any; permission: any }> => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/${workspaceId}/share`, {
+export const shareWorkspace = async (workspaceId: string, payload: ShareWorkspacePayload): Promise<{ message: string; share: unknown; permission: unknown }> =>
+  request(`/workspaces-sharing/${workspaceId}/share`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
+    body: payload,
+    errorMessage: 'Failed to share workspace',
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to share workspace');
-  }
-
-  return response.json();
-};
-
-export const respondToShareInvitation = async (workspaceId: string, shareId: string, payload: RespondToInvitationPayload): Promise<{ message: string; share: any }> => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/${workspaceId}/share/${shareId}/respond`, {
+export const respondToShareInvitation = async (workspaceId: string, shareId: string, payload: RespondToInvitationPayload): Promise<{ message: string; share: unknown }> =>
+  request(`/workspaces-sharing/${workspaceId}/share/${shareId}/respond`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
+    body: payload,
+    errorMessage: 'Failed to respond to share invitation',
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to respond to share invitation');
-  }
-
-  return response.json();
-};
-
-export const updatePermissions = async (workspaceId: string, userId: string, payload: UpdatePermissionsPayload): Promise<{ message: string; permission: any }> => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/${workspaceId}/permissions/${userId}`, {
+export const updatePermissions = async (workspaceId: string, userId: string, payload: UpdatePermissionsPayload): Promise<{ message: string; permission: unknown }> =>
+  request(`/workspaces-sharing/${workspaceId}/permissions/${userId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
+    body: payload,
+    errorMessage: 'Failed to update permissions',
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to update permissions');
-  }
-
-  return response.json();
-};
-
-export const revokeAccess = async (workspaceId: string, userId: string): Promise<{ message: string }> => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/${workspaceId}/share/${userId}`, {
+export const revokeAccess = async (workspaceId: string, userId: string): Promise<{ message: string }> =>
+  request(`/workspaces-sharing/${workspaceId}/share/${userId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+    errorMessage: 'Failed to revoke access',
   });
 
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to revoke access');
-  }
-
-  return response.json();
-};
-
-export const getSharedUsers = async (workspaceId: string): Promise<SharedUser[]> => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/${workspaceId}/shared-users`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+export const getSharedUsers = async (workspaceId: string): Promise<SharedUser[]> =>
+  request<SharedUser[]>(`/workspaces-sharing/${workspaceId}/shared-users`, {
+    errorMessage: 'Failed to fetch shared users',
   });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to fetch shared users');
-  }
-
-  return response.json();
-};
 
 export interface WorkspaceInvitation {
   shareId: string;
@@ -191,26 +96,7 @@ export interface WorkspaceInvitation {
   };
 }
 
-export const getMyInvitations = async (): Promise<{ status: string; data: WorkspaceInvitation[] }> => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    throw new Error('No authentication token found');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/workspaces-sharing/my-invitations`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+export const getMyInvitations = async (): Promise<{ status: string; data: WorkspaceInvitation[] }> =>
+  request('/workspaces-sharing/my-invitations', {
+    errorMessage: 'Failed to fetch invitations',
   });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to fetch invitations');
-  }
-
-  return response.json();
-};

@@ -15,6 +15,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input"; // Import Input component
+import { Label } from "@/components/ui/label";
 import { MoreVertical, Pencil, XCircle } from "lucide-react";
 import {
   AlertDialog,
@@ -45,13 +46,11 @@ interface WorkspaceGroup {
 
 interface WorkspaceListProps {
   onCreateNew: () => void;
-  onSelectWorkspace: (workspace: Workspace) => void;
   onEditWorkspace: (workspace: Workspace) => void;
 }
 
 const WorkspaceList: React.FC<WorkspaceListProps> = ({
   onCreateNew,
-  onSelectWorkspace,
   onEditWorkspace,
 }) => {
   const { t } = useTranslation();
@@ -70,6 +69,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
   ); // State for dragged workspace ID
   const [editingGroup, setEditingGroup] = useState<string | null>(null); // State to track which group is being edited
   const [editedGroupName, setEditedGroupName] = useState<string>(""); // State for the edited group name
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null); // Workspace shown in the share dialog
   const fetchWorkspaces = async () => {
     setLoading(true);
     setError(null);

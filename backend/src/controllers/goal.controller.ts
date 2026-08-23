@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { db, driver } from '../db';
 import { goals, tasks, taskTrackingRecords, workspaceShares, workspaces, permissions } from '../db/schema';
-import { eq, and, ne, sql } from 'drizzle-orm';
+import { eq, and, ne, sql, inArray } from 'drizzle-orm';
 import { createGoalSchema, updateGoalSchema } from '../validation/goal.validation';
 import { catchAsync } from '../utils/catchAsync';
 
@@ -51,9 +51,19 @@ export const getGoals = catchAsync(async (req: Request, res: Response) => {
       ? and(eq(goals.userId, userId), eq(goals.workspaceId, workspaceId as string))
       : eq(goals.userId, userId);
     const ownedGoals = await db.select().from(goals).where(conditions);
-    const formatted = await Promise.all(ownedGoals.map(async (goal: typeof goals.$inferSelect) => {
-      const goalTasks = await db.select({ id: tasks.id, timeBudget: tasks.timeBudget }).from(tasks).where(eq(tasks.goalId, goal.id));
-      return { ...goal, taskCount: goalTasks.length, totalProgress: 0, hasRunningTask: false };
+    // Single grouped query instead of one query per goal (N+1)
+    const taskRows = ownedGoals.length > 0
+      ? await db.select({ goalId: tasks.goalId, count: sql<number>`COUNT(*)` })
+          .from(tasks)
+          .where(inArray(tasks.goalId, ownedGoals.map((goal: typeof goals.$inferSelect) => goal.id)))
+          .groupBy(tasks.goalId)
+      : [];
+    const tasksPerGoal = new Map(taskRows.map((row: { goalId: string; count: number }) => [row.goalId, row.count]));
+    const formatted = ownedGoals.map((goal: typeof goals.$inferSelect) => ({
+      ...goal,
+      taskCount: tasksPerGoal.get(goal.id) ?? 0,
+      totalProgress: 0,
+      hasRunningTask: false,
     }));
     return res.status(200).json(formatted);
   }

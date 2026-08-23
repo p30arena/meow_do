@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { db, driver } from '../db';
 import { tasks, taskTrackingRecords, users, goals, workspaceShares, permissions } from '../db/schema';
-import { eq, and, isNull, sql } from 'drizzle-orm';
+import { eq, and, isNull, sql, inArray } from 'drizzle-orm';
 import { createTaskSchema, updateTaskSchema, startTaskTrackingSchema, stopTaskTrackingSchema, createManualTaskRecordSchema } from '../validation/task.validation';
 import { catchAsync } from '../utils/catchAsync';
 import { DateTime } from 'luxon';
@@ -77,10 +77,34 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
     const conditions = goalId
       ? and(eq(tasks.userId, userId), eq(tasks.goalId, goalId as string))
       : eq(tasks.userId, userId);
-    const ownedTasks = await db.select().from(tasks).where(conditions).orderBy(tasks.priority, tasks.name);
-    const tasksWithTracking = await Promise.all(ownedTasks.map(async (task: typeof tasks.$inferSelect) => {
-      const active = await db.select().from(taskTrackingRecords).where(and(eq(taskTrackingRecords.taskId, task.id), eq(taskTrackingRecords.userId, userId), isNull(taskTrackingRecords.endTime)));
-      return { ...task, activeTracking: active[0] ?? null };
+    const ownedTasks = await db.select().from(tasks).where(conditions).orderBy(
+      sql`CASE
+        WHEN ${tasks.status} = 'started' THEN 0
+        WHEN ${tasks.status} = 'pending' THEN 1
+        WHEN ${tasks.status} = 'failed' THEN 2
+        WHEN ${tasks.status} = 'done' THEN 3
+        ELSE 4
+      END`,
+      sql`${tasks.priority} DESC`,
+      tasks.name,
+    );
+    // Single query for all open tracking records instead of one per task (N+1)
+    const openRecords = ownedTasks.length > 0
+      ? await db.select().from(taskTrackingRecords).where(and(
+          eq(taskTrackingRecords.userId, userId),
+          isNull(taskTrackingRecords.endTime),
+          inArray(taskTrackingRecords.taskId, ownedTasks.map((task: typeof tasks.$inferSelect) => task.id)),
+        ))
+      : [];
+    const activePerTask = new Map<string, (typeof taskTrackingRecords.$inferSelect)>();
+    for (const record of openRecords) {
+      if (!activePerTask.has(record.taskId)) {
+        activePerTask.set(record.taskId, record);
+      }
+    }
+    const tasksWithTracking = ownedTasks.map((task: typeof tasks.$inferSelect) => ({
+      ...task,
+      activeTracking: activePerTask.get(task.id) ?? null,
     }));
     return res.status(200).json(tasksWithTracking);
   }
@@ -322,14 +346,53 @@ export const createManualTaskRecord = catchAsync(async (req: Request, res: Respo
   // Validate input using the new schema, combining params and body
   const validatedData = createManualTaskRecordSchema.parse({ ...req.body, taskId, userId });
 
+  // Only the task owner or an accepted share with submit permission may add records
+  const goalRow = await db.select({ userId: goals.userId, workspaceId: goals.workspaceId }).from(goals)
+    .innerJoin(tasks, eq(tasks.goalId, goals.id))
+    .where(eq(tasks.id, validatedData.taskId));
+  if (goalRow.length === 0) {
+    return res.status(404).json({ message: 'Task not found' });
+  }
+  const goal = goalRow[0];
+  if (goal.userId !== userId) {
+    const share = await db.select({ id: workspaceShares.id }).from(workspaceShares).where(and(
+      eq(workspaceShares.workspaceId, goal.workspaceId),
+      eq(workspaceShares.sharedWithUserId, userId),
+      eq(workspaceShares.status, 'accepted'),
+    ));
+    if (share.length === 0) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    const taskPerm = await db.select().from(permissions).where(and(
+      eq(permissions.userId, userId),
+      eq(permissions.resourceId, validatedData.taskId),
+      eq(permissions.resourceType, 'task'),
+    ));
+    const wsPerm = await db.select().from(permissions).where(and(
+      eq(permissions.userId, userId),
+      eq(permissions.resourceId, goal.workspaceId),
+      eq(permissions.resourceType, 'workspace'),
+    ));
+    const allowed = (taskPerm.length > 0 && taskPerm[0].canSubmitRecord) || (wsPerm.length > 0 && wsPerm[0].canEdit);
+    if (!allowed) {
+      return res.status(403).json({ message: 'You do not have permission to submit records for this task' });
+    }
+  }
+
+  if (validatedData.stopTime < validatedData.startTime) {
+    return res.status(400).json({ message: 'Stop time cannot be before start time' });
+  }
+
+  // Compute duration server-side instead of trusting the client-supplied value
+  const duration = Math.floor((validatedData.stopTime.getTime() - validatedData.startTime.getTime()) / 1000);
+
   // Insert the new manual tracking record
-  // The duration is calculated on the frontend and sent here.
   const newManualRecord = await db.insert(taskTrackingRecords).values({
     taskId: validatedData.taskId,
     userId: validatedData.userId,
     startTime: validatedData.startTime,
-    endTime: validatedData.stopTime, // Use stopTime from validated data
-    duration: validatedData.duration, // Use duration from validated data
+    endTime: validatedData.stopTime,
+    duration,
   }).returning();
 
   res.status(201).json({ message: 'Manual task record created', record: newManualRecord[0] });

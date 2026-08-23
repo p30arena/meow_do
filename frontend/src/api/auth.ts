@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config';
+import { request } from './client';
 
 export interface LoginResponse {
   token: string;
@@ -11,21 +11,12 @@ export interface LoginResponse {
 
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    return await request<LoginResponse>('/auth/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
+      body: { email, password },
+      token: null,
+      errorMessage: 'Login failed',
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Login failed');
-    }
-
-    const data = await response.json();
-    return data;
   } catch (error: any) {
     throw new Error(error.message || 'An unexpected error occurred during login.');
   }
@@ -33,22 +24,17 @@ export const login = async (email: string, password: string): Promise<LoginRespo
 
 export const register = async (username: string, email: string, password: string): Promise<LoginResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    return await request<LoginResponse>('/auth/register', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, email, password }),
+      body: { username, email, password },
+      token: null,
+      errorMessage: 'Registration failed',
     });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Registration failed');
-    }
-
-    const data = await response.json();
-    return data;
   } catch (error: any) {
     throw new Error(error.message || 'An unexpected error occurred during registration.');
   }
 };
+
+/** Exchange a valid token for a fresh one. */
+export const refreshToken = async (token: string): Promise<{ token: string }> =>
+  request<{ token: string }>('/auth/refresh', { method: 'POST', token });

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { getGoalsByWorkspaceId, type Goal } from "../../api/goal";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +28,6 @@ interface GoalListProps {
   workspaceId: string;
   onCreateNew: () => void;
   onEditGoal: (goal: Goal) => void;
-  onSelectGoal: (goal: Goal) => void;
   onDeleteGoal: (goalId: string) => void;
 }
 
@@ -35,7 +35,6 @@ const GoalList: React.FC<GoalListProps> = ({
   workspaceId,
   onCreateNew,
   onEditGoal,
-  onSelectGoal,
   onDeleteGoal,
 }) => {
   const { t } = useTranslation();

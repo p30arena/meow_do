@@ -9,9 +9,13 @@ import { catchAsync } from '../utils/catchAsync';
 
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET as string, {
-    expiresIn: '90d',
+    expiresIn: '30d',
   });
 };
+
+// Precomputed bcrypt digest used to equalize response time for unknown
+// emails so login cannot be used to enumerate registered users.
+const DUMMY_HASH_PROMISE = bcrypt.hash('timing-equalization-placeholder', 10);
 
 export const register = catchAsync(async (req: Request, res: Response) => {
   const validatedData = registerUserSchema.parse(req.body);
@@ -63,12 +67,23 @@ export const updateTimezone = catchAsync(async (req: Request, res: Response) => 
   });
 });
 
+export const refresh = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    return res.status(401).json({ message: 'Not authorized, user ID missing' });
+  }
+  // protect has already verified the token and confirmed the user exists
+  res.status(200).json({ token: generateToken(userId) });
+});
+
 export const login = catchAsync(async (req: Request, res: Response) => {
   const validatedData = loginUserSchema.parse(req.body);
   const { email, password } = validatedData;
 
   const user = await db.select().from(users).where(eq(users.email, email));
   if (user.length === 0) {
+    // Burn comparable CPU time as a real bcrypt.compare to prevent timing-based user enumeration
+    await bcrypt.compare(password, await DUMMY_HASH_PROMISE);
     return res.status(400).json({ message: 'Invalid credentials' });
   }
 
