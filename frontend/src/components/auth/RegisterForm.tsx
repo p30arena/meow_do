@@ -62,11 +62,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
     setLoading(true);
 
     try {
-      console.log("Attempting registration with:", {
-        username: data.username,
-        email: data.email,
-        password: data.password,
-      });
       const registerData = await register(
         data.username,
         data.email,
@@ -75,7 +70,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
       onRegisterSuccess(registerData);
     } catch (err: any) {
       setError(err.message || t("register.errorOccurred"));
-      console.error("Registration error:", err);
     } finally {
       setLoading(false);
     }

@@ -7,8 +7,8 @@ COPY . /app/
 # Set the working directory in the container
 WORKDIR /app
 
-# Install dependencies
-RUN npm install
+# Install dependencies reproducibly from the lockfile
+RUN npm ci
 
 # Build the TypeScript application
 RUN npm run build

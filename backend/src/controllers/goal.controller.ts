@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { db, driver } from '../db';
-import { goals, tasks, taskTrackingRecords, workspaceShares } from '../db/schema';
+import { goals, tasks, taskTrackingRecords, workspaceShares, workspaces, permissions } from '../db/schema';
 import { eq, and, ne, sql } from 'drizzle-orm';
 import { createGoalSchema, updateGoalSchema } from '../validation/goal.validation';
 import { catchAsync } from '../utils/catchAsync';
@@ -11,6 +11,31 @@ export const createGoal = catchAsync(async (req: Request, res: Response) => {
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
+
+  // Only the workspace owner or an accepted share with edit permission may add goals
+  const workspaceRow = await db.select({ userId: workspaces.userId }).from(workspaces).where(eq(workspaces.id, validatedData.workspaceId));
+  if (workspaceRow.length === 0) {
+    return res.status(404).json({ message: 'Workspace not found' });
+  }
+  if (workspaceRow[0].userId !== userId) {
+    const share = await db.select({ id: workspaceShares.id }).from(workspaceShares).where(and(
+      eq(workspaceShares.workspaceId, validatedData.workspaceId),
+      eq(workspaceShares.sharedWithUserId, userId),
+      eq(workspaceShares.status, 'accepted'),
+    ));
+    if (share.length === 0) {
+      return res.status(404).json({ message: 'Workspace not found' });
+    }
+    const perm = await db.select().from(permissions).where(and(
+      eq(permissions.userId, userId),
+      eq(permissions.resourceId, validatedData.workspaceId),
+      eq(permissions.resourceType, 'workspace'),
+    ));
+    if (perm.length === 0 || !perm[0].canEdit) {
+      return res.status(403).json({ message: 'You do not have permission to add goals to this workspace' });
+    }
+  }
+
   const newGoal = await db.insert(goals).values({ ...validatedData, userId }).returning();
   res.status(201).json(newGoal[0]);
 });

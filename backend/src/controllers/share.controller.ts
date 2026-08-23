@@ -3,7 +3,18 @@ import { db } from '../db';
 import { workspaceShares, permissions, users, workspaces, goals, tasks } from '../db/schema';
 import { inArray } from 'drizzle-orm';
 import { eq, and, or } from 'drizzle-orm';
+import { z } from 'zod';
 import { catchAsync } from '../utils/catchAsync';
+
+const updatePermissionsSchema = z.object({
+  resourceId: z.string().uuid('Invalid resource ID format'),
+  resourceType: z.enum(['workspace', 'goal', 'task']),
+  canList: z.boolean().default(false),
+  canEdit: z.boolean().default(false),
+  canDelete: z.boolean().default(false),
+  canAddTask: z.boolean().default(false),
+  canSubmitRecord: z.boolean().default(false),
+});
 
 export const shareWorkspace = catchAsync(async (req: Request, res: Response) => {
   const { id: workspaceId } = req.params;
@@ -93,7 +104,8 @@ export const respondToShareInvitation = catchAsync(async (req: Request, res: Res
 
 export const updatePermissions = catchAsync(async (req: Request, res: Response) => {
   const { workspaceId, userId: targetUserId } = req.params;
-  const { resourceId, resourceType, canList, canEdit, canDelete, canAddTask = false, canSubmitRecord = false } = req.body;
+  const validatedData = updatePermissionsSchema.parse(req.body);
+  const { resourceId, resourceType, canList, canEdit, canDelete, canAddTask, canSubmitRecord } = validatedData;
   const ownerId = req.user?.id;
 
   if (!ownerId) {
@@ -110,6 +122,25 @@ export const updatePermissions = catchAsync(async (req: Request, res: Response) 
   const share = await db.select().from(workspaceShares).where(and(eq(workspaceShares.workspaceId, workspaceId), eq(workspaceShares.sharedWithUserId, targetUserId)));
   if (share.length === 0) {
     return res.status(404).json({ message: 'User does not have access to this workspace' });
+  }
+
+  // Verify the resource belongs to this workspace
+  if (resourceType === 'workspace') {
+    if (resourceId !== workspaceId) {
+      return res.status(400).json({ message: 'Resource does not belong to this workspace' });
+    }
+  } else if (resourceType === 'goal') {
+    const goal = await db.select({ id: goals.id }).from(goals).where(and(eq(goals.id, resourceId), eq(goals.workspaceId, workspaceId)));
+    if (goal.length === 0) {
+      return res.status(400).json({ message: 'Resource does not belong to this workspace' });
+    }
+  } else {
+    const task = await db.select({ id: tasks.id }).from(tasks)
+      .innerJoin(goals, eq(tasks.goalId, goals.id))
+      .where(and(eq(tasks.id, resourceId), eq(goals.workspaceId, workspaceId)));
+    if (task.length === 0) {
+      return res.status(400).json({ message: 'Resource does not belong to this workspace' });
+    }
   }
 
   // Check if permission entry exists, if not create one, otherwise update

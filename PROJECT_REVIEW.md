@@ -1,5 +1,48 @@
 # MeowDo Project Review
 
+## Full-stack review — 2026-08-23
+
+Second review pass covering backend, frontend, and infrastructure end to end. Each finding below was verified in source, fixed where safe, and re-verified with builds, the SQLite smoke test (`backend/scripts/sqlite-smoke.mjs`), ESLint, and an 11-check live API verification script (all passing).
+
+### Fixed this round
+
+| # | Severity | Finding | Fix |
+|---|----------|---------|-----|
+| 1 | P0 | **SQL injection via timezone** — `PUT /me/timezone` accepted arbitrary strings; `getTaskTrackingSummary` interpolated that value into Postgres SQL with `sql.raw()` (`task.controller.ts`). A malicious stored timezone executed attacker-controlled SQL. | Strict validation on write: `updateUserTimezoneSchema` now requires a valid IANA zone/offset plus a character whitelist. Defense in depth on read: `safeTimezone()` re-validates before any raw SQL interpolation and falls back to UTC for legacy rows. |
+| 2 | P0 | **Registration logged the password** to the browser console (`RegisterForm.tsx`) — same class of issue as the LoginForm P0 from the previous review, missed on this form. | Log removed entirely. |
+| 3 | P1 | **Cross-tenant writes** — `createGoal`/`createTask` never checked that the target workspace/goal belongs to the caller; any authenticated user could insert rows into another user's workspace. | Ownership check added; shared users are admitted only with an accepted share plus workspace-level `canEdit` (goals) or goal-level `canAddTask` / workspace-level `canEdit` (tasks), mirroring `checkPermission` semantics. Verified live: intruder writes get 404/403. |
+| 4 | P1 | **Validation errors returned as 500s** — no error middleware existed, so every `ZodError` bubbled to Express's default handler (500 + stack trace in dev). | New centralized `errorHandler`: `ZodError` → 400 with per-field `issues`; PG unique violation → 409; everything else → sanitized 500 without stack leak. |
+| 5 | P1 | **`getTaskTrackingSummary` ignored the `workspaceId` filter** — conditions were pushed onto the condition arrays *after* `.where(...)` had already been applied, for both owned and shared queries. | Filters moved before query execution; the goals join is now unconditional (safe — `goal_id` is NOT NULL). |
+| 6 | P1 | **SQLite/Postgres divergence in `startTask`** — the SQLite path skipped the "another task is already active" guard, allowing parallel tracking records in SQLite mode only. | Unified flow: active-task check runs for both drivers; stale-record closing stays Postgres-only (server-side duration math). Verified: second start gets 400 in SQLite mode. |
+| 7 | P1 | **No auth rate limiting / no security headers** — `/auth/*` allowed unlimited brute-force attempts; backend sent no hardening headers. | Added `express-rate-limit` (20 attempts / 15 min on `/api/v1/auth`, draft-8 headers) and `helmet()`. Verified live. |
+| 8 | P1 | **Secrets baked into Docker images** — neither `Dockerfile` had a `.dockerignore`, so `COPY . /app/` shipped local `.env`, SQLite data files, and `node_modules` into image layers. | Added `backend/.dockerignore` and `frontend/.dockerignore`. |
+| 9 | P2 | **JWT secret not validated at startup** — a missing `JWT_SECRET` produced a cryptic runtime failure on first login attempt. | Fail-fast startup check when missing/empty; loud warning when short or a known placeholder (`random_key`, …). |
+| 10 | P2 | **CORS fully open with no opt-out.** | New optional `CORS_ORIGIN` env var (comma-separated allowlist); default remains permissive so existing local setups keep working. Documented in `.env.example`. |
+| 11 | P2 | **`updatePermissions` accepted unvalidated body** — `resourceId`/`resourceType` were taken verbatim, allowing permission rows pointing at resources outside the workspace. | Zod schema (uuid + enum) plus containment check: workspace permissions must target the workspace itself; goal/task permissions must resolve inside the shared workspace. |
+| 12 | P2 | **Broken/dead API function** — `copyTaskToNextDay()` called `POST /tasks/:id/copy-to-next-day`, which has never existed in the backend. | Removed (was unreferenced). |
+| 13 | P2 | **Untranslated fallback string** — hardcoded `"Loading…"` in `App.tsx` authenticated Suspense fallback while every other state uses i18n. | Uses `t("loading")`. |
+| 14 | P2 | **Weak input limits** — register schema had no maximum lengths (bcrypt silently truncates beyond 72 bytes). | `username ≤ 64`, `email ≤ 256`, `password ≤ 72`. Timezone capped at 64 chars. |
+| 15 | P3 | **Hygiene**: obsolete `version:` key in `docker-compose.yml`; non-reproducible `npm install` in backend Dockerfile; nginx served no security headers. | Removed key; switched to `npm ci`; added `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` (duplicated into locations that set their own `add_header`, since nginx does not inherit server-level headers there). |
+
+### Noted, not fixed (deliberate)
+
+- **JWT lifetime is 90 days** with no revocation/refresh. Acceptable for a self-hosted app; revisit if it ever becomes multi-tenant SaaS.
+- **Email enumeration**: register/login responses distinguish known emails. Fixing requires uniform responses + timing normalization; left as-is for usability.
+- **Client-supplied duration on manual records** is trusted (validated non-negative int). Low risk since it only affects the submitting user's own stats.
+- **SQLite list endpoints use N+1 queries** (`getWorkspaces`/`getGoals`/`getTasks`). SQLite mode is positioned as a lightweight/local mode; Postgres path uses proper joins.
+- **Frontend api layer duplicates token/fetch boilerplate** across six files. A small `request()` wrapper would remove ~200 lines; cosmetic.
+- **`navigateFromParams` parses `window.location.pathname` manually** instead of using route context. Works correctly today; refactor candidate.
+
+### Verification performed
+
+- `backend`: `tsc` clean; SQLite smoke test passes (register → group → workspace → goal → task → start → stop → summary).
+- `frontend`: ESLint clean; bundle-size test passes; production build succeeds.
+- Live API checks against a running SQLite-mode server: all 11 passed, covering the new error handler, timezone validation, ownership guards, tracking parity, and rate limiting.
+
+---
+
+# Prior review — frontend UX focus
+
 ## Scope and method
 
 Review focused on the React frontend, its primary workspace → goal → task workflow, responsive behavior, accessibility, internationalization, error states, and perceived performance. Backend architecture and project health were reviewed where they affect the user experience.

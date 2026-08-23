@@ -159,7 +159,7 @@ function AuthenticatedRoutes({
   const navigate = useNavigate();
 
   return (
-    <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center" role="status">Loading…</div>}>
+    <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center" role="status">{t("loading")}</div>}>
       <Routes>
         <Route path="/" element={<Navigate to="/workspaces" replace />} />
         <Route

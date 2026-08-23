@@ -272,25 +272,3 @@ export const deleteTask = async (id: string): Promise<void> => {
     throw new Error(errorData.message || `Failed to delete task with ID ${id}`);
   }
 };
-
-export const copyTaskToNextDay = async (id: string): Promise<Task> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/tasks/${id}/copy-to-next-day`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-
-  if (response.status === 401) {
-    handleUnauthorized();
-    throw new Error('Unauthorized');
-  }
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || `Failed to copy task with ID ${id} to next day`);
-  }
-  return response.json();
-};

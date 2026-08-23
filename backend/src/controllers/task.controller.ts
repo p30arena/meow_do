@@ -1,10 +1,19 @@
 import { Request, Response } from 'express';
 import { db, driver } from '../db';
-import { tasks, taskTrackingRecords, users, goals, workspaceShares } from '../db/schema';
+import { tasks, taskTrackingRecords, users, goals, workspaceShares, permissions } from '../db/schema';
 import { eq, and, isNull, sql } from 'drizzle-orm';
 import { createTaskSchema, updateTaskSchema, startTaskTrackingSchema, stopTaskTrackingSchema, createManualTaskRecordSchema } from '../validation/task.validation';
 import { catchAsync } from '../utils/catchAsync';
 import { DateTime } from 'luxon';
+
+// Defense in depth for values that end up inside sql.raw() fragments below.
+// Timezones are validated on write (updateUserTimezoneSchema); this guards
+// against legacy rows that predate validation. Only IANA-safe characters
+// survive; anything else falls back to UTC.
+const safeTimezone = (tz: string | undefined | null): string => {
+  const candidate = (tz ?? '').trim();
+  return /^[A-Za-z0-9_+\-/]{1,64}$/.test(candidate) && DateTime.now().setZone(candidate).isValid ? candidate : 'UTC';
+};
 
 export const createTask = catchAsync(async (req: Request, res: Response) => {
   const validatedData = createTaskSchema.parse(req.body);
@@ -12,6 +21,39 @@ export const createTask = catchAsync(async (req: Request, res: Response) => {
   if (!userId) {
     return res.status(401).json({ message: 'Not authorized, user ID missing' });
   }
+
+  const goalRow = await db.select({ userId: goals.userId, workspaceId: goals.workspaceId }).from(goals).where(eq(goals.id, validatedData.goalId));
+  if (goalRow.length === 0) {
+    return res.status(404).json({ message: 'Goal not found' });
+  }
+  const goal = goalRow[0];
+  if (goal.userId !== userId) {
+    // Shared-workspace path: require an accepted share plus goal-level addTask
+    // or workspace-level edit permission, mirroring checkPermission semantics.
+    const share = await db.select({ id: workspaceShares.id }).from(workspaceShares).where(and(
+      eq(workspaceShares.workspaceId, goal.workspaceId),
+      eq(workspaceShares.sharedWithUserId, userId),
+      eq(workspaceShares.status, 'accepted'),
+    ));
+    if (share.length === 0) {
+      return res.status(404).json({ message: 'Goal not found' });
+    }
+    const goalPerm = await db.select().from(permissions).where(and(
+      eq(permissions.userId, userId),
+      eq(permissions.resourceId, validatedData.goalId),
+      eq(permissions.resourceType, 'goal'),
+    ));
+    const wsPerm = await db.select().from(permissions).where(and(
+      eq(permissions.userId, userId),
+      eq(permissions.resourceId, goal.workspaceId),
+      eq(permissions.resourceType, 'workspace'),
+    ));
+    const allowed = (goalPerm.length > 0 && goalPerm[0].canAddTask) || (wsPerm.length > 0 && wsPerm[0].canEdit);
+    if (!allowed) {
+      return res.status(403).json({ message: 'You do not have permission to add tasks to this goal' });
+    }
+  }
+
   const payload = driver === 'sqlite'
     ? {
         ...validatedData,
@@ -176,20 +218,12 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
   // Validate input using the new schema, combining params and body
   const validatedData = startTaskTrackingSchema.parse({ ...req.body, taskId, userId });
 
-  if (driver === 'sqlite') {
-    const newTaskTrackingRecord = await db.insert(taskTrackingRecords).values({
-      taskId: validatedData.taskId,
-      userId: validatedData.userId,
-      startTime: new Date(),
-    }).returning();
-    return res.status(201).json({ message: 'Task tracking started', record: newTaskTrackingRecord[0] });
-  }
   const user = await db.select({ timezone: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
-  const userTimezone = user[0]?.timezone || 'UTC'; // Default to UTC if not found
+  const userTimezone = safeTimezone(user[0]?.timezone); // Default to UTC if not found
 
   const actualStartTime = validatedData.startTime || DateTime.now().setZone(userTimezone).toJSDate();
 
-  // Check if any other task is currently active for this user
+  // Check if any other task is currently active for this user (both drivers)
   const activeTaskRecord = await db.select({
     taskId: taskTrackingRecords.taskId,
     taskName: tasks.name,
@@ -208,10 +242,13 @@ export const startTask = catchAsync(async (req: Request, res: Response) => {
     });
   }
 
-
-  await db.update(taskTrackingRecords)
-    .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - ${taskTrackingRecords.startTime}))` })
-    .where(and(eq(taskTrackingRecords.taskId, validatedData.taskId), eq(taskTrackingRecords.userId, validatedData.userId), sql`${taskTrackingRecords.endTime} IS NULL`));
+  // Close stale open records for this task (Postgres can compute the duration
+  // server-side; SQLite mode leaves them to be closed via stopTask).
+  if (driver === 'postgres') {
+    await db.update(taskTrackingRecords)
+      .set({ endTime: new Date(), duration: sql`EXTRACT(EPOCH FROM (NOW() - ${taskTrackingRecords.startTime}))` })
+      .where(and(eq(taskTrackingRecords.taskId, validatedData.taskId), eq(taskTrackingRecords.userId, validatedData.userId), sql`${taskTrackingRecords.endTime} IS NULL`));
+  }
 
   const newTaskTrackingRecord = await db.insert(taskTrackingRecords).values({
     taskId: validatedData.taskId,
@@ -319,7 +356,7 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
   }
 
   const user = await db.select({ timezone: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
-  const userTimezone = user[0]?.timezone || 'UTC';
+  const userTimezone = safeTimezone(user[0]?.timezone);
   let periodGroupByColumn: any = null;
   let periodOrderByColumn: any = null;
   let periodCondition: any = null;
@@ -359,6 +396,9 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
   if (goalId) {
     ownedConditions.push(eq(tasks.goalId, goalId as string));
   }
+  if (workspaceId) {
+    ownedConditions.push(eq(goals.workspaceId, workspaceId as string));
+  }
 
   let ownedQueryBuilder: any = db.select({
     taskName: tasks.name,
@@ -367,12 +407,8 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
   })
     .from(taskTrackingRecords)
     .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
+    .innerJoin(goals, eq(tasks.goalId, goals.id))
     .where(and(...ownedConditions));
-
-  if (workspaceId) {
-    ownedQueryBuilder = ownedQueryBuilder.innerJoin(goals, eq(tasks.goalId, goals.id));
-    ownedConditions.push(eq(goals.workspaceId, workspaceId as string));
-  }
 
   // Construct final groupBy and orderBy arrays for owned tasks
   const ownedGroupByColumns = [tasks.name];
@@ -394,6 +430,9 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
   if (goalId) {
     sharedConditions.push(eq(tasks.goalId, goalId as string));
   }
+  if (workspaceId) {
+    sharedConditions.push(eq(goals.workspaceId, workspaceId as string));
+  }
 
   let sharedQueryBuilder: any = db.select({
     taskName: tasks.name,
@@ -405,10 +444,6 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
     .innerJoin(goals, eq(tasks.goalId, goals.id))
     .innerJoin(workspaceShares, and(eq(workspaceShares.workspaceId, goals.workspaceId), eq(workspaceShares.sharedWithUserId, userId)))
     .where(and(...sharedConditions));
-
-  if (workspaceId) {
-    sharedConditions.push(eq(goals.workspaceId, workspaceId as string));
-  }
 
   // Construct final groupBy and orderBy arrays for shared tasks
   const sharedGroupByColumns = [tasks.name];
