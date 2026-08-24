@@ -4,6 +4,7 @@ import { tasks, taskTrackingRecords, users, goals, workspaceShares, permissions 
 import { eq, and, isNull, sql, inArray } from 'drizzle-orm';
 import { createTaskSchema, updateTaskSchema, startTaskTrackingSchema, stopTaskTrackingSchema, createManualTaskRecordSchema } from '../validation/task.validation';
 import { catchAsync } from '../utils/catchAsync';
+import { forDriver } from '../utils/driverPayload';
 import { DateTime } from 'luxon';
 
 // Defense in depth for values that end up inside sql.raw() fragments below.
@@ -54,14 +55,15 @@ export const createTask = catchAsync(async (req: Request, res: Response) => {
     }
   }
 
-  const payload = driver === 'sqlite'
-    ? {
-        ...validatedData,
-        userId,
-        isRecurring: validatedData.isRecurring ? 1 : 0,
-        deadline: validatedData.deadline?.toISOString(),
-      }
-    : { ...validatedData, userId };
+  const payload = forDriver({
+    ...validatedData,
+    // zod's .default(false).optional() omits the key when the client doesn't
+    // send it; drizzle would then bind the pg-schema boolean default (JS false),
+    // which crashes better-sqlite3. Always materialize it.
+    isRecurring: validatedData.isRecurring ?? false,
+    userId,
+    deadline: validatedData.deadline?.toISOString(),
+  });
   const newTask = await db.insert(tasks).values(payload).returning();
   res.status(201).json(newTask[0]);
 });
@@ -74,10 +76,12 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
   }
 
   if (driver === 'sqlite') {
-    const conditions = goalId
-      ? and(eq(tasks.userId, userId), eq(tasks.goalId, goalId as string))
-      : eq(tasks.userId, userId);
-    const ownedTasks = await db.select().from(tasks).where(conditions).orderBy(
+    // Owned tasks
+    const ownedConditions = [eq(tasks.userId, userId)];
+    if (goalId) {
+      ownedConditions.push(eq(tasks.goalId, goalId as string));
+    }
+    const ownedTasks = await db.select().from(tasks).where(and(...ownedConditions)).orderBy(
       sql`CASE
         WHEN ${tasks.status} = 'started' THEN 0
         WHEN ${tasks.status} = 'pending' THEN 1
@@ -88,12 +92,39 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
       sql`${tasks.priority} DESC`,
       tasks.name,
     );
+
+    // Shared tasks through accepted workspace shares (parity with the Postgres path)
+    const sharedTasks = await db.select({ task: tasks })
+      .from(tasks)
+      .innerJoin(goals, eq(tasks.goalId, goals.id))
+      .innerJoin(workspaceShares, and(
+        eq(workspaceShares.workspaceId, goals.workspaceId),
+        eq(workspaceShares.sharedWithUserId, userId),
+        eq(workspaceShares.status, 'accepted'),
+      ))
+      .where(goalId ? eq(tasks.goalId, goalId as string) : undefined)
+      .orderBy(
+        sql`CASE
+          WHEN ${tasks.status} = 'started' THEN 0
+          WHEN ${tasks.status} = 'pending' THEN 1
+          WHEN ${tasks.status} = 'failed' THEN 2
+          WHEN ${tasks.status} = 'done' THEN 3
+          ELSE 4
+        END`,
+        sql`${tasks.priority} DESC`,
+        tasks.name,
+      );
+
+    const allTasks: Array<typeof tasks.$inferSelect> = [
+      ...ownedTasks,
+      ...sharedTasks.map((row: { task: typeof tasks.$inferSelect }) => row.task),
+    ];
+
     // Single query for all open tracking records instead of one per task (N+1)
-    const openRecords = ownedTasks.length > 0
+    const openRecords = allTasks.length > 0
       ? await db.select().from(taskTrackingRecords).where(and(
-          eq(taskTrackingRecords.userId, userId),
           isNull(taskTrackingRecords.endTime),
-          inArray(taskTrackingRecords.taskId, ownedTasks.map((task: typeof tasks.$inferSelect) => task.id)),
+          inArray(taskTrackingRecords.taskId, allTasks.map((task: typeof tasks.$inferSelect) => task.id)),
         ))
       : [];
     const activePerTask = new Map<string, (typeof taskTrackingRecords.$inferSelect)>();
@@ -102,7 +133,7 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
         activePerTask.set(record.taskId, record);
       }
     }
-    const tasksWithTracking = ownedTasks.map((task: typeof tasks.$inferSelect) => ({
+    const tasksWithTracking = allTasks.map((task: typeof tasks.$inferSelect) => ({
       ...task,
       activeTracking: activePerTask.get(task.id) ?? null,
     }));
@@ -407,10 +438,36 @@ export const getTaskTrackingSummary = catchAsync(async (req: Request, res: Respo
   }
 
   if (driver === 'sqlite') {
+    // Mirror the Postgres path's period filter: only 'total' has no time bound.
+    const user = await db.select({ timezone: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
+    const userTimezone = safeTimezone(user[0]?.timezone);
+
+    let periodCondition;
+    switch (period) {
+      case 'day':
+        // SQLite stores timestamps as ISO-8601 TEXT; compare against local midnight.
+        periodCondition = sql`${taskTrackingRecords.startTime} >= ${DateTime.now().setZone(userTimezone).startOf('day').toUTC().toISO()}`;
+        break;
+      case 'month':
+        periodCondition = sql`${taskTrackingRecords.startTime} >= ${DateTime.now().setZone(userTimezone).startOf('month').toUTC().toISO()}`;
+        break;
+      case 'year':
+        periodCondition = sql`${taskTrackingRecords.startTime} >= ${DateTime.now().setZone(userTimezone).startOf('year').toUTC().toISO()}`;
+        break;
+      case 'total':
+        break;
+      default:
+        return res.status(400).json({ message: 'Invalid period specified. Must be "day", "month", "year", or "total".' });
+    }
+
     const rows = await db.select({ taskName: tasks.name, duration: taskTrackingRecords.duration })
       .from(taskTrackingRecords)
       .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
-      .where(and(eq(taskTrackingRecords.userId, userId), ...(goalId ? [eq(tasks.goalId, goalId as string)] : [])));
+      .where(and(
+        eq(taskTrackingRecords.userId, userId),
+        ...(periodCondition ? [periodCondition] : []),
+        ...(goalId ? [eq(tasks.goalId, goalId as string)] : []),
+      ));
     const totals = new Map<string, number>();
     for (const row of rows as Array<{ taskName: string; duration: number | null }>) {
       totals.set(row.taskName, (totals.get(row.taskName) ?? 0) + (row.duration ?? 0));

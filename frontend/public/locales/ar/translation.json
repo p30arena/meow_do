@@ -105,7 +105,8 @@
     "invitedBy": "دعا بواسطة",
     "accept": "قبول",
     "decline": "رفض",
-    "shared": "مشترك"
+    "shared": "مشترك",
+    "groups": "المجموعات"
   },
   "goalsFor": "أهداف لـ {{name}}",
   "backToWorkspaces": "العودة إلى مساحات العمل",
@@ -202,7 +203,11 @@
       "pending": "قيد الانتظار",
       "failed": "فشل",
       "done": "انتهى"
-    }
+    },
+    "stopNow": "إيقاف",
+    "adjustStopTime": "تعديل وقت التوقف",
+    "startedAt": "بدأت في {{time}}",
+    "anotherTaskActiveShort": "مهمة أخرى قيد التشغيل - أوقفها أولاً."
   },
   "cancel": "إلغاء",
   "confirm": "تأكيد",
@@ -236,5 +241,22 @@
   "notFound": "غير موجود",
   "pageNotFound": "الصفحة غير موجودة.",
   "close": "إغلاق",
-  "deleteError": "خطأ في الحذف."
+  "deleteError": "خطأ في الحذف.",
+  "today": {
+    "title": "اليوم",
+    "runningNow": "جارٍ الآن",
+    "dueToday": "مستحق اليوم",
+    "overdue": "متأخر",
+    "upcoming": "قادم",
+    "allClearTitle": "لا شيء يستحق الانتباه",
+    "allClearHint": "لا مهام مستحقة اليوم. ابدأ مهمة معلقة أو خطط للمستقبل.",
+    "dayBudget": "ميزانية اليوم",
+    "spentToday": "المنفق اليوم",
+    "empty": "لا توجد مهام في مساحات عملك بعد.",
+    "startNext": "ابدأ المهمة التالية"
+  },
+  "nav": {
+    "today": "اليوم",
+    "workspaces": "مساحات العمل"
+  }
 }

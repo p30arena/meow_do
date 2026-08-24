@@ -108,7 +108,8 @@
     "invitedBy": "Invited by",
     "accept": "Accept",
     "decline": "Decline",
-    "shared": "Shared"
+    "shared": "Shared",
+    "groups": "Groups"
   },
   "goalsFor": "Goals for {{name}}",
   "backToWorkspaces": "Back to Workspaces",
@@ -206,7 +207,11 @@
       "pending": "Pending",
       "failed": "Failed",
       "done": "Done"
-    }
+    },
+    "stopNow": "Stop",
+    "adjustStopTime": "Adjust stop time",
+    "startedAt": "Started at {{time}}",
+    "anotherTaskActiveShort": "Another task is running - stop it first."
   },
   "cancel": "Cancel",
   "confirm": "Confirm",
@@ -246,5 +251,22 @@
   "navigation": {
     "openMenu": "Open navigation menu"
   },
-  "breadcrumb": "Breadcrumb"
+  "breadcrumb": "Breadcrumb",
+  "today": {
+    "title": "Today",
+    "runningNow": "Running now",
+    "dueToday": "Due today",
+    "overdue": "Overdue",
+    "upcoming": "Upcoming",
+    "allClearTitle": "You are all clear",
+    "allClearHint": "Nothing is due today. Start something pending or plan ahead.",
+    "dayBudget": "Day budget",
+    "spentToday": "Spent today",
+    "empty": "No tasks across your workspaces yet.",
+    "startNext": "Start next task"
+  },
+  "nav": {
+    "today": "Today",
+    "workspaces": "Workspaces"
+  }
 }

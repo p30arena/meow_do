@@ -104,6 +104,12 @@ export const getTasksByGoalId = async (goalId: string): Promise<Task[]> =>
     errorMessage: `Failed to fetch tasks for goal ID ${goalId}`,
   });
 
+/** All of the user's tasks across every workspace (owned + shared), with active tracking state. */
+export const getAllTasks = async (): Promise<Task[]> =>
+  request<Task[]>('/tasks', {
+    errorMessage: 'Failed to fetch tasks',
+  });
+
 export const getTaskById = async (id: string): Promise<Task> =>
   request<Task>(`/tasks/${id}`, {
     errorMessage: `Failed to fetch task with ID ${id}`,

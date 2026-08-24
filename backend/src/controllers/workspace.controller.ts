@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { db, driver, type TransactionClient } from '../db';
 import { workspaces, workspaceGroups, goals, tasks, taskTrackingRecords, workspaceShares } from '../db/schema';
-import { eq, and, ne, sql, inArray } from 'drizzle-orm';
+import { eq, and, ne, sql, inArray, isNull } from 'drizzle-orm';
+import { DateTime } from 'luxon';
 import { z } from 'zod';
 import { createWorkspaceSchema, updateWorkspaceSchema } from '../validation/workspace.validation';
 import { catchAsync } from '../utils/catchAsync';
@@ -23,26 +24,80 @@ export const getWorkspaces = catchAsync(async (req: Request, res: Response) => {
   }
   if (driver === 'sqlite') {
     const owned = await db.select().from(workspaces).where(eq(workspaces.userId, userId));
-    // Aggregate counts in bulk instead of one query per workspace (N+1)
-    const goalRows = await db.select({ workspaceId: goals.workspaceId, count: sql<number>`COUNT(*)` })
-      .from(goals)
-      .where(eq(goals.userId, userId))
-      .groupBy(goals.workspaceId);
-    const taskRows = await db.select({ workspaceId: goals.workspaceId, count: sql<number>`COUNT(*)` })
-      .from(tasks)
-      .innerJoin(goals, eq(tasks.goalId, goals.id))
-      .where(eq(goals.userId, userId))
-      .groupBy(goals.workspaceId);
-    const goalsPerWorkspace = new Map(goalRows.map((row: { workspaceId: string; count: number }) => [row.workspaceId, row.count]));
-    const tasksPerWorkspace = new Map(taskRows.map((row: { workspaceId: string; count: number }) => [row.workspaceId, row.count]));
-    const formatted = owned.map((workspace: typeof workspaces.$inferSelect) => ({
-      ...workspace,
-      goalCount: goalsPerWorkspace.get(workspace.id) ?? 0,
-      taskCount: tasksPerWorkspace.get(workspace.id) ?? 0,
-      totalProgress: 0,
-      hasRunningTask: false,
-      isShared: false,
-    }));
+    const wsIds = owned.map((workspace: typeof workspaces.$inferSelect) => workspace.id);
+
+    // Aggregate counts + progress weights in bulk instead of per-workspace queries (N+1)
+    type WsStats = {
+      workspaceId: string;
+      goalCount: number;
+      taskCount: number;
+      sumTimeBudget: number;
+      doneWeighted: number;
+      trackedMinutes: number;
+    };
+    let statRows: WsStats[] = [];
+    if (wsIds.length > 0) {
+      statRows = await db.select({
+        workspaceId: goals.workspaceId,
+        goalCount: sql<number>`COUNT(DISTINCT ${goals.id})`,
+        taskCount: sql<number>`COUNT(${tasks.id})`,
+        sumTimeBudget: sql<number>`COALESCE(SUM(${tasks.timeBudget}), 0)`,
+        doneWeighted: sql<number>`COALESCE(SUM(CASE WHEN ${tasks.status} = 'done' THEN ${tasks.timeBudget} ELSE 0 END), 0)`,
+        trackedMinutes: sql<number>`COALESCE(SUM(${taskTrackingRecords.duration}) / 60.0, 0)`,
+      })
+        .from(goals)
+        .leftJoin(tasks, eq(tasks.goalId, goals.id))
+        .leftJoin(taskTrackingRecords, and(
+          eq(taskTrackingRecords.taskId, tasks.id),
+          // Daily tracked minutes only (mirrors date_trunc('day', ...) filter)
+          sql`${taskTrackingRecords.startTime} >= ${DateTime.now().startOf('day').toUTC().toISO()}`,
+        ))
+        .where(inArray(goals.workspaceId, wsIds))
+        .groupBy(goals.workspaceId);
+    }
+    const statsPerWs = new Map<string, WsStats>(statRows.map((row) => [row.workspaceId, row]));
+
+    // Workspaces with an open tracking record on any of their tasks
+    const runningRows: Array<{ workspaceId: string }> = wsIds.length > 0
+      ? await db.select({ workspaceId: goals.workspaceId })
+          .from(taskTrackingRecords)
+          .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
+          .innerJoin(goals, eq(tasks.goalId, goals.id))
+          .where(and(
+            inArray(goals.workspaceId, wsIds),
+            eq(taskTrackingRecords.userId, userId),
+            isNull(taskTrackingRecords.endTime),
+          ))
+          .groupBy(goals.workspaceId)
+      : [];
+    const runningWsIds = new Set(runningRows.map((row) => row.workspaceId));
+
+    // Workspaces shared with others (any share row counts, matching the pg path)
+    const sharedRows: Array<{ workspaceId: string }> = wsIds.length > 0
+      ? await db.select({ workspaceId: workspaceShares.workspaceId })
+          .from(workspaceShares)
+          .where(inArray(workspaceShares.workspaceId, wsIds))
+          .groupBy(workspaceShares.workspaceId)
+      : [];
+    const sharedWsIds = new Set(sharedRows.map((row) => row.workspaceId));
+
+    const formatted = owned.map((workspace: typeof workspaces.$inferSelect) => {
+      const stats = statsPerWs.get(workspace.id);
+      const sumTimeBudget = Number(stats?.sumTimeBudget ?? 0);
+      let totalProgress = 0;
+      if (sumTimeBudget > 0) {
+        const weighted = Number(stats?.doneWeighted ?? 0) + Number(stats?.trackedMinutes ?? 0);
+        totalProgress = Math.min(100, Math.max(0, (weighted * 100.0) / sumTimeBudget));
+      }
+      return {
+        ...workspace,
+        goalCount: Number(stats?.goalCount ?? 0),
+        taskCount: Number(stats?.taskCount ?? 0),
+        totalProgress,
+        hasRunningTask: runningWsIds.has(workspace.id),
+        isShared: sharedWsIds.has(workspace.id),
+      };
+    });
     return res.status(200).json(formatted);
   }
   const dailyTrackedTimeSubquery = db.select({

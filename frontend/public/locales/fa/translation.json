@@ -105,7 +105,8 @@
     "invitedBy": "دعوت شده توسط",
     "accept": "پذیرش",
     "decline": "رد",
-    "shared": "مشترک"
+    "shared": "مشترک",
+    "groups": "گروه‌ها"
   },
   "goalsFor": "اهداف برای {{name}}",
   "backToWorkspaces": "بازگشت به فضاهای کاری",
@@ -202,7 +203,11 @@
       "pending": "در انتظار",
       "failed": "ناموفق",
       "done": "انجام شده"
-    }
+    },
+    "stopNow": "توقف",
+    "adjustStopTime": "تنظیم زمان توقف",
+    "startedAt": "شروع در {{time}}",
+    "anotherTaskActiveShort": "کار دیگری در حال اجراست - اول آن را متوقف کن."
   },
   "cancel": "لغو",
   "confirm": "تایید",
@@ -236,5 +241,22 @@
   "notFound": "یافت نشد",
   "pageNotFound": "صفحه یافت نشد.",
   "close": "بستن",
-  "deleteError": "خطای حذف."
+  "deleteError": "خطای حذف.",
+  "today": {
+    "title": "امروز",
+    "runningNow": "در حال اجرا",
+    "dueToday": "سررسید امروز",
+    "overdue": "عقب‌افتاده",
+    "upcoming": "پیش‌رو",
+    "allClearTitle": "همه‌چیز مرتب است",
+    "allClearHint": "امروز کاری سررسید ندارد. یک کار در انتظار را شروع کن یا برنامه‌ریزی کن.",
+    "dayBudget": "بودجه روز",
+    "spentToday": "هزینه‌شده امروز",
+    "empty": "هنوز کاری در فضاهای کاری تو نیست.",
+    "startNext": "شروع کار بعدی"
+  },
+  "nav": {
+    "today": "امروز",
+    "workspaces": "فضاهای کاری"
+  }
 }

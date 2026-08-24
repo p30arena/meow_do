@@ -17,6 +17,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input"; // Import Input component
 import { Label } from "@/components/ui/label";
 import { MoreVertical, Pencil, XCircle } from "lucide-react";
+import { Progress } from "../ui/progress";
+import { Badge } from "../ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -70,6 +72,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
   const [editingGroup, setEditingGroup] = useState<string | null>(null); // State to track which group is being edited
   const [editedGroupName, setEditedGroupName] = useState<string>(""); // State for the edited group name
   const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null); // Workspace shown in the share dialog
+  const [showGroupCreator, setShowGroupCreator] = useState(false); // Group creation hidden behind "+"; P2 fix
   const fetchWorkspaces = async () => {
     setLoading(true);
     setError(null);
@@ -250,28 +253,42 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
         {t("workspace.createWorkspace")}
       </Button>
 
-      {/* Group Creation UI */}
-      <div className="mb-6 p-4 border rounded-lg bg-card text-card-foreground shadow-sm">
-        <h3 className="text-xl font-semibold mb-3">
-          {t("workspace.createGroup")}
-        </h3>
-        <div className="flex gap-2 items-end">
-          <div className="grid gap-1.5 flex-grow">
-            <Label htmlFor="new-group-name">{t("workspace.groupName")}</Label>
-            <Input
-              id="new-group-name"
-              placeholder={t("workspace.enterGroupName")}
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  handleAddGroup();
-                }
-              }}
-            />
-          </div>
-          <Button onClick={handleAddGroup}>{t("workspace.addGroup")}</Button>
+      {/* Group management: behind a "+" affordance so it doesn't lead the page */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">{t("workspace.groups")}</h3>
+          {workspaces.length > 1 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowGroupCreator((v) => !v)}
+              aria-expanded={showGroupCreator}
+            >
+              + {t("workspace.createGroup")}
+            </Button>
+          )}
         </div>
+        {showGroupCreator && workspaces.length > 1 && (
+          <div className="mt-3 p-4 border rounded-lg bg-card text-card-foreground shadow-sm">
+            <div className="flex gap-2 items-end">
+              <div className="grid gap-1.5 flex-grow">
+                <Label htmlFor="new-group-name">{t("workspace.groupName")}</Label>
+                <Input
+                  id="new-group-name"
+                  placeholder={t("workspace.enterGroupName")}
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleAddGroup();
+                    }
+                  }}
+                />
+              </div>
+              <Button onClick={handleAddGroup}>{t("workspace.addGroup")}</Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {workspaces.length === 0 && groups.length <= 1 ? ( // Only 'Ungrouped' exists initially
@@ -292,7 +309,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                       value={editedGroupName}
                       onChange={(e) => setEditedGroupName(e.target.value)}
                       onBlur={() => handleSaveGroupRename(groupName)}
-                      onKeyPress={(e) => {
+                      onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           handleSaveGroupRename(groupName);
                         }
@@ -399,26 +416,43 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                     </CardHeader>
                     <CardContent>
                       <DescriptionViewer description={workspace.description} />
-                      <div className="mt-2 text-sm text-muted-foreground">
-                        <p>
-                          {t("workspace.goals")}: {workspace.goalCount ?? 0}
-                        </p>
-                        <p>
-                          {t("workspace.tasks")}: {workspace.taskCount ?? 0}
-                        </p>
-                        <p>
-                          {t("workspace.progress")}:{" "}
-                          {workspace.totalProgress != null &&
-                          !isNaN(workspace.totalProgress)
-                            ? `${workspace.totalProgress.toFixed(0)}%`
-                            : "0%"}
-                        </p>
-                        {workspace.groupName && (
-                          <p className="mt-1">
-                            {t("workspace.group")}: {workspace.groupName}
-                          </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                        {workspace.isShared && (
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                            {t("workspace.shared")}
+                          </Badge>
+                        )}
+                        {workspace.hasRunningTask && (
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" title={t("workspace.runningTask")}>
+                            <span aria-hidden="true" className="inline-flex h-2 w-2 rounded-full bg-green-500" />
+                            {t("workspace.runningTask")}
+                          </span>
                         )}
                       </div>
+                      <div className="mt-3">
+                        <div className="mb-1 flex items-baseline justify-between text-xs">
+                          <span className="text-muted-foreground">
+                            {t("workspace.goals")}: {workspace.goalCount ?? 0} ·{" "}
+                            {t("workspace.tasks")}: {workspace.taskCount ?? 0}
+                          </span>
+                          <span className={`tabular-nums ${((workspace.totalProgress ?? 0) >= 100) ? "font-semibold text-green-600 dark:text-green-400" : "font-medium"}`}>
+                            {workspace.totalProgress != null &&
+                            !isNaN(workspace.totalProgress)
+                              ? `${workspace.totalProgress.toFixed(0)}%`
+                              : "0%"}
+                          </span>
+                        </div>
+                        <Progress
+                          value={Math.min(100, workspace.totalProgress ?? 0)}
+                          className="h-2"
+                          aria-label={`${workspace.name}: ${workspace.totalProgress?.toFixed(0) ?? 0}%`}
+                        />
+                      </div>
+                      {workspace.groupName && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {t("workspace.group")}: {workspace.groupName}
+                        </p>
+                      )}
                       <div className="mt-4 flex justify-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

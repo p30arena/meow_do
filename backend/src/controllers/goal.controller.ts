@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { db, driver } from '../db';
 import { goals, tasks, taskTrackingRecords, workspaceShares, workspaces, permissions } from '../db/schema';
-import { eq, and, ne, sql, inArray } from 'drizzle-orm';
+import { eq, and, ne, sql, inArray, isNull } from 'drizzle-orm';
+import { DateTime } from 'luxon';
 import { createGoalSchema, updateGoalSchema } from '../validation/goal.validation';
 import { catchAsync } from '../utils/catchAsync';
 
@@ -51,20 +52,66 @@ export const getGoals = catchAsync(async (req: Request, res: Response) => {
       ? and(eq(goals.userId, userId), eq(goals.workspaceId, workspaceId as string))
       : eq(goals.userId, userId);
     const ownedGoals = await db.select().from(goals).where(conditions);
+    const goalIds = ownedGoals.map((goal: typeof goals.$inferSelect) => goal.id);
+
     // Single grouped query instead of one query per goal (N+1)
-    const taskRows = ownedGoals.length > 0
-      ? await db.select({ goalId: tasks.goalId, count: sql<number>`COUNT(*)` })
-          .from(tasks)
-          .where(inArray(tasks.goalId, ownedGoals.map((goal: typeof goals.$inferSelect) => goal.id)))
+    type GoalStats = {
+      goalId: string;
+      count: number;
+      sumTimeBudget: number;
+      doneWeighted: number;
+      trackedMinutes: number;
+    };
+    let taskRows: GoalStats[] = [];
+    if (goalIds.length > 0) {
+      taskRows = await db.select({
+        goalId: tasks.goalId,
+        count: sql<number>`COUNT(*)`,
+        sumTimeBudget: sql<number>`COALESCE(SUM(${tasks.timeBudget}), 0)`,
+        doneWeighted: sql<number>`COALESCE(SUM(CASE WHEN ${tasks.status} = 'done' THEN ${tasks.timeBudget} ELSE 0 END), 0)`,
+        trackedMinutes: sql<number>`COALESCE(SUM(${taskTrackingRecords.duration}) / 60.0, 0)`,
+      })
+        .from(tasks)
+        .leftJoin(taskTrackingRecords, and(
+          eq(taskTrackingRecords.taskId, tasks.id),
+          // Daily tracked minutes only (mirrors date_trunc('day', ...) filter)
+          sql`${taskTrackingRecords.startTime} >= ${DateTime.now().startOf('day').toUTC().toISO()}`,
+        ))
+        .where(inArray(tasks.goalId, goalIds))
+        .groupBy(tasks.goalId);
+    }
+    const statsPerGoal = new Map<string, GoalStats>(taskRows.map((row) => [row.goalId, row]));
+
+    // Goals with an open tracking record on any of their tasks
+    const runningRows: Array<{ goalId: string }> = goalIds.length > 0
+      ? await db.select({ goalId: tasks.goalId })
+          .from(taskTrackingRecords)
+          .innerJoin(tasks, eq(taskTrackingRecords.taskId, tasks.id))
+          .where(and(
+            inArray(tasks.goalId, goalIds),
+            eq(taskTrackingRecords.userId, userId),
+            isNull(taskTrackingRecords.endTime),
+          ))
           .groupBy(tasks.goalId)
       : [];
-    const tasksPerGoal = new Map(taskRows.map((row: { goalId: string; count: number }) => [row.goalId, row.count]));
-    const formatted = ownedGoals.map((goal: typeof goals.$inferSelect) => ({
-      ...goal,
-      taskCount: tasksPerGoal.get(goal.id) ?? 0,
-      totalProgress: 0,
-      hasRunningTask: false,
-    }));
+    const runningGoalIds = new Set(runningRows.map((row) => row.goalId));
+
+    const formatted = ownedGoals.map((goal: typeof goals.$inferSelect) => {
+      const stats = statsPerGoal.get(goal.id);
+      const sumTimeBudget = Number(stats?.sumTimeBudget ?? 0);
+      let totalProgress = 0;
+      if (sumTimeBudget > 0) {
+        // done tasks count their full budget; open tasks count today's tracked minutes
+        const weighted = Number(stats?.doneWeighted ?? 0) + Number(stats?.trackedMinutes ?? 0);
+        totalProgress = Math.min(100, Math.max(0, (weighted * 100.0) / sumTimeBudget));
+      }
+      return {
+        ...goal,
+        taskCount: Number(stats?.count ?? 0),
+        totalProgress,
+        hasRunningTask: runningGoalIds.has(goal.id),
+      };
+    });
     return res.status(200).json(formatted);
   }
   const dailyTrackedTimeSubquery = db.select({

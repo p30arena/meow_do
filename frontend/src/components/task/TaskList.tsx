@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { useAuth } from "../../context/AuthContext";
@@ -11,7 +11,7 @@ import {
   type TaskTrackingSummary,
 } from "../../api/task";
 import { ManualTimeRecordForm } from "./ManualTimeRecordForm";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import TaskCard from "./TaskCard";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import {
@@ -32,18 +32,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
-import DescriptionViewer from "../common/DescriptionViewer";
 
 interface TaskListProps {
   workspaceId: string;
@@ -70,273 +61,136 @@ const TaskList: React.FC<TaskListProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [totalTimeBudget, setTotalTimeBudget] = useState(0);
   const [totalTimeSpentToday, setTotalTimeSpentToday] = useState(0);
-  const [totalTimeSpentOverall, setTotalTimeSpentOverall] = useState(0);
-  const [dailyTaskSummaries, setDailyTaskSummaries] = useState<
-    TaskTrackingSummary[]
-  >([]);
-  const [overallTaskSummaries, setOverallTaskSummaries] = useState<
-    TaskTrackingSummary[]
-  >([]);
-  const [activeTrackingTaskId, setActiveTrackingTaskId] = useState<
-    string | null
-  >(null);
-  const [durationDisplay, setDurationDisplay] = useState<string>("00:00:00");
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<DateTime | null>(null);
-  const [showStopTrackingDialog, setShowStopTrackingDialog] = useState(false);
-  const [selectedStopTime, setSelectedStopTime] = useState("");
-  const [currentTrackingRecordIdToStop, setCurrentTrackingRecordIdToStop] =
-    useState<string | null>(null);
-  const [currentTrackingRecordStartTime, setCurrentTrackingRecordStartTime] =
-    useState<DateTime | null>(null);
+  const [dailyByName, setDailyByName] = useState<Record<string, number>>({});
+  const [overallByName, setOverallByName] = useState<Record<string, number>>({});
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [showManualRecordForm, setShowManualRecordForm] = useState(false);
-  const [selectedTaskIdForManualRecord, setSelectedTaskIdForManualRecord] =
-    useState<string | null>(null);
+  const [selectedTaskIdForManualRecord, setSelectedTaskIdForManualRecord] = useState<string | null>(null);
 
-  const groupTasks = (tasks: Task[]) => {
-    const groupedTasks: { [key: string]: Task[] } = {
-      Running: [],
-      Started: [],
-      Pending: [],
-      Failed: [],
-      Done: [],
-    };
+  // Live ticker for the currently running task.
+  const [now, setNow] = useState(() => DateTime.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(DateTime.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
-    tasks.forEach((task) => {
-      if (task.activeTracking && task.activeTracking.endTime === null) {
-        groupedTasks["Running"].push(task);
-      } else {
-        groupedTasks[
-          task.status.charAt(0).toUpperCase() + task.status.slice(1)
-        ].push(task);
-      }
-    });
-
-    return groupedTasks;
-  };
-
-  const TaskListDivider = ({ title }: { title: string }) => {
-    const { t } = useTranslation();
-
-    const statusColors: { [key: string]: string } = {
-      Running: "bg-green-500",
-      Started: "bg-yellow-500",
-      Pending: "bg-blue-500",
-      Failed: "bg-red-500",
-      Done: "bg-gray-500",
-    };
-
-    const bgColorClass = statusColors[title] || "bg-gray-300"; // Default to gray if status is not found
-
-    return (
-      <div className="w-full flex items-center my-4">
-        <div className="bg-gray-300 h-0.5 w-full"></div>
-        <div
-          className={`${bgColorClass} text-white px-2 py-1 rounded rtl:mr-2 ltr:ml-2`}
-        >
-          {t(`tasks.statuses.${title.toLowerCase()}`)}
-        </div>
-      </div>
-    );
-  };
+  // One-tap stop dialog ("adjust end time" is an opt-in refinement inside it).
+  const [pendingStop, setPendingStop] = useState<Task | null>(null);
+  const [adjustingStop, setAdjustingStop] = useState(false);
+  const [selectedStopTime, setSelectedStopTime] = useState("");
 
   const fetchTasks = async () => {
+    setError(null);
     try {
       const data = await getTasksByGoalId(goalId);
       setTasks(data);
-      const sum = data.reduce((acc, task) => acc + task.timeBudget, 0);
-      setTotalTimeBudget(sum);
+      setTotalTimeBudget(data.reduce((acc, task) => acc + task.timeBudget, 0));
 
-      const dailySummary = await getTaskTrackingSummary(
-        "day",
-        workspaceId,
-        goalId,
-      );
-      setDailyTaskSummaries(dailySummary);
-      const totalSpentTodaySeconds = dailySummary.reduce(
-        (acc, record) => acc + record.totalDurationSeconds,
-        0,
-      );
-      setTotalTimeSpentToday(Math.floor(totalSpentTodaySeconds / 60));
+      // Summaries are keyed by task name by the API; resolved to ids at render.
+      const [dailySummary, overallSummary] = await Promise.all([
+        getTaskTrackingSummary("day", workspaceId, goalId),
+        getTaskTrackingSummary("total", workspaceId, goalId),
+      ]);
+      const daily: Record<string, number> = {};
+      dailySummary.forEach((s: TaskTrackingSummary) => {
+        daily[s.taskName] = s.totalDurationSeconds;
+      });
+      const overall: Record<string, number> = {};
+      overallSummary.forEach((s: TaskTrackingSummary) => {
+        overall[s.taskName] = s.totalDurationSeconds;
+      });
+      setDailyByName(daily);
+      setOverallByName(overall);
 
-      const overallSummary = await getTaskTrackingSummary(
-        "total",
-        workspaceId,
-        goalId,
-      );
-      const totalSpentOverallSeconds = overallSummary.reduce(
-        (acc, record) => acc + record.totalDurationSeconds,
-        0,
-      );
-      setTotalTimeSpentOverall(Math.floor(totalSpentOverallSeconds / 60));
-
-      const individualOverallSummaries = await getTaskTrackingSummary(
-        "total",
-        workspaceId,
-        goalId,
-      );
-      setOverallTaskSummaries(individualOverallSummaries);
-
-      const activeTask = data.find(
-        (task) => task.activeTracking && task.activeTracking.endTime === null,
-      );
-
-      if (activeTask && activeTask.activeTracking) {
-        setActiveTrackingTaskId(activeTask.id);
-        startTimeRef.current = DateTime.fromISO(
-          activeTask.activeTracking.startTime,
-          { zone: "utc" },
-        ).setZone(userTimezone);
-        startTimer(activeTask.id);
-      } else {
-        stopTimer();
-      }
+      let todaySeconds = 0;
+      data.forEach((task) => {
+        todaySeconds += liveDailySeconds(task);
+      });
+      setTotalTimeSpentToday(Math.floor(todaySeconds / 60));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : t("workspace.error"));
-      stopTimer();
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTasks();
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [goalId, workspaceId, userTimezone]);
+    void fetchTasks();
+  }, [goalId, workspaceId]);
 
-  const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-      2,
-      "0",
-    )}:${String(remainingSeconds).padStart(2, "0")}`;
+  const runningTask = useMemo(
+    () => tasks.find((task) => task.activeTracking && !task.activeTracking.endTime) ?? null,
+    [tasks],
+  );
+
+  /** Recorded-today seconds plus the live portion of any open record. */
+  const liveDailySeconds = (task: Task): number => {
+    let seconds = dailyByName[task.name] ?? 0;
+    if (task.activeTracking && !task.activeTracking.endTime) {
+      const startedAt = DateTime.fromISO(task.activeTracking.startTime, { zone: "utc" }).setZone(userTimezone);
+      if (startedAt > now.startOf("day")) {
+        seconds += Math.floor(now.diff(startedAt).as("seconds"));
+      }
+    }
+    return seconds;
   };
 
-  const startTimer = (taskId: string) => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    if (!startTimeRef.current) {
-      startTimeRef.current = DateTime.now().setZone(userTimezone);
-    }
-    setActiveTrackingTaskId(taskId);
-
-    intervalRef.current = setInterval(() => {
-      if (startTimeRef.current) {
-        const elapsedSeconds = Math.floor(
-          DateTime.now()
+  /** One tap stops NOW; adjusting the end time is opt-in inside the same dialog. */
+  const confirmStop = async () => {
+    if (!pendingStop?.activeTracking) return;
+    setError(null);
+    try {
+      if (adjustingStop) {
+        const local = DateTime.fromFormat(selectedStopTime, "yyyy-MM-dd'T'HH:mm", {
+          zone: userTimezone,
+        });
+        if (!local.isValid) throw new Error(t("tasks.invalidStopDateTimeFormat"));
+        if (
+          DateTime.fromISO(pendingStop.activeTracking.startTime, { zone: "utc" })
             .setZone(userTimezone)
-            .diff(startTimeRef.current, "seconds")
-            .toObject().seconds || 0,
-        );
-        setDurationDisplay(formatDuration(elapsedSeconds));
+            .diff(local, "minutes").minutes > 1
+        ) {
+          throw new Error(t("tasks.stopTimeBeforeStartTime"));
+        }
+        await stopTaskTracking(pendingStop.activeTracking.id, local.toUTC().toISO());
+      } else {
+        await stopTaskTracking(pendingStop.activeTracking.id); // server-side "now"
       }
-    }, 1000);
+      setPendingStop(null);
+      setAdjustingStop(false);
+      setSelectedStopTime("");
+      await fetchTasks();
+    } catch (err: any) {
+      setError(err.message ?? t("workspace.error"));
+    }
   };
 
-  const stopTimer = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    setActiveTrackingTaskId(null);
-    setDurationDisplay("00:00:00");
-    startTimeRef.current = null;
+  const openStopDialog = (taskId: string) => {
+    const task = tasks.find((t2) => t2.id === taskId);
+    if (!task?.activeTracking) return;
+    setSelectedStopTime(DateTime.now().setZone(userTimezone).toFormat("yyyy-MM-dd'T'HH:mm"));
+    setAdjustingStop(false);
+    setPendingStop(task);
   };
 
   const handleStartTracking = async (taskId: string) => {
     setError(null);
     try {
       await startTaskTracking(taskId);
-      fetchTasks();
+      await fetchTasks();
     } catch (err: any) {
       if (err?.status === 400 && err?.data?.activeTask) {
         setError(
-          t("tasks.anotherTaskActive", {
-            taskName: err.data.activeTask.taskName,
-          }),
+          t("tasks.anotherTaskActive", { taskName: err.data.activeTask.taskName }),
         );
       } else {
-        setError(err.message);
+        setError(err.message ?? t("workspace.error"));
       }
-      stopTimer();
     }
-  };
-
-  const handleStopTracking = (task: Task) => {
-    setError(null);
-    if (task.activeTracking) {
-      setCurrentTrackingRecordIdToStop(task.activeTracking.id);
-      setCurrentTrackingRecordStartTime(
-        DateTime.fromISO(task.activeTracking.startTime, {
-          zone: "utc",
-        }).setZone(userTimezone),
-      );
-      const nowInUserTimezone = DateTime.now().setZone(userTimezone);
-      setSelectedStopTime(nowInUserTimezone.toFormat("yyyy-MM-dd'T'HH:mm"));
-      setShowStopTrackingDialog(true);
-    } else {
-      setError(t("tasks.noActiveTrackingRecord"));
-    }
-  };
-
-  const handleConfirmStopTracking = async () => {
-    setError(null);
-    if (
-      !currentTrackingRecordIdToStop ||
-      !currentTrackingRecordStartTime ||
-      !selectedStopTime
-    ) {
-      setError(t("tasks.missingStopTimeInfo"));
-      return;
-    }
-
-    const localStopTime = DateTime.fromFormat(
-      selectedStopTime,
-      "yyyy-MM-dd'T'HH:mm",
-      { zone: userTimezone },
-    );
-
-    if (!localStopTime.isValid) {
-      setError(t("tasks.missingStopTimeInfo"));
-      return;
-    }
-
-    if (
-      currentTrackingRecordStartTime.diff(localStopTime, "minutes").minutes > 1
-    ) {
-      setError(t("tasks.stopTimeBeforeStartTime"));
-      return;
-    }
-
-    const isoStopTime = localStopTime.toUTC().toISO();
-
-    try {
-      await stopTaskTracking(currentTrackingRecordIdToStop, isoStopTime);
-      setShowStopTrackingDialog(false);
-      setSelectedStopTime("");
-      setCurrentTrackingRecordIdToStop(null);
-      setCurrentTrackingRecordStartTime(null);
-      fetchTasks();
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  const confirmDelete = (task: Task) => {
-    setTaskToDelete(task);
   };
 
   const executeDelete = async () => {
     if (!taskToDelete) return;
-
     setLoading(true);
     setError(null);
     try {
@@ -353,23 +207,77 @@ const TaskList: React.FC<TaskListProps> = ({
   const isOver24Hours = totalTimeBudget > 24 * 60;
 
   if (loading && tasks.length === 0) {
-    return <div role="status" aria-live="polite">{t("loadingTasks")}</div>;
+    return (
+      <div className="space-y-4 p-4" role="status" aria-live="polite">
+        <div className="h-40 animate-pulse rounded-lg bg-muted" />
+        <div className="h-40 animate-pulse rounded-lg bg-muted" />
+      </div>
+    );
   }
 
   if (error && tasks.length === 0) {
     return (
-      <div className="flex flex-col items-start gap-3" role="alert">
+      <div className="flex flex-col items-start gap-3 p-4" role="alert">
         <p>{t("workspace.error")}: {error}</p>
         <Button variant="outline" onClick={() => void fetchTasks()}>{t("retry")}</Button>
       </div>
     );
   }
 
+  const renderGroup = (statusKey: string, tone?: string) => {
+    const items =
+      statusKey === "running"
+        ? runningTask
+          ? [runningTask]
+          : []
+        : tasks.filter((task) => task.status === statusKey && task.id !== runningTask?.id);
+    if (items.length === 0) return null;
+    return (
+      <section key={statusKey} aria-labelledby={`group-${statusKey}`} className="mt-6 first:mt-0">
+        <h2
+          id={`group-${statusKey}`}
+          className={`mb-3 text-sm font-semibold uppercase tracking-wide ${tone ?? "text-muted-foreground"}`}
+        >
+          {t(`tasks.statuses.${statusKey}`)} · {items.length}
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          {items.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              spentTodayMinutes={Math.floor(liveDailySeconds(task) / 60)}
+              spentOverallMinutes={Math.floor((overallByName[task.name] ?? 0) / 60)}
+              isRunning={runningTask?.id === task.id}
+              runningDisplay={
+                task.activeTracking
+                  ? DateTime.fromISO(task.activeTracking.startTime, { zone: "utc" })
+                      .setZone(userTimezone)
+                      .diffNow()
+                      .toFormat("hh:mm:ss")
+                  : undefined
+              }
+              canStart={!runningTask}
+              startBlockedReason={t("tasks.anotherTaskActiveShort")}
+              onStart={(id) => void handleStartTracking(id)}
+              onStop={openStopDialog}
+              onEdit={() => onEditTask(task)}
+              onManualRecord={() => {
+                setSelectedTaskIdForManualRecord(task.id);
+                setShowManualRecordForm(true);
+              }}
+              onDelete={() => setTaskToDelete(task)}
+            />
+          ))}
+        </div>
+      </section>
+    );
+  };
+
   return (
     <div className="p-4">
       {error && (
         <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm" role="alert">
-          <span>{t("workspace.error")}: {error}</span>
+          <span>{error}</span>
           <Button variant="outline" size="sm" onClick={() => setError(null)}>{t("close")}</Button>
         </div>
       )}
@@ -382,35 +290,35 @@ const TaskList: React.FC<TaskListProps> = ({
           })}
         </p>
       )}
-      <p className="mb-2">
-        <strong>{t("tasks.totalDailyBudget")}:</strong>{" "}
-        {Math.floor(totalTimeBudget / 60)}h {totalTimeBudget % 60}m
-      </p>
-      <p className="mb-4">
-        <strong>{t("tasks.totalOverallSpent")}:</strong>{" "}
-        {Math.floor(totalTimeSpentOverall / 60)}h {totalTimeSpentOverall % 60}m
-      </p>
 
-      {totalTimeBudget > 0 && (
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-sm font-medium">
-              {t("tasks.dailyProgress")}:
-            </span>
-            <span className="text-sm font-medium">
-              {totalTimeSpentToday} {t("tasks.minutes")} / {totalTimeBudget}{" "}
-              {t("tasks.minutes")} (
-              {((totalTimeSpentToday / totalTimeBudget) * 100).toFixed(0)}%)
+      {/* Goal-level totals as a compact progress bar with human durations */}
+      {(totalTimeBudget > 0 || totalTimeSpentToday > 0) && (
+        <div className="mb-6 max-w-md">
+          <div className="mb-1 flex items-baseline justify-between text-xs">
+            <span className="font-medium">{t("tasks.dailyProgress")}</span>
+            <span
+              className={`tabular-nums ${
+                totalTimeBudget > 0 && totalTimeSpentToday > totalTimeBudget
+                  ? "font-semibold text-destructive"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {formatHM(totalTimeSpentToday)} / {formatHM(totalTimeBudget)}
+              {totalTimeBudget > 0 &&
+                ` (${Math.round((totalTimeSpentToday / totalTimeBudget) * 100)}%)`}
             </span>
           </div>
-          <Progress
-            value={Math.min(100, (totalTimeSpentToday / totalTimeBudget) * 100)}
-            className="h-2"
-          />
+          {totalTimeBudget > 0 && (
+            <Progress
+              value={Math.min(100, (totalTimeSpentToday / totalTimeBudget) * 100)}
+              className="h-2"
+              aria-label={`${t("tasks.dailyProgress")} ${totalTimeSpentToday}/${totalTimeBudget}`}
+            />
+          )}
         </div>
       )}
 
-      <Button className="mt-4" onClick={onCreateNew} disabled={loading}>
+      <Button className="my-4" onClick={onCreateNew} disabled={loading}>
         {t("tasks.createTask")}
       </Button>
 
@@ -418,241 +326,32 @@ const TaskList: React.FC<TaskListProps> = ({
         <p>{t("tasks.noTasksYet")}</p>
       ) : (
         <div>
-          {Object.entries(groupTasks(tasks)).map(
-            ([group, tasks]) =>
-              tasks.length > 0 && (
-                <div key={group}>
-                  <TaskListDivider title={group} />
-                  <div className="flex flex-wrap gap-4 justify-start">
-                    {tasks.map((task) => (
-                      <Card
-                        key={task.id}
-                        className="w-full md:w-[calc(50%-0.5rem)]"
-                      >
-                        <CardHeader>
-                          <CardTitle>{task.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="w-full overflow-hidden">
-                          <DescriptionViewer description={task.description} />
-                          <p>
-                            <strong>{t("tasks.timeBudget")}:</strong>{" "}
-                            {task.timeBudget} {t("tasks.minutes")}
-                          </p>
-                          {(() => {
-                            const dailySummary = dailyTaskSummaries.find(
-                              (s) => s.taskName === task.name,
-                            );
-                            const individualDailyTimeSpent = dailySummary
-                              ? Math.floor(
-                                  dailySummary.totalDurationSeconds / 60,
-                                )
-                              : 0;
-                            const individualDailyPercentage =
-                              task.timeBudget > 0
-                                ? (individualDailyTimeSpent / task.timeBudget) *
-                                  100
-                                : 0;
-
-                            return (
-                              <div className="mb-2">
-                                <div className="flex justify-between items-center mb-1">
-                                  <span className="text-sm font-medium">
-                                    {t("tasks.dailyProgress")}:
-                                  </span>
-                                  <span className={`text-sm font-medium ${individualDailyPercentage > 100 ? "text-destructive" : "text-muted-foreground"}`}>
-                                    {individualDailyTimeSpent} {t("tasks.minutes")} / {task.timeBudget} {t("tasks.minutes")} ({individualDailyPercentage.toFixed(0)}%)
-                                    {individualDailyPercentage > 100 && <span className="ms-1 font-semibold">({t("tasks.overBudget")})</span>}
-                                  </span>
-                                </div>
-                                <Progress
-                                  value={Math.min(
-                                    100,
-                                    individualDailyPercentage,
-                                  )}
-                                  className="h-2"
-                                />
-                              </div>
-                            );
-                          })()}
-                          {(() => {
-                            const overallSummary = overallTaskSummaries.find(
-                              (s) => s.taskName === task.name,
-                            );
-                            const individualOverallTimeSpent = overallSummary
-                              ? Math.floor(
-                                  overallSummary.totalDurationSeconds / 60,
-                                )
-                              : 0;
-
-                            return (
-                              <p className="mb-2">
-                                <strong>{t("tasks.overallSpent")}:</strong>{" "}
-                                {individualOverallTimeSpent}{" "}
-                                {t("tasks.minutes")}
-                              </p>
-                            );
-                          })()}
-                          <p>
-                            <strong>{t("tasks.status")}:</strong>{" "}
-                            {t(`tasks.statuses.${task.status}`)}
-                          </p>
-                          <p>
-                            <strong>{t("tasks.priority")}:</strong>{" "}
-                            {task.priority}
-                          </p>
-                          {task.deadline && (
-                            <p>
-                              <strong>{t("tasks.deadline")}:</strong>{" "}
-                              {DateTime.fromISO(task.deadline, { zone: "utc" })
-                                .setZone(userTimezone)
-                                .toLocaleString(DateTime.DATE_SHORT)}
-                            </p>
-                          )}
-                          {activeTrackingTaskId === task.id && (
-                            <p className="text-primary" role="status">
-                              {t("tasks.tracking")}: {durationDisplay}
-                            </p>
-                          )}
-                          <div className="mt-4 flex flex-wrap justify-end gap-2 min-w-0">
-                            {task.status !== "done" && (
-                              <>
-                                {activeTrackingTaskId === task.id ? (
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleStopTracking(task);
-                                    }}
-                                    disabled={loading}
-                                    className="flex-shrink"
-                                  >
-                                    {t("tasks.stopTracking")}
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    variant="default"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleStartTracking(task.id);
-                                    }}
-                                    disabled={
-                                      loading || activeTrackingTaskId !== null
-                                    }
-                                    className="flex-shrink"
-                                  >
-                                    {t("tasks.startTracking")}
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedTaskIdForManualRecord(task.id);
-                                    setShowManualRecordForm(true);
-                                  }}
-                                  disabled={loading}
-                                  className="flex-shrink"
-                                >
-                                  {t("tasks.manualRecord.add")}
-                                </Button>
-                              </>
-                            )}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0 flex-shrink-0"
-                                >
-                                  <span className="sr-only">
-                                    {t("workspace.openMenu")}
-                                  </span>
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onEditTask(task);
-                                  }}
-                                >
-                                  {t("workspace.edit")}
-                                </DropdownMenuItem>
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem
-                                      onSelect={(e) => e.preventDefault()}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        confirmDelete(task);
-                                      }}
-                                      className="text-destructive"
-                                    >
-                                      {t("workspace.delete")}
-                                    </DropdownMenuItem>
-                                  </AlertDialogTrigger>
-                                  {taskToDelete && (
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>
-                                          {t("tasks.confirmDelete", {
-                                            taskName: taskToDelete.name,
-                                          })}
-                                        </AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          {t("confirmDeleteDescription")}
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setTaskToDelete(null);
-                                            setError(null);
-                                          }}
-                                        >
-                                          {t("cancel")}
-                                        </AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            executeDelete();
-                                          }}
-                                        >
-                                          {t("confirm")}
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  )}
-                                </AlertDialog>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              ),
-          )}
+          {renderGroup("running")}
+          {renderGroup("started")}
+          {renderGroup("pending")}
+          {renderGroup("failed")}
+          {renderGroup("done")}
         </div>
       )}
 
+      {/* Stop dialog: one-tap stop primary; adjust time opt-in */}
       <Dialog
-        open={showStopTrackingDialog}
-        onOpenChange={setShowStopTrackingDialog}
+        open={!!pendingStop}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingStop(null);
+            setAdjustingStop(false);
+          }
+        }}
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{t("tasks.stopTrackingTitle")}</DialogTitle>
             <DialogDescription>
-              {t("tasks.stopTrackingDescription")}
+              {adjustingStop ? t("tasks.stopTrackingDescription") : pendingStop?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          {adjustingStop && (
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="stopTime" className="text-start">
                 {t("tasks.stopTime")}
@@ -663,18 +362,49 @@ const TaskList: React.FC<TaskListProps> = ({
                 value={selectedStopTime}
                 onChange={(e) => setSelectedStopTime(e.target.value)}
                 className="col-span-3"
+                inputMode="numeric"
               />
             </div>
-            {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">{t("cancel")}</Button>
-            </DialogClose>
-            <Button onClick={handleConfirmStopTracking}>{t("confirm")}</Button>
+          )}
+          {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
+          <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+            <Button variant="link" size="sm" onClick={() => setAdjustingStop((v) => !v)}>
+              {t("tasks.adjustStopTime")}
+            </Button>
+            <div className="flex gap-2">
+              <DialogClose asChild>
+                <Button variant="outline">{t("cancel")}</Button>
+              </DialogClose>
+              <Button variant="destructive" onClick={() => void confirmStop()}>
+                {t("tasks.stopNow")}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!taskToDelete} onOpenChange={(open) => { if (!open) setTaskToDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("tasks.confirmDelete", { taskName: taskToDelete?.name ?? "" })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{t("confirmDeleteDescription")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setTaskToDelete(null); setError(null); }}>
+              {t("cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => void executeDelete()}
+            >
+              {t("confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {showManualRecordForm && selectedTaskIdForManualRecord && (
         <ManualTimeRecordForm
@@ -687,5 +417,15 @@ const TaskList: React.FC<TaskListProps> = ({
     </div>
   );
 };
+
+/** Minutes -> "1h 30m" human duration (shared formatting rules). */
+function formatHM(totalMinutes: number): string {
+  const m = Math.max(0, Math.round(totalMinutes));
+  const hours = Math.floor(m / 60);
+  const minutes = m % 60;
+  if (hours === 0) return `${minutes}m`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes}m`;
+}
 
 export default TaskList;

@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./ui/alert-dialog"; // Import AlertDialog components
-import { Menu, Settings } from "lucide-react";
+import { Menu, Settings, Sun, CalendarDays } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
 import TimezoneSelector from "./settings/TimezoneSelector"; // Import TimezoneSelector
@@ -52,6 +52,17 @@ export const Navbar: React.FC = () => {
                         {/* Dynamic side */}
                         <SheetTitle className="sr-only">Main Navigation</SheetTitle>
                         <div className="flex flex-col space-y-4">
+                            {/* Primary destinations */}
+                            <div className="border-b pb-2">
+                                <Link to="/today" className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-primary/10">
+                                    <Sun className="h-4 w-4" aria-hidden="true" />
+                                    {t("nav.today")}
+                                </Link>
+                                <Link to="/workspaces" className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-primary/10">
+                                    <CalendarDays className="h-4 w-4" aria-hidden="true" />
+                                    {t("nav.workspaces")}
+                                </Link>
+                            </div>
                             <div className="border-b pb-2">
                                 <h3 className="text-sm font-medium">{t("user.profile")}</h3>
                                 <div className="mt-1 text-xs text-muted-foreground">
@@ -143,6 +154,18 @@ export const Navbar: React.FC = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
+                <Link
+                    to="/today"
+                    className="rounded-md px-2 py-1 text-sm font-medium underline-offset-4 hover:underline"
+                >
+                    {t("nav.today")}
+                </Link>
+                <Link
+                    to="/workspaces"
+                    className="rounded-md px-2 py-1 text-sm font-medium underline-offset-4 hover:underline"
+                >
+                    {t("nav.workspaces")}
+                </Link>
                 <InstallPWAButton />
                 <LanguageSwitcher />
                 <ThemeToggle />

@@ -22,6 +22,9 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
+import { Badge } from "../ui/badge";
+import { Progress } from "../ui/progress";
+import { DateTime } from "luxon";
 import DescriptionViewer from "../common/DescriptionViewer";
 
 interface GoalListProps {
@@ -132,13 +135,55 @@ const GoalList: React.FC<GoalListProps> = ({
               </CardHeader>
               <CardContent>
                 <DescriptionViewer description={goal.description} />
-                <div className="mt-2 text-sm text-muted-foreground">
-                  <p><strong>{t("status")}:</strong> {t(`goalStatus.${goal.status}`)}</p>
-                  {goal.deadline && (
-                    <p><strong>{t("deadline")}:</strong> {new Date(goal.deadline).toLocaleDateString()}</p>
-                  )}
-                  <p>{t("goals.tasks")}: {goal.taskCount ?? 0}</p>
-                  <p>{t("goals.progress")}: {goal.totalProgress != null && !isNaN(goal.totalProgress) ? `${goal.totalProgress.toFixed(0)}%` : "0%"}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <Badge
+                    variant="outline"
+                    className={
+                      goal.status === "reached"
+                        ? "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30"
+                        : "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30"
+                    }
+                  >
+                    {t(`goalStatus.${goal.status}`)}
+                  </Badge>
+                  {goal.deadline && (() => {
+                    const deadline = DateTime.fromISO(goal.deadline).setZone(
+                      Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    );
+                    const daysLeft = Math.ceil(deadline.diffNow("days").days);
+                    if (daysLeft < 0) {
+                      return (
+                        <span className="text-xs font-medium text-destructive">
+                          ⚠ {deadline.toRelative()}
+                        </span>
+                      );
+                    }
+                    if (daysLeft <= 3) {
+                      return (
+                        <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
+                          {deadline.toRelative()} · {deadline.toLocaleString(DateTime.DATE_SHORT)}
+                        </span>
+                      );
+                    }
+                    return null; // far-out deadlines stay off the card
+                  })()}
+                </div>
+                <div className="mt-3">
+                  <div className="mb-1 flex items-baseline justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      {t("goals.tasks")}: {goal.taskCount ?? 0}
+                    </span>
+                    <span className={`tabular-nums ${((goal.totalProgress ?? 0) >= 100) ? "font-semibold text-green-600 dark:text-green-400" : "font-medium"}`}>
+                      {goal.totalProgress != null && !isNaN(goal.totalProgress)
+                        ? `${goal.totalProgress.toFixed(0)}%`
+                        : "0%"}
+                    </span>
+                  </div>
+                  <Progress
+                    value={Math.min(100, goal.totalProgress ?? 0)}
+                    className="h-2"
+                    aria-label={`${goal.name}: ${goal.totalProgress?.toFixed(0) ?? 0}%`}
+                  />
                 </div>
                 <div className="mt-4 flex justify-end">
                   <DropdownMenu>

@@ -5,6 +5,7 @@ import { inArray } from 'drizzle-orm';
 import { eq, and, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { catchAsync } from '../utils/catchAsync';
+import { forDriver } from '../utils/driverPayload';
 
 const updatePermissionsSchema = z.object({
   resourceId: z.string().uuid('Invalid resource ID format'),
@@ -53,7 +54,7 @@ export const shareWorkspace = catchAsync(async (req: Request, res: Response) => 
   }).returning();
 
   // Set default permissions for the workspace
-  const newPermission = await db.insert(permissions).values({
+  const newPermission = await db.insert(permissions).values(forDriver({
     userId: sharedWithUserId,
     resourceId: workspaceId,
     resourceType: 'workspace',
@@ -62,7 +63,7 @@ export const shareWorkspace = catchAsync(async (req: Request, res: Response) => 
     canDelete,
     canAddTask: false, // Not applicable for workspace
     canSubmitRecord: false, // Not applicable for workspace
-  }).returning();
+  })).returning();
 
   res.status(201).json({ message: 'Workspace shared successfully', share: newShare[0], permission: newPermission[0] });
 });
@@ -148,16 +149,16 @@ export const updatePermissions = catchAsync(async (req: Request, res: Response) 
   let updatedPermission;
 
   if (existingPermission.length > 0) {
-    updatedPermission = await db.update(permissions).set({
+    updatedPermission = await db.update(permissions).set(forDriver({
       canList,
       canEdit,
       canDelete,
       canAddTask: resourceType === 'goal' ? canAddTask : false,
       canSubmitRecord: resourceType === 'task' ? canSubmitRecord : false,
       updatedAt: new Date(),
-    }).where(eq(permissions.id, existingPermission[0].id)).returning();
+    })).where(eq(permissions.id, existingPermission[0].id)).returning();
   } else {
-    updatedPermission = await db.insert(permissions).values({
+    updatedPermission = await db.insert(permissions).values(forDriver({
       userId: targetUserId,
       resourceId,
       resourceType,
@@ -166,7 +167,7 @@ export const updatePermissions = catchAsync(async (req: Request, res: Response) 
       canDelete,
       canAddTask: resourceType === 'goal' ? canAddTask : false,
       canSubmitRecord: resourceType === 'task' ? canSubmitRecord : false,
-    }).returning();
+    })).returning();
   }
 
   res.status(200).json({ message: 'Permissions updated successfully', permission: updatedPermission[0] });

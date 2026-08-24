@@ -18,6 +18,7 @@ const GoalList = lazy(() => import("./components/goal/GoalList"));
 const GoalForm = lazy(() => import("./components/goal/GoalForm"));
 const TaskList = lazy(() => import("./components/task/TaskList"));
 const TaskForm = lazy(() => import("./components/task/TaskForm"));
+const TodayView = lazy(() => import("./components/task/TodayView"));
 import { deleteGoal, getGoalById, type Goal } from "./api/goal";
 import { deleteTask } from "./api/task";
 import { getWorkspaceById, type Workspace } from "./api/workspace";
@@ -58,7 +59,7 @@ function App() {
     setToken(data.token);
     setUser(data.user);
     const returnTo = location.state?.returnTo;
-    navigate(typeof returnTo === "string" ? returnTo : "/workspaces", { replace: true });
+    navigate(typeof returnTo === "string" ? returnTo : "/today", { replace: true });
   };
   const handleDeleteGoal = (goalId: string) => deleteGoal(goalId);
   const handleDeleteTask = (taskId: string) => deleteTask(taskId);
@@ -162,7 +163,23 @@ function AuthenticatedRoutes({
   return (
     <Suspense fallback={<div className="flex min-h-[50vh] items-center justify-center" role="status">{t("loading")}</div>}>
       <Routes>
-        <Route path="/" element={<Navigate to="/workspaces" replace />} />
+        <Route path="/" element={<Navigate to="/today" replace />} />
+        <Route
+          path="/today"
+          element={
+            <TodayView
+              onOpenTask={async (task) => {
+                // Tasks only know their goal; resolve the workspace for the edit route.
+                try {
+                  const goal = await getGoalById(task.goalId);
+                  navigate(`/workspaces/${goal.workspaceId}/goals/${task.goalId}/tasks/${task.id}/edit`);
+                } catch {
+                  navigate(`/workspaces`);
+                }
+              }}
+            />
+          }
+        />
         <Route
           path="/workspaces"
           element={
