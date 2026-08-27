@@ -12,6 +12,7 @@ import {
 } from "../../api/task";
 import { ManualTimeRecordForm } from "./ManualTimeRecordForm";
 import TaskCard from "./TaskCard";
+import { createElapsedFormatter } from "../../lib/elapsed";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import {
@@ -250,10 +251,7 @@ const TaskList: React.FC<TaskListProps> = ({
               isRunning={runningTask?.id === task.id}
               runningDisplay={
                 task.activeTracking
-                  ? DateTime.fromISO(task.activeTracking.startTime, { zone: "utc" })
-                      .setZone(userTimezone)
-                      .diffNow()
-                      .toFormat("hh:mm:ss")
+                  ? createElapsedFormatter(task.activeTracking.startTime)()
                   : undefined
               }
               canStart={!runningTask}

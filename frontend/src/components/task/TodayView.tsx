@@ -18,6 +18,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Progress } from "../ui/progress";
 import { Coffee } from "lucide-react";
+import { createElapsedFormatter } from "../../lib/elapsed";
 
 interface TodayViewProps {
   onOpenTask: (task: Task) => void;
@@ -280,6 +281,11 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
             spentTodayMinutes={Math.floor((spentTodaySecondsByTask[runningTask.id] ?? 0) / 60)}
             spentOverallMinutes={Math.floor((spentTotalSecondsByTask[runningTask.id] ?? 0) / 60)}
             isRunning
+            runningDisplay={
+              runningTask.activeTracking
+                ? createElapsedFormatter(runningTask.activeTracking.startTime)()
+                : undefined
+            }
             canStart={false}
             onStart={() => undefined}
             onStop={openStopDialog}
@@ -292,7 +298,7 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
       {renderSection("dueToday", dueToday)}
       {renderSection("upcoming", upcoming)}
 
-      {!runningTask && overdue.length === 0 && dueToday.length === 0 && (
+      {!runningTask && overdue.length === 0 && dueToday.length === 0 && upcoming.length === 0 && (
         <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed py-16 text-center">
           <Coffee className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
           <p className="text-lg font-semibold">{t("today.allClearTitle")}</p>

@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Download } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: Array<string>;
@@ -11,10 +17,15 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
+const INSTALL_HINT_KEY = 'pwa-install-hint-dismissed';
+
 const InstallPWAButton: React.FC = () => {
-  const { t } = useTranslation(); // Use t for translation - moved to top
+  const { t } = useTranslation();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [hintDismissed, setHintDismissed] = useState(
+    () => localStorage.getItem(INSTALL_HINT_KEY) === '1',
+  );
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -41,31 +52,65 @@ const InstallPWAButton: React.FC = () => {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      console.log('User accepted the PWA installation prompt');
       setIsAppInstalled(true);
-    } else {
-      console.log('User dismissed the PWA installation prompt');
     }
     setDeferredPrompt(null);
+  };
+
+  const dismissHint = () => {
+    localStorage.setItem(INSTALL_HINT_KEY, '1');
+    setHintDismissed(true);
   };
 
   if (isAppInstalled) {
     return null; // Always hide if installed
   }
 
+  // Native install prompt available (Android/desktop Chrome/Edge): one clean button.
   if (deferredPrompt) {
     return (
-      <Button onClick={handleInstallClick} className="mr-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleInstallClick}
+        className="gap-1.5 border-white/40 bg-white/10 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground"
+      >
+        <Download className="h-4 w-4" aria-hidden="true" />
         {t('pwa.installApp')}
       </Button>
     );
   }
 
-  // If not installed and no deferredPrompt (e.g., iOS or dismissed on Android)
+  // No native prompt (iOS, unsupported browsers): quiet icon + popover with
+  // instructions. Hidden entirely once the user dismisses it — never a
+  // permanent text blob in the navbar.
+  if (hintDismissed) {
+    return null;
+  }
+
   return (
-    <span className="text-sm text-muted-foreground mr-2">
-      {t('pwa.installInstructions')}
-    </span>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t('pwa.installApp')}
+          title={t('pwa.installApp')}
+          className="text-primary-foreground hover:bg-white/10 hover:text-primary-foreground"
+        >
+          <Download className="h-4 w-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-64 text-sm">
+        <p>{t('pwa.installInstructions')}</p>
+        <button
+          onClick={dismissHint}
+          className="mt-2 text-xs text-muted-foreground underline-offset-4 hover:underline"
+        >
+          {t('pwa.dismiss')}
+        </button>
+      </PopoverContent>
+    </Popover>
   );
 };
 
