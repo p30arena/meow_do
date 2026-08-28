@@ -160,3 +160,108 @@ Reframe the product metric from "tasks created" to **"sessions that end with a s
 ---
 
 *Files referenced: `frontend/src/App.tsx`, `components/Navbar.tsx`, `components/workspace/WorkspaceList.tsx`, `components/goal/GoalList.tsx`, `components/task/TaskList.tsx`, `components/task/TaskForm.tsx`, `index.css`.*
+
+---
+
+# Round 2 — 2026-08-28: Review of recent UI/UX commits + full-project re-pass
+
+**Scope:** the two most recent UI/UX commits (`1aea022` “Today view, card redesign, and SQLite correctness fixes”, `28b5bcb` “keep running timer monotonic and style install control”), plus a full re-pass of the current frontend state against this document’s round-1 findings.
+
+**Method:** source review of `TodayView.tsx`, `TaskCard.tsx`, `TaskList.tsx`, `Navbar.tsx`, `GoalList.tsx`, `WorkspaceList.tsx`, `InstallPWAButton.tsx`, `App.tsx`, `ThemeToggle.tsx`, `lib/elapsed.ts`, `lib/format.ts`, `ui/popover.tsx`, and the three locale files; git diff review of both commits; verification via `npm run typecheck` (clean), `npm run lint` (clean, 0 findings), `npm test` (1/1 pass).
+
+## 1. Commit reviews
+
+### `1aea022` — Today view + card redesign
+
+This commit executes the round-1 plan almost exactly as specified. Verified delivered:
+
+| Round-1 item | Status |
+|---|---|
+| P0: “No Today view” | ✅ `/today` is the default post-login route; running timer pinned on top; overdue → due today → upcoming buckets across all workspaces; day-budget bar; all-clear state; skeleton loaders; fully localized (en/ar/fa) |
+| P0: “Stopping the timer is hostile” | ✅ One-tap stop; “Adjust stop time” demoted to an opt-in refinement inside the same dialog |
+| P1: Cards as label:value prose | ✅ New `TaskCard`: status badge (shared `STATUS_BADGE_CLASSES`), priority as flame icons with sr-only value, human durations (`1h 30m`), deadline surfaced only when ≤ 3 days or overdue, explicit over-budget styling |
+| P1: Priority does nothing | ✅ All Today buckets sort by priority desc |
+| P1: Navbar has no destinations | ✅ Today / Workspaces links on desktop and in the mobile sheet |
+
+Well done, specifically: the stop dialog keeps destructive styling with Cancel focused; the running banner uses `role="timer" aria-live="off"` so screen readers aren’t spammed every second; loading uses `role="status" aria-live="polite"`; i18n keys were added to all three locales in the same commit.
+
+**Issues found in the commit (current as of HEAD):**
+
+1. **[P1] TodayView shows the *empty* state on load failure.** When `getAllTasks()` rejects, `tasks.length === 0` renders `today.empty` (“No tasks across your workspaces yet”) under the error banner — no retry. `TaskList` correctly branches `error && tasks.length === 0` into an error view with Retry; `TodayView` regressed relative to that pattern. A transient failure on the app’s front door looks identical to “you have no tasks.”
+2. **[P2] “Spent today” and the day-budget bar lag up to an hour.** `loadSummaries` runs only when `[loading, tasks.length, now.hour]` change, but it bakes live running seconds into `spentTodaySecondsByTask`. The elapsed clock ticks every second; the progress bars and per-card minutes refresh hourly. `TaskList` recomputes live seconds at render (`liveDailySeconds`) — so the two surfaces disagree. Fix: compute live seconds at render in TodayView too, or put a minute-granularity tick in the deps.
+3. **[P2] `upcoming` is silently truncated to 6** (`slice(0, 6)`) with no “N more” affordance — tasks quietly disappear from the front door.
+4. **[P2] “Day budget” semantics.** It is the sum of `timeBudget` of all non-done tasks across all workspaces — for a user with 10 × 2h tasks it reads “1200m” and the bar never becomes a meaningful daily signal. Either rename (e.g. “Remaining budget”) or define an actual daily target the user sets.
+5. **[P2] Timezone inconsistency.** `TaskCard` and `GoalList` use `Intl.DateTimeFormat().resolvedOptions().timeZone`; `TodayView` and `TaskList` honor `user.timezone` first. For a user whose profile timezone differs from the device, deadline urgency (“due today”, overdue, “2 days left”) will contradict other screens.
+6. **[P3] `TaskCard` caption pairing is ambiguous.** The bar shows *today’s* spend vs the day budget, but the right-hand caption reads `overall · pct%` where pct is the *daily* percentage — it reads as if the % belongs to the overall total. Put the % next to today’s value or drop it.
+7. **[P3] Summaries keyed by task *name*.** `getTaskTrackingSummary` returns rows keyed by name; two tasks sharing a name merge their tracked time on every screen. Backend shape limitation, but the UI inherits it silently — worth a backend fix or a visible caveat.
+8. **[P3] Stop-dialog validation asymmetry.** `TaskList.confirmStop` pre-checks stop-before-start with a friendly message; `TodayView.confirmStop` doesn’t (backend 400 surfaces as a raw error).
+9. **[P3] Shared `error` state between the stop dialog and the page banner.** After a failed stop inside the dialog, dismissing the dialog leaves the error stranded in the page-level banner.
+10. **[P3] Dead i18n key** `today.startNext` — defined in all locales, never rendered.
+11. **[P3] The 404 page (`NoMatch`) still links to Workspaces**, though the home is now `/today`.
+12. **[P3] Blocked Start is `disabled` + `title` tooltip** — the reason (“Another task is running”) is invisible to touch users and screen readers. Add sr-only text or `aria-describedby`.
+
+Also noted: `onOpenTask` does an extra `getGoalById` round-trip to resolve the edit route; on failure it silently navigates to `/workspaces` with no message. Acceptable, but including `workspaceId` in the tasks payload would remove the dependency.
+
+### `28b5bcb` — monotonic timer + install control
+
+- ✅ `lib/elapsed.ts` fixes a genuine, well-documented bug: a server clock even slightly ahead made `diffNow()` negative and rendered “00:00:-05” counting *up* toward zero. The baseline-once + monotonic-delta approach with negative clamping is the right fix.
+- ⚠️ It dropped the explicit `{ zone: "utc" }` used by every other parse site (`TaskList`, `TaskCard`, `TodayView`). It happens to be safe today because the API serializes `startTime` as a `Date` → Z-suffixed ISO, but it’s a latent inconsistency; state the zone explicitly like everywhere else.
+- ⚠️ The formatter is created and called exactly once per render (baseline recomputed each tick). Functionally fine because the parent re-renders on the 1s ticker, but it’s a subtle coupling: remove the ticker and the timer silently freezes. Memoizing per `startTime` inside `TaskCard` would be more robust.
+- ✅ `InstallPWAButton`: the permanent instruction text blob is gone — native prompt → clean outline button; iOS/unsupported → quiet icon + popover with instructions; dismissal persists in `localStorage`. Good pattern. New `ui/popover.tsx` is a standard shadcn primitive.
+- ⚠️ The button hardcodes `text-primary-foreground` / `bg-white/10` / `border-white/40`, coupling it to the navbar’s `bg-primary`. Breaks quietly if navbar theming ever changes. A comment or a `navbar-button` recipe would protect it.
+
+## 2. Full-project re-pass
+
+### Round-1 items verified fixed since 2026-08-23
+
+- Today front door (P0) · one-tap stop (P0) · card anatomy (P1) · priority sorting (P1) · navbar destinations (P1) · group creator behind “+” (P2) · “Move to group” touch/keyboard path (P1) · theme selector simplified to light/dark/system and fully translated (P2) · app-version footer removed · status colors centralized in `lib/format.ts` · skeletons on Today/Task lists · destructive confirm styling · workspace/goal/task cards use real `<Link>` titles with focus rings.
+
+### Still open from round 1
+
+1. **[P2] Redundant wayfinding** — `GoalsView`/`TasksView` render breadcrumbs *and* “Back to …” links directly under them. Pick one (breadcrumbs recommended).
+2. **[P2] Charts still bolted to the bottom** of goal/task pages (`<div className="mt-8"><TaskTrackingChart/></div>`) where nobody scrolls.
+3. **[P2] WorkspaceList loading is still plain text** — no skeleton, unlike Today/TaskList.
+4. **[P3] Hardcoded grays** in WorkspaceList drop zones (`border-gray-300 dark:border-gray-700`) bypass tokens.
+5. **[P3] Navbar still duplicates ~150 lines** between mobile/desktop and keeps the Sheet-inside-Sheet settings; desktop still shows all utility buttons permanently.
+6. **[P3] Nav links have no active state** (`aria-current="page"` / visual highlight) — no sense of place on desktop.
+7. **[P3] Empty groups still instruct “drag workspaces here”** even though the menu path works everywhere — copy should mention the menu for touch users.
+8. **[P3] Group rename save still uses a Pencil icon**; TaskList delete-confirm still uses the generic “Confirm” label.
+9. **[P3] Share dialog passes `isOwner={true} // Placeholder`** — unimplemented signal in shipped UI.
+10. **[P3] `err: any`** in Today/Task catch blocks (typecheck/lint allow it; `unknown` + narrowing would match the codebase’s own `ApiError` design).
+
+### New ease-of-use finding (round 2)
+
+- **[P1] There is no way to complete a task from any list.** Task status changes only inside the full edit form (`TaskForm`). The daily loop the Today view was built for — *start → work → stop → done* — still ends with a drill-down: Today → card menu → Edit → change status → save. The natural close of the loop (a “Mark done” action on `TaskCard`, especially on the pinned running card right after stopping) is missing. This is now the biggest gap between the Today view’s promise and the product’s behavior.
+
+### What’s genuinely good right now
+
+- The core loop is finally one tap from the front door: open → see running timer → stop.
+- Accessibility posture of the new code is above average: live regions, roles, sr-only labels, focus-visible rings, logical properties (`me-*`) for RTL, direction-aware sheets.
+- i18n discipline: new features ship with all three locales in the same commit; no hardcoded English found in the new components.
+- Shared formatting (`lib/format.ts`) and documented utilities (`lib/elapsed.ts`) reduce the drift that round 1 complained about.
+- Clean quality gates: `typecheck`, `lint` (0 findings), and tests all pass.
+
+## 3. Implementation update — 2026-08-28
+
+Implemented in this pass:
+
+- TodayView now separates initial load failure from the empty state and provides a localized Retry action.
+- Task cards expose a one-tap `Mark done` action from the overflow menu in both Today and goal task lists.
+- Blocked Start controls now expose their reason to assistive technology with `aria-describedby` and screen-reader text.
+- Today summary refreshes at minute granularity instead of hourly.
+- TaskCard receives the profile timezone from its parent; GoalList now uses the profile timezone consistently.
+- Elapsed-time parsing explicitly treats server timestamps as UTC.
+- The 404 recovery link now returns to Today, and empty-group guidance mentions the non-drag “Move to group” path in all locales.
+- Added a shared timezone resolver utility for continued adoption.
+
+Verification after implementation: `npm run typecheck`, `npm run lint`, and `npm test` all pass.
+
+## 4. Recommended next steps (priority order)
+
+1. TodayView: error-vs-empty branch with Retry (mirrors TaskList).
+2. Add a quick “Failed” affordance to `TaskCard` — close the loop for unsuccessful work.
+3. Make Today’s spent-today/budget bars tick live (render-time computation like TaskList).
+4. Unify timezone resolution in one helper (`user.timezone ?? device`) used by TaskCard/GoalList too.
+5. Add “+N more” under the truncated Upcoming section; reconsider the “Day budget” label/semantics.
+6. State `{ zone: "utc" }` explicitly in `elapsed.ts`; memoize the formatter per start time.
+7. Retire the back-links in favor of breadcrumbs; move the chart off the page bottoms.8. Small hygiene batch: dead `today.startNext` key, 404 link → `/today`, aria-current on nav, sr-only reason on blocked Start, sr-only text share-dialog `isOwner`.

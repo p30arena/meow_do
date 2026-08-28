@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { getGoalsByWorkspaceId, type Goal } from "../../api/goal";
+import { useAuth } from "../../context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import {
@@ -26,6 +27,7 @@ import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
 import { DateTime } from "luxon";
 import DescriptionViewer from "../common/DescriptionViewer";
+import { resolveUserTimezone } from "../../lib/timezone";
 
 interface GoalListProps {
   workspaceId: string;
@@ -45,6 +47,8 @@ const GoalList: React.FC<GoalListProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null); // State to hold goal to delete
+  const { user } = useAuth();
+  const userTimezone = resolveUserTimezone(user?.timezone);
 
   const fetchGoals = async () => {
     setLoading(true);
@@ -115,7 +119,20 @@ const GoalList: React.FC<GoalListProps> = ({
           {goals.map((goal) => (
             <Card
               key={goal.id}
-              className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
+              role="link"
+              tabIndex={0}
+              aria-label={goal.name}
+              onClick={(event) => {
+                if ((event.target as HTMLElement).closest("button, a, [role=menuitem], input, textarea, select")) return;
+                onEditGoal(goal);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onEditGoal(goal);
+                }
+              }}
+              className="w-full cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-medium">
@@ -148,7 +165,7 @@ const GoalList: React.FC<GoalListProps> = ({
                   </Badge>
                   {goal.deadline && (() => {
                     const deadline = DateTime.fromISO(goal.deadline).setZone(
-                      Intl.DateTimeFormat().resolvedOptions().timeZone,
+                      userTimezone,
                     );
                     const daysLeft = Math.ceil(deadline.diffNow("days").days);
                     if (daysLeft < 0) {
@@ -188,7 +205,7 @@ const GoalList: React.FC<GoalListProps> = ({
                 <div className="mt-4 flex justify-end">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-9 w-9 p-0">
+                      <Button variant="ghost" size="icon" className="h-11 w-11 p-0" onClick={(event) => event.stopPropagation()}>
                         <span className="sr-only">{t("workspace.openMenu")}</span>
                         <MoreVertical className="h-4 w-4" />
                       </Button>

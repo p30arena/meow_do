@@ -75,7 +75,7 @@
     "addGroup": "Add Group",
     "ungrouped": "Ungrouped",
     "deleteGroup": "Delete Group",
-    "dragWorkspacesHere": "Choose a group or drag workspaces here",
+    "dragWorkspacesHere": "Choose a group or drag workspaces here. On touch devices, use Move to group.",
     "moveToGroup": "Move to group",
     "group": "Group",
     "confirmDeleteGroup": "Are you sure you want to delete group \"{{groupName}}\"? All workspaces in this group will become ungrouped.",
@@ -211,7 +211,9 @@
     "stopNow": "Stop",
     "adjustStopTime": "Adjust stop time",
     "startedAt": "Started at {{time}}",
-    "anotherTaskActiveShort": "Another task is running - stop it first."
+    "anotherTaskActiveShort": "Another task is running - stop it first.",
+    "markDone": "Mark done",
+    "deleteTask": "Delete task"
   },
   "cancel": "Cancel",
   "confirm": "Confirm",
@@ -262,8 +264,7 @@
     "allClearHint": "Nothing is due today. Start something pending or plan ahead.",
     "dayBudget": "Day budget",
     "spentToday": "Spent today",
-    "empty": "No tasks across your workspaces yet.",
-    "startNext": "Start next task"
+    "empty": "No tasks across your workspaces yet."
   },
   "nav": {
     "today": "Today",

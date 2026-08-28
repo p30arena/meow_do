@@ -391,7 +391,20 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                     key={workspace.id}
                     draggable="true"
                     onDragStart={(e) => handleDragStart(e, workspace.id)}
-                    className="w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
+                    role="link"
+                    tabIndex={0}
+                    aria-label={workspace.name}
+                    onClick={(event) => {
+                      if ((event.target as HTMLElement).closest("button, a, [role=menuitem], input, textarea, select")) return;
+                      window.location.assign(`/workspaces/${workspace.id}`);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        window.location.assign(`/workspaces/${workspace.id}`);
+                      }
+                    }}
+                    className="w-full cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.7rem)]"
                   >
                     <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                       <CardTitle className="break-words text-lg font-medium">
@@ -456,7 +469,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                       <div className="mt-4 flex justify-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghost" size="icon" className="h-11 w-11 p-0" onClick={(event) => event.stopPropagation()}>
                               <span className="sr-only">
                                 {t("workspace.openMenu")}
                               </span>

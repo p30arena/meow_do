@@ -15,7 +15,7 @@ import { DateTime } from "luxon";
 export function createElapsedFormatter(
   startTimeIso: string,
 ): () => string {
-  const start = DateTime.fromISO(startTimeIso);
+  const start = DateTime.fromISO(startTimeIso, { zone: "utc" });
   // Positive ms since start; a future start (skew) yields 0.
   const baseElapsedMs = Math.max(0, -start.diffNow().milliseconds);
   const wallStart = Date.now();

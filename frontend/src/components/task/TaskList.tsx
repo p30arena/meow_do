@@ -6,6 +6,7 @@ import {
   getTasksByGoalId,
   startTaskTracking,
   stopTaskTracking,
+  updateTask,
   getTaskTrackingSummary,
   type Task,
   type TaskTrackingSummary,
@@ -174,6 +175,16 @@ const TaskList: React.FC<TaskListProps> = ({
     setPendingStop(task);
   };
 
+  const handleMarkDone = async (taskId: string) => {
+    setError(null);
+    try {
+      await updateTask(taskId, { status: "done" });
+      await fetchTasks();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
+    }
+  };
+
   const handleStartTracking = async (taskId: string) => {
     setError(null);
     try {
@@ -249,6 +260,7 @@ const TaskList: React.FC<TaskListProps> = ({
               spentTodayMinutes={Math.floor(liveDailySeconds(task) / 60)}
               spentOverallMinutes={Math.floor((overallByName[task.name] ?? 0) / 60)}
               isRunning={runningTask?.id === task.id}
+              userTimezone={userTimezone}
               runningDisplay={
                 task.activeTracking
                   ? createElapsedFormatter(task.activeTracking.startTime)()
@@ -259,6 +271,7 @@ const TaskList: React.FC<TaskListProps> = ({
               onStart={(id) => void handleStartTracking(id)}
               onStop={openStopDialog}
               onEdit={() => onEditTask(task)}
+              onMarkDone={(id) => void handleMarkDone(id)}
               onManualRecord={() => {
                 setSelectedTaskIdForManualRecord(task.id);
                 setShowManualRecordForm(true);
@@ -397,8 +410,8 @@ const TaskList: React.FC<TaskListProps> = ({
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => void executeDelete()}
-            >
-              {t("confirm")}
+            >                                {t("tasks.deleteTask")}
+
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

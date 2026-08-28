@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
-import { getAllTasks, startTaskTracking, stopTaskTracking, getTaskTrackingSummary, type Task } from "../../api/task";
+import { getAllTasks, startTaskTracking, stopTaskTracking, getTaskTrackingSummary, updateTask, type Task } from "../../api/task";
 import { useAuth } from "../../context/AuthContext";
 import TaskCard from "./TaskCard";
 import { Button } from "../ui/button";
@@ -123,7 +123,7 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
 
   useEffect(() => {
     void loadSummaries();
-  }, [loading, tasks.length, now.hour]);
+  }, [loading, tasks.length, now.minute]);
 
   const runningTask = useMemo(
     () =>
@@ -158,6 +158,16 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
     buckets.upcoming = buckets.upcoming.slice(0, 6); // keep the front door calm
     return buckets;
   }, [tasks, userTimezone, runningTask]);
+
+  const handleMarkDone = async (taskId: string) => {
+    setError(null);
+    try {
+      await updateTask(taskId, { status: "done" });
+      await fetchTasks();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
+    }
+  };
 
   const handleStart = async (taskId: string) => {
     setError(null);
@@ -215,6 +225,15 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
     );
   }
 
+  if (error && tasks.length === 0) {
+    return (
+      <div className="flex flex-col items-start gap-3 p-4" role="alert">
+        <p>{t("workspace.error")}: {error}</p>
+        <Button variant="outline" onClick={() => void fetchTasks()}>{t("retry")}</Button>
+      </div>
+    );
+  }
+
   const dayBudgetPct = dayBudgetMinutes > 0 ? Math.min(100, Math.round((spentTodayMinutes / dayBudgetMinutes) * 100)) : 0;
 
   const renderSection = (titleKey: string, items: Task[], tone?: string) =>
@@ -231,11 +250,13 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
               spentTodayMinutes={Math.floor((spentTodaySecondsByTask[task.id] ?? 0) / 60)}
               spentOverallMinutes={Math.floor((spentTotalSecondsByTask[task.id] ?? 0) / 60)}
               isRunning={runningTask?.id === task.id}
+              userTimezone={userTimezone}
               canStart={!runningTask}
               startBlockedReason={t("tasks.anotherTaskActiveShort")}
               onStart={(id) => void handleStart(id)}
               onStop={openStopDialog}
               onEdit={() => onOpenTask(task)}
+              onMarkDone={(id) => void handleMarkDone(id)}
             />
           ))}
         </div>
@@ -281,6 +302,7 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
             spentTodayMinutes={Math.floor((spentTodaySecondsByTask[runningTask.id] ?? 0) / 60)}
             spentOverallMinutes={Math.floor((spentTotalSecondsByTask[runningTask.id] ?? 0) / 60)}
             isRunning
+            userTimezone={userTimezone}
             runningDisplay={
               runningTask.activeTracking
                 ? createElapsedFormatter(runningTask.activeTracking.startTime)()
@@ -290,6 +312,7 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
             onStart={() => undefined}
             onStop={openStopDialog}
             onEdit={() => onOpenTask(runningTask)}
+            onMarkDone={(id) => void handleMarkDone(id)}
           />
         </section>
       )}

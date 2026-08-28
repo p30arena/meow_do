@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { MoreVertical, Play, Square, Pencil, Clock, Trash2 } from "lucide-react";
+import { MoreVertical, Play, Square, Pencil, Clock, Trash2, Check } from "lucide-react";
 import DescriptionViewer from "../common/DescriptionViewer";
 import {
   formatMinutes,
@@ -42,6 +42,8 @@ export interface TaskCardProps {
   onStart: (taskId: string) => void;
   onStop: (taskId: string) => void;
   onEdit: () => void;
+  onMarkDone?: (taskId: string) => void;
+  userTimezone?: string;
   /** Optional extra actions surfaced in the card's overflow menu. */
   onManualRecord?: () => void;
   onDelete?: () => void;
@@ -65,12 +67,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
   onStart,
   onStop,
   onEdit,
+  onMarkDone,
+  userTimezone: timezone,
   onManualRecord,
   onDelete,
 }) => {
   const { t } = useTranslation();
-  const userTimezone =
-    Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userTimezone = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const pct =
     task.timeBudget > 0 ? Math.round((spentTodayMinutes / task.timeBudget) * 100) : 0;
@@ -104,8 +107,28 @@ const TaskCard: React.FC<TaskCardProps> = ({
     ? DateTime.fromISO(task.activeTracking.startTime, { zone: "utc" }).setZone(userTimezone)
     : null;
 
+  const handleCardClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest("button, a, [role=menuitem], input, textarea, select")) return;
+    onEdit();
+  };
+
+  const handleCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onEdit();
+    }
+  };
+
   return (
-    <Card data-testid="task-card" className={isRunning ? "border-green-500/50 shadow-sm" : undefined}>
+    <Card
+      data-testid="task-card"
+      role="link"
+      tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      aria-label={task.name}
+      className={`cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isRunning ? "border-green-500/50 shadow-sm" : ""}`}
+    >
       <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
         <div className="min-w-0 flex-1">
           <h3 className="break-words font-semibold leading-snug">{task.name}</h3>
@@ -127,7 +150,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 p-0">
+            <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 p-0" onClick={(event) => event.stopPropagation()}>
               <span className="sr-only">{t("workspace.openMenu")}</span>
               <MoreVertical className="h-4 w-4" />
             </Button>
@@ -137,6 +160,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <Pencil className="me-2 h-4 w-4" aria-hidden="true" />
               {t("workspace.edit")}
             </DropdownMenuItem>
+            {onMarkDone && task.status !== "done" && !isRunning && (
+              <DropdownMenuItem onClick={() => onMarkDone(task.id)}>
+                <Check className="me-2 h-4 w-4" aria-hidden="true" />
+                {t("tasks.markDone")}
+              </DropdownMenuItem>
+            )}
             {onManualRecord && (
               <DropdownMenuItem onClick={onManualRecord}>
                 <Clock className="me-2 h-4 w-4" aria-hidden="true" />
@@ -208,10 +237,19 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 {t("tasks.startTracking")}
               </Button>
             ) : (
-              <Button size="sm" variant="outline" disabled title={startBlockedReason}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled
+                title={startBlockedReason}
+                aria-describedby={`${task.id}-start-blocked`}
+              >
                 <Play className="me-1 h-3.5 w-3.5" aria-hidden="true" />
                 {t("tasks.startTracking")}
               </Button>
+            )}
+            {!isRunning && !canStart && (
+              <span id={`${task.id}-start-blocked`} className="sr-only">{startBlockedReason}</span>
             )}
           </div>
         )}

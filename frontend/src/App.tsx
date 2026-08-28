@@ -281,7 +281,7 @@ function GoalsView({ onDeleteGoal }: { onDeleteGoal: (goalId: string) => Promise
     <div>
       <ResourceHeader workspaceId={workspaceId} />
       <div className="mb-4 flex justify-start">
-        <Link className="text-primary underline-offset-4 hover:underline" to="/workspaces">{t("backToWorkspaces")}</Link>
+        <Link className="text-primary underline-offset-4 hover:underline" to="/today">{t("nav.today")}</Link>
       </div>
       <GoalList workspaceId={workspaceId} onCreateNew={() => navigate(`/workspaces/${workspaceId}/goals/new`)} onEditGoal={(goal) => navigate(`/workspaces/${workspaceId}/goals/${goal.id}/edit`)} onDeleteGoal={onDeleteGoal} />
       <div className="mt-8"><TaskTrackingChart workspaceId={workspaceId} /></div>
@@ -312,7 +312,7 @@ function NoMatch() {
     <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 text-center">
       <h1 className="text-2xl font-bold">{t("notFound")}</h1>
       <p className="text-muted-foreground">{t("pageNotFound")}</p>
-      <Link className="text-primary underline-offset-4 hover:underline" to="/workspaces">{t("workspace.workspaces")}</Link>
+      <Link className="text-primary underline-offset-4 hover:underline" to="/today">{t("nav.today")}</Link>
     </div>
   );
 }
