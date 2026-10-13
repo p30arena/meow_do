@@ -241,20 +241,33 @@ Also noted: `onOpenTask` does an extra `getGoalById` round-trip to resolve the e
 - Shared formatting (`lib/format.ts`) and documented utilities (`lib/elapsed.ts`) reduce the drift that round 1 complained about.
 - Clean quality gates: `typecheck`, `lint` (0 findings), and tests all pass.
 
-## 3. Implementation update — 2026-08-28
+## 3. Implementation update — 2026-08-28 (continued)
 
-Implemented in this pass:
+Implemented in this pass (UI_UX_REVIEW §4 items 2–6 + hygiene batch):
 
-- TodayView now separates initial load failure from the empty state and provides a localized Retry action.
-- Task cards expose a one-tap `Mark done` action from the overflow menu in both Today and goal task lists.
-- Blocked Start controls now expose their reason to assistive technology with `aria-describedby` and screen-reader text.
-- Today summary refreshes at minute granularity instead of hourly.
-- TaskCard receives the profile timezone from its parent; GoalList now uses the profile timezone consistently.
-- Elapsed-time parsing explicitly treats server timestamps as UTC.
-- The 404 recovery link now returns to Today, and empty-group guidance mentions the non-drag “Move to group” path in all locales.
-- Added a shared timezone resolver utility for continued adoption.
+- `TaskCard` exposes a one-tap `Mark failed` action from the overflow menu in
+  both Today and goal task lists, closing the loop for unsuccessful work.
+- Today's spent-today/day-budget bars and per-card spent values now tick live
+  via render-time computation (`liveRunningSeconds`), matching `TaskList`.
+- All timezone reads go through `resolveUserTimezone(user.timezone)` —
+  `TaskCard`, `TaskList`, `TodayView`, `TaskTrackingChart`, and `GoalList` —
+  so profile timezone and device fallback stay consistent.
+- The truncated Upcoming section shows the full total plus a localized
+  `+N more` / `Show less` toggle (`today.showMore`, `today.showLess`).
+- `elapsed.ts` already parses server timestamps with `{ zone: "utc" }`; the
+  monotonic formatter is now memoized per start time inside `TaskCard` (with
+  a self-contained 1s tick), so parent re-renders no longer reset the clock.
+- Hygiene: group-rename save uses a `Check` icon, task delete-confirm uses
+  the specific `tasks.deleteTask` label, share dialog derives `isOwner` from
+  `workspace.userId` instead of a hardcoded placeholder, nav links use
+  `NavLink` active state, and Today/Task/Chart catch blocks narrow `unknown`
+  via `ApiError`/`Error` instead of `any`. Duplicate locale keys in
+  `ar`/`fa` were merged and missing keys added.
+- `TaskTrackingRecord.endTime` is now `string | null`; `TaskCard` accepts the
+  record `id` from the API type.
 
-Verification after implementation: `npm run typecheck`, `npm run lint`, and `npm test` all pass.
+Verification after implementation: `npm run typecheck`, `npm run lint`, and
+`npm test` (frontend + backend) all pass.
 
 ## 4. Recommended next steps (priority order)
 

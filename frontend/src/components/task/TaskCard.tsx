@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { Flame } from "lucide-react";
@@ -12,13 +12,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { MoreVertical, Play, Square, Pencil, Clock, Trash2, Check } from "lucide-react";
+import { MoreVertical, Play, Square, Pencil, Clock, Trash2, Check, XCircle } from "lucide-react";
 import DescriptionViewer from "../common/DescriptionViewer";
 import {
   formatMinutes,
   STATUS_BADGE_CLASSES,
   priorityFlames,
 } from "../../lib/format";
+import { createElapsedFormatter } from "../../lib/elapsed";
+import { resolveUserTimezone } from "../../lib/timezone";
 
 export interface TaskCardProps {
   task: {
@@ -29,7 +31,7 @@ export interface TaskCardProps {
     deadline?: string;
     status: "pending" | "started" | "failed" | "done";
     priority: number;
-    activeTracking?: { startTime: string; endTime?: string | null } | null;
+    activeTracking?: { id?: string; startTime: string; endTime?: string | null } | null;
   };
   /** Minutes spent today on this task (for the daily progress bar). */
   spentTodayMinutes: number;
@@ -39,10 +41,14 @@ export interface TaskCardProps {
   runningDisplay?: string;
   canStart: boolean;
   startBlockedReason?: string;
+  /** Compact label dots + assignee initials shown under the title row. */
+  labels?: Array<{ id: string; name: string; color: string }>;
+  assignees?: Array<{ id: string; username: string }>;
   onStart: (taskId: string) => void;
   onStop: (taskId: string) => void;
   onEdit: () => void;
   onMarkDone?: (taskId: string) => void;
+  onMarkFailed?: (taskId: string) => void;
   userTimezone?: string;
   /** Optional extra actions surfaced in the card's overflow menu. */
   onManualRecord?: () => void;
@@ -68,12 +74,32 @@ const TaskCard: React.FC<TaskCardProps> = ({
   onStop,
   onEdit,
   onMarkDone,
+  onMarkFailed,
   userTimezone: timezone,
+  labels = [],
+  assignees = [],
   onManualRecord,
   onDelete,
 }) => {
   const { t } = useTranslation();
-  const userTimezone = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userTimezone = resolveUserTimezone(timezone);
+
+  // Memoize the monotonic elapsed formatter per start time so the running
+  // clock does not reset on every parent re-render (UI_UX_REVIEW §4 item 6).
+  const elapsedFormatter = useMemo(
+    () =>
+      isRunning && task.activeTracking?.startTime
+        ? createElapsedFormatter(task.activeTracking.startTime)
+        : null,
+    [isRunning, task.activeTracking?.startTime],
+  );
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!isRunning || !elapsedFormatter) return;
+    const id = setInterval(() => setTick((v) => v + 1), 1000);
+    return () => clearInterval(id);
+  }, [isRunning, elapsedFormatter]);
+  const liveRunningDisplay = elapsedFormatter ? elapsedFormatter() : runningDisplay;
 
   const pct =
     task.timeBudget > 0 ? Math.round((spentTodayMinutes / task.timeBudget) * 100) : 0;
@@ -147,6 +173,29 @@ const TaskCard: React.FC<TaskCardProps> = ({
             </span>
             {deadlineNode}
           </div>
+          {(labels.length > 0 || assignees.length > 0) && (
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              {labels.map((label) => (
+                <span
+                  key={label.id}
+                  title={label.name}
+                  aria-label={label.name}
+                  className="inline-block h-2.5 w-6 rounded-full"
+                  style={{ backgroundColor: label.color }}
+                />
+              ))}
+              {assignees.map((person) => (
+                <span
+                  key={person.id}
+                  title={person.username}
+                  aria-label={person.username}
+                  className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-[10px] font-semibold uppercase text-primary"
+                >
+                  {person.username.slice(0, 2)}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -164,6 +213,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <DropdownMenuItem onClick={() => onMarkDone(task.id)}>
                 <Check className="me-2 h-4 w-4" aria-hidden="true" />
                 {t("tasks.markDone")}
+              </DropdownMenuItem>
+            )}
+            {onMarkFailed && task.status !== "failed" && task.status !== "done" && !isRunning && (
+              <DropdownMenuItem onClick={() => onMarkFailed(task.id)}>
+                <XCircle className="me-2 h-4 w-4" aria-hidden="true" />
+                {t("tasks.markFailed")}
               </DropdownMenuItem>
             )}
             {onManualRecord && (
@@ -213,7 +268,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
           <div className="flex items-center justify-between gap-2 rounded-md bg-green-500/10 px-3 py-2">
             <div className="min-w-0">
               <p className="truncate font-mono text-lg font-bold tabular-nums leading-none" role="timer" aria-live="off">
-                {runningDisplay ?? "00:00:00"}
+                {liveRunningDisplay ?? "00:00:00"}
               </p>
               {startedAt && (
                 <p className="mt-0.5 text-[11px] text-muted-foreground">

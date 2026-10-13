@@ -2,7 +2,17 @@
 
 ## Current Work Focus
 
-The current focus is on implementing new features: user timezone preference, task tracking (start/stop, time spent summary with Recharts), task priority, and **manual task time record entry**. All previous core features (User authentication, Workspace management, Goal management, and Task management) and project initialization tasks (multi-language support including RTL/LTR, and light/dark mode theming) have been successfully implemented. All core backend features are also complete.
+The current focus is UI/UX remediation follow-through (UI_UX_REVIEW §4): Today-view live budget bars, quick failed-state affordance, unified timezone resolution, Upcoming +N more toggle, memoized running-timer formatter, and small hygiene fixes (group-rename icon, delete-confirm label, share-dialog owner signal, NavLink active state, `unknown` error narrowing, locale cleanup). All previous core features (User authentication, Workspace management, Goal management, and Task management) and project initialization tasks (multi-language support including RTL/LTR, and light/dark mode theming) have been successfully implemented. All core backend features are also complete.
+
+### Latest pass (2026-08-28 continued)
+
+*   **Added `TaskCard` `onMarkFailed` action (overflow menu) and wired `handleMarkFailed` in `TodayView` and `TaskList`, with `tasks.markFailed` keys in en/ar/fa.**
+*   **Made Today spent-today/day-budget bars and per-card spent values tick live via render-time `liveRunningSeconds` (matches `TaskList` live computation).**
+*   **Unified timezone reads on `resolveUserTimezone(user.timezone)` across `TaskCard`, `TaskList`, `TodayView`, `TaskTrackingChart`, `GoalList`; hardened resolver with trim + UTC fallback.**
+*   **Added Upcoming `+N more` / `Show less` toggle (`today.showMore`, `today.showLess` in en/ar/fa) and full-total heading count.**
+*   **Memoized monotonic elapsed formatter per start time inside `TaskCard` with self-contained 1s tick; `elapsed.ts` already parses with `{ zone: "utc" }`.**
+*   **Hygiene: group-rename save uses `Check` icon; task delete-confirm uses `tasks.deleteTask`; share dialog derives `isOwner` from `workspace.userId`; nav uses `NavLink` active state; catch blocks narrow `unknown` via `ApiError`/`Error`; fixed duplicate `ar`/`fa` locale keys; `TaskTrackingRecord.endTime` typed `string | null`.**
+*   **Verified: `npm run typecheck`, `npm run lint`, `npm test` (frontend + backend) all pass; frontend production build succeeds.**
 
 ## Recent Changes
 

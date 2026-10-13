@@ -11,9 +11,10 @@ import {
   type Task,
   type TaskTrackingSummary,
 } from "../../api/task";
+import { ApiError } from "../../api/client";
 import { ManualTimeRecordForm } from "./ManualTimeRecordForm";
 import TaskCard from "./TaskCard";
-import { createElapsedFormatter } from "../../lib/elapsed";
+import { resolveUserTimezone } from "../../lib/timezone";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import {
@@ -55,8 +56,7 @@ const TaskList: React.FC<TaskListProps> = ({
 }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const userTimezone =
-    user?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userTimezone = resolveUserTimezone(user?.timezone);
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,8 +162,8 @@ const TaskList: React.FC<TaskListProps> = ({
       setAdjustingStop(false);
       setSelectedStopTime("");
       await fetchTasks();
-    } catch (err: any) {
-      setError(err.message ?? t("workspace.error"));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
     }
   };
 
@@ -185,18 +185,31 @@ const TaskList: React.FC<TaskListProps> = ({
     }
   };
 
+  const handleMarkFailed = async (taskId: string) => {
+    setError(null);
+    try {
+      await updateTask(taskId, { status: "failed" });
+      await fetchTasks();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
+    }
+  };
+
   const handleStartTracking = async (taskId: string) => {
     setError(null);
     try {
       await startTaskTracking(taskId);
       await fetchTasks();
-    } catch (err: any) {
-      if (err?.status === 400 && err?.data?.activeTask) {
-        setError(
-          t("tasks.anotherTaskActive", { taskName: err.data.activeTask.taskName }),
-        );
+    } catch (err: unknown) {
+      if (err instanceof ApiError && err.status === 400) {
+        const activeTask = err.data?.activeTask as { taskName?: string } | undefined;
+        if (activeTask?.taskName) {
+          setError(t("tasks.anotherTaskActive", { taskName: activeTask.taskName }));
+        } else {
+          setError(err.message);
+        }
       } else {
-        setError(err.message ?? t("workspace.error"));
+        setError(err instanceof Error ? err.message : t("workspace.error"));
       }
     }
   };
@@ -261,17 +274,13 @@ const TaskList: React.FC<TaskListProps> = ({
               spentOverallMinutes={Math.floor((overallByName[task.name] ?? 0) / 60)}
               isRunning={runningTask?.id === task.id}
               userTimezone={userTimezone}
-              runningDisplay={
-                task.activeTracking
-                  ? createElapsedFormatter(task.activeTracking.startTime)()
-                  : undefined
-              }
               canStart={!runningTask}
               startBlockedReason={t("tasks.anotherTaskActiveShort")}
               onStart={(id) => void handleStartTracking(id)}
               onStop={openStopDialog}
               onEdit={() => onEditTask(task)}
               onMarkDone={(id) => void handleMarkDone(id)}
+              onMarkFailed={(id) => void handleMarkFailed(id)}
               onManualRecord={() => {
                 setSelectedTaskIdForManualRecord(task.id);
                 setShowManualRecordForm(true);

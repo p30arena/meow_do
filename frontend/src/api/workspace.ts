@@ -2,6 +2,7 @@ import { request } from './client';
 
 export interface Workspace {
   id: string;
+  userId: string;
   name: string;
   description?: string;
   groupName?: string | null; // New: Optional group name

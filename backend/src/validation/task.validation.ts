@@ -8,6 +8,7 @@ export const createTaskSchema = z.object({
   deadline: z.string().datetime().optional().transform((str) => (str ? new Date(str) : undefined)), // ISO 8601 string to Date object
   status: z.enum(['pending', 'started', 'failed', 'done']).default('pending').optional(),
   priority: z.number().int().min(1).max(10).default(1).optional(), // Priority from 1 to 10, default 1
+  position: z.number().int().min(0, 'Position must be a non-negative integer').optional(), // Manual order within goal
   isRecurring: z.boolean().default(false).optional(),
 });
 
@@ -18,6 +19,7 @@ export const updateTaskSchema = z.object({
   deadline: z.string().datetime().optional().transform((str) => (str ? new Date(str) : undefined)), // ISO 8601 string to Date object
   status: z.enum(['pending', 'started', 'failed', 'done']).optional(),
   priority: z.number().int().min(1).max(10).optional(), // Priority from 1 to 10
+  position: z.number().int().min(0, 'Position must be a non-negative integer').optional(), // Manual order within goal
   isRecurring: z.boolean().optional(),
 });
 

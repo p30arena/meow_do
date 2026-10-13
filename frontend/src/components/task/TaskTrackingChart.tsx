@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { useAuth } from '../../context/AuthContext';
 import { DateTime } from 'luxon';
 
+import { resolveUserTimezone } from "../../lib/timezone";
+
 interface TaskTrackingChartProps {
   workspaceId?: string;
   goalId?: string;
@@ -27,8 +29,8 @@ const TaskTrackingChart: React.FC<TaskTrackingChartProps> = ({ workspaceId, goal
     try {
       const data = await getTaskTrackingSummary(period, workspaceId, goalId);
       setSummaryData(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
     } finally {
       setLoading(false);
     }
@@ -45,10 +47,10 @@ const TaskTrackingChart: React.FC<TaskTrackingChartProps> = ({ workspaceId, goal
   };
 
   const formatTooltipLabel = (label: string) => {
-    if (!user?.timezone) return label; // Fallback if timezone is not set
+    const zone = resolveUserTimezone(user?.timezone);
 
     // Use fromSQL to parse the PostgreSQL timestamp string
-    const dt = DateTime.fromSQL(label, { zone: user.timezone });
+    const dt = DateTime.fromSQL(label, { zone });
 
     if (!dt.isValid) {
       console.error("Invalid DateTime object:", dt.invalidExplanation);

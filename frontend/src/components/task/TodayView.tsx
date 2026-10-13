@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { getAllTasks, startTaskTracking, stopTaskTracking, getTaskTrackingSummary, updateTask, type Task } from "../../api/task";
+import { ApiError } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import TaskCard from "./TaskCard";
 import { Button } from "../ui/button";
@@ -18,7 +19,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Progress } from "../ui/progress";
 import { Coffee } from "lucide-react";
-import { createElapsedFormatter } from "../../lib/elapsed";
+import { resolveUserTimezone } from "../../lib/timezone";
 
 interface TodayViewProps {
   onOpenTask: (task: Task) => void;
@@ -32,8 +33,7 @@ interface TodayViewProps {
 const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const userTimezone =
-    user?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userTimezone = resolveUserTimezone(user?.timezone);
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,8 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
   const [spentTodaySecondsByTask, setSpentTodaySecondsByTask] = useState<Record<string, number>>({});
   const [spentTotalSecondsByTask, setSpentTotalSecondsByTask] = useState<Record<string, number>>({});
   const [dayBudgetMinutes, setDayBudgetMinutes] = useState(0);
-  const [spentTodayMinutes, setSpentTodayMinutes] = useState(0);
+  const [baseSpentTodayMinutes, setBaseSpentTodayMinutes] = useState(0);
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false);
 
   // Live ticker for the currently running task.
   const [now, setNow] = useState(() => DateTime.now());
@@ -99,7 +100,7 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
         0,
       );
       setDayBudgetMinutes(budgetFromTasks);
-      setSpentTodayMinutes(Math.floor(todayMinutes));
+      setBaseSpentTodayMinutes(Math.floor(todayMinutes));
     } catch {
       /* summary is enhancement-only; never block the list on it */
     }
@@ -133,7 +134,7 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
     [tasks],
   );
 
-  const { overdue, dueToday, upcoming } = useMemo(() => {
+  const { overdue, dueToday, upcoming, upcomingTotal } = useMemo(() => {
     const todayEnd = DateTime.now().setZone(userTimezone).endOf("day");
     const buckets = { overdue: [] as Task[], dueToday: [] as Task[], upcoming: [] as Task[] };
     tasks.forEach((task) => {
@@ -155,9 +156,19 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
     buckets.overdue.sort(byPriority);
     buckets.dueToday.sort(byPriority);
     buckets.upcoming.sort(byPriority);
-    buckets.upcoming = buckets.upcoming.slice(0, 6); // keep the front door calm
-    return buckets;
-  }, [tasks, userTimezone, runningTask]);
+    const upcomingTotal = buckets.upcoming.length;
+    buckets.upcoming = showAllUpcoming ? buckets.upcoming : buckets.upcoming.slice(0, 6); // keep the front door calm
+    return { ...buckets, upcomingTotal };
+  }, [tasks, userTimezone, runningTask, showAllUpcoming]);
+
+  // Live tick for the day-budget bar: base recorded minutes plus the running
+  // portion of the open record, computed at render time (UI_UX_REVIEW §4 item 3).
+  const liveRunningSeconds = useMemo(() => {
+    if (!runningTask?.activeTracking?.startTime) return 0;
+    const startedAt = DateTime.fromISO(runningTask.activeTracking.startTime, { zone: "utc" });
+    return Math.max(0, Math.floor(DateTime.now().diff(startedAt).as("seconds")));
+  }, [runningTask, now]);
+  const spentTodayMinutes = baseSpentTodayMinutes + Math.floor(liveRunningSeconds / 60);
 
   const handleMarkDone = async (taskId: string) => {
     setError(null);
@@ -169,16 +180,31 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
     }
   };
 
+  const handleMarkFailed = async (taskId: string) => {
+    setError(null);
+    try {
+      await updateTask(taskId, { status: "failed" });
+      await fetchTasks();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
+    }
+  };
+
   const handleStart = async (taskId: string) => {
     setError(null);
     try {
       await startTaskTracking(taskId);
       await fetchTasks();
-    } catch (err: any) {
-      if (err?.status === 400 && err?.data?.activeTask) {
-        setError(t("tasks.anotherTaskActive", { taskName: err.data.activeTask.taskName }));
+    } catch (err: unknown) {
+      if (err instanceof ApiError && err.status === 400) {
+        const activeTask = err.data?.activeTask as { taskName?: string } | undefined;
+        if (activeTask?.taskName) {
+          setError(t("tasks.anotherTaskActive", { taskName: activeTask.taskName }));
+        } else {
+          setError(err.message);
+        }
       } else {
-        setError(err.message ?? t("workspace.error"));
+        setError(err instanceof Error ? err.message : t("workspace.error"));
       }
     }
   };
@@ -200,8 +226,8 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
       setAdjustingStop(false);
       setSelectedStopTime("");
       await fetchTasks();
-    } catch (err: any) {
-      setError(err.message ?? t("workspace.error"));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("workspace.error"));
     } finally {
       stopLockRef.current = false;
     }
@@ -236,18 +262,20 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
 
   const dayBudgetPct = dayBudgetMinutes > 0 ? Math.min(100, Math.round((spentTodayMinutes / dayBudgetMinutes) * 100)) : 0;
 
-  const renderSection = (titleKey: string, items: Task[], tone?: string) =>
-    items.length > 0 && (
+  const renderSection = (titleKey: string, items: Task[], tone?: string) => {
+    if (items.length === 0) return null;
+    const showToggle = titleKey === "upcoming" && upcomingTotal > items.length;
+    return (
       <section aria-labelledby={`today-${titleKey}`} className="mt-6 first:mt-0">
         <h2 id={`today-${titleKey}`} className={`mb-3 text-sm font-semibold uppercase tracking-wide ${tone ?? "text-muted-foreground"}`}>
-          {t(`today.${titleKey}`)} · {items.length}
+          {t(`today.${titleKey}`)} · {titleKey === "upcoming" ? upcomingTotal : items.length}
         </h2>
         <div className="grid gap-4 md:grid-cols-2">
           {items.map((task) => (
             <TaskCard
               key={task.id}
               task={task}
-              spentTodayMinutes={Math.floor((spentTodaySecondsByTask[task.id] ?? 0) / 60)}
+              spentTodayMinutes={Math.floor((spentTodaySecondsByTask[task.id] ?? 0) / 60) + (runningTask?.id === task.id ? Math.floor(liveRunningSeconds / 60) : 0)}
               spentOverallMinutes={Math.floor((spentTotalSecondsByTask[task.id] ?? 0) / 60)}
               isRunning={runningTask?.id === task.id}
               userTimezone={userTimezone}
@@ -257,11 +285,26 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
               onStop={openStopDialog}
               onEdit={() => onOpenTask(task)}
               onMarkDone={(id) => void handleMarkDone(id)}
+              onMarkFailed={(id) => void handleMarkFailed(id)}
             />
           ))}
         </div>
+        {showToggle && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-2"
+            onClick={() => setShowAllUpcoming((v) => !v)}
+            aria-expanded={showAllUpcoming}
+          >
+            {showAllUpcoming
+              ? t("today.showLess")
+              : t("today.showMore", { count: upcomingTotal - items.length })}
+          </Button>
+        )}
       </section>
     );
+  };
 
   return (
     <div className="p-4">
@@ -299,20 +342,16 @@ const TodayView: React.FC<TodayViewProps> = ({ onOpenTask }) => {
           </h2>
           <TaskCard
             task={runningTask}
-            spentTodayMinutes={Math.floor((spentTodaySecondsByTask[runningTask.id] ?? 0) / 60)}
+            spentTodayMinutes={Math.floor((spentTodaySecondsByTask[runningTask.id] ?? 0) / 60) + Math.floor(liveRunningSeconds / 60)}
             spentOverallMinutes={Math.floor((spentTotalSecondsByTask[runningTask.id] ?? 0) / 60)}
             isRunning
             userTimezone={userTimezone}
-            runningDisplay={
-              runningTask.activeTracking
-                ? createElapsedFormatter(runningTask.activeTracking.startTime)()
-                : undefined
-            }
             canStart={false}
             onStart={() => undefined}
             onStop={openStopDialog}
             onEdit={() => onOpenTask(runningTask)}
             onMarkDone={(id) => void handleMarkDone(id)}
+            onMarkFailed={(id) => void handleMarkFailed(id)}
           />
         </section>
       )}

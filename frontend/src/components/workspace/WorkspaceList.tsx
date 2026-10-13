@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input"; // Import Input component
 import { Label } from "@/components/ui/label";
-import { MoreVertical, Pencil, XCircle } from "lucide-react";
+import { MoreVertical, Pencil, XCircle, Check } from "lucide-react";
 import { Progress } from "../ui/progress";
 import { Badge } from "../ui/badge";
 import {
@@ -56,7 +56,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
   onEditWorkspace,
 }) => {
   const { t } = useTranslation();
-  const { token } = useAuth(); // Get token from useAuth
+  const { token, user } = useAuth(); // Get token from useAuth
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -320,12 +320,12 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
                       variant="ghost"
                       size="icon"
                       onClick={() => handleSaveGroupRename(groupName)}
+                      aria-label={t("workspace.saveRename")}
                     >
                       <span className="sr-only">
                         {t("workspace.saveRename")}
                       </span>
-                      <Pencil className="h-5 w-5" />{" "}
-                      {/* Reusing Pencil for save icon */}
+                      <Check className="h-5 w-5" aria-hidden="true" />
                     </Button>
                   </div>
                 ) : (
@@ -575,7 +575,7 @@ const WorkspaceList: React.FC<WorkspaceListProps> = ({
             </AlertDialogHeader>
             <WorkspaceSharing
               workspaceId={selectedWorkspace.id}
-              isOwner={true} // Placeholder, adjust based on actual API data
+              isOwner={!selectedWorkspace.isShared && (!user || selectedWorkspace.userId === user.id)}
               workspaceName={selectedWorkspace.name}
             />
             <AlertDialogFooter>

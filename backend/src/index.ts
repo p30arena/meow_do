@@ -6,6 +6,9 @@ import rateLimit from 'express-rate-limit';
 import workspaceRoutes from './routes/workspace.routes';
 import goalRoutes from './routes/goal.routes';
 import taskRoutes from './routes/task.routes';
+import cardRoutes from './routes/card.routes';
+import notifyRoutes from './routes/notify.routes';
+import automationRoutes from './routes/automation.routes';
 import authRoutes from './routes/auth.routes';
 import shareRoutes from './routes/share.routes';
 import { updateTimezone } from './controllers/auth.controller'; // Import updateTimezone
@@ -65,6 +68,15 @@ app.use('/api/v1/goals', protect, goalRoutes);
 
 // Task routes
 app.use('/api/v1/tasks', protect, taskRoutes);
+
+// Rich-card routes (labels, assignees)
+app.use('/api/v1', protect, cardRoutes);
+
+// Reminders, notifications, reports
+app.use('/api/v1', protect, notifyRoutes);
+
+// Rules-lite, webhooks, Trello import
+app.use('/api/v1', protect, automationRoutes);
 
 // Centralized error handler: maps ZodError -> 400 and hides stack traces.
 app.use(errorHandler);

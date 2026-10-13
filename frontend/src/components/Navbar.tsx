@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "./ui/button";
@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./ui/alert-dialog"; // Import AlertDialog components
-import { Menu, Settings, Sun, CalendarDays } from "lucide-react";
+import { Menu, Settings, Sun, CalendarDays, Calendar } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import ThemeToggle from "./ThemeToggle";
 import TimezoneSelector from "./settings/TimezoneSelector"; // Import TimezoneSelector
@@ -54,14 +54,18 @@ export const Navbar: React.FC = () => {
                         <div className="flex flex-col space-y-4">
                             {/* Primary destinations */}
                             <div className="border-b pb-2">
-                                <Link to="/today" className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-primary/10">
+                                <NavLink to="/today" className={({ isActive }) => `flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-primary/10 ${isActive ? "bg-primary/10" : ""}`}>
                                     <Sun className="h-4 w-4" aria-hidden="true" />
                                     {t("nav.today")}
-                                </Link>
-                                <Link to="/workspaces" className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-primary/10">
+                                </NavLink>
+                                <NavLink to="/workspaces" className={({ isActive }) => `flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-primary/10 ${isActive ? "bg-primary/10" : ""}`}>
                                     <CalendarDays className="h-4 w-4" aria-hidden="true" />
                                     {t("nav.workspaces")}
-                                </Link>
+                                </NavLink>
+                                <NavLink to="/calendar" className={({ isActive }) => `flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-primary/10 ${isActive ? "bg-primary/10" : ""}`}>
+                                    <Calendar className="h-4 w-4" aria-hidden="true" />
+                                    {t("nav.calendar")}
+                                </NavLink>
                             </div>
                             <div className="border-b pb-2">
                                 <h3 className="text-sm font-medium">{t("user.profile")}</h3>
@@ -154,18 +158,24 @@ export const Navbar: React.FC = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
-                <Link
+                <NavLink
                     to="/today"
-                    className="rounded-md px-2 py-1 text-sm font-medium underline-offset-4 hover:underline"
+                    className={({ isActive }) => `rounded-md px-2 py-1 text-sm font-medium underline-offset-4 hover:underline ${isActive ? "underline" : ""}`}
                 >
                     {t("nav.today")}
-                </Link>
-                <Link
+                </NavLink>
+                <NavLink
                     to="/workspaces"
-                    className="rounded-md px-2 py-1 text-sm font-medium underline-offset-4 hover:underline"
+                    className={({ isActive }) => `rounded-md px-2 py-1 text-sm font-medium underline-offset-4 hover:underline ${isActive ? "underline" : ""}`}
                 >
                     {t("nav.workspaces")}
-                </Link>
+                </NavLink>
+                <NavLink
+                    to="/calendar"
+                    className={({ isActive }) => `rounded-md px-2 py-1 text-sm font-medium underline-offset-4 hover:underline ${isActive ? "underline" : ""}`}
+                >
+                    {t("nav.calendar")}
+                </NavLink>
                 <InstallPWAButton />
                 <LanguageSwitcher />
                 <ThemeToggle />

@@ -213,6 +213,7 @@
     "startedAt": "Started at {{time}}",
     "anotherTaskActiveShort": "Another task is running - stop it first.",
     "markDone": "Mark done",
+    "markFailed": "Mark failed",
     "deleteTask": "Delete task"
   },
   "cancel": "Cancel",
@@ -254,6 +255,32 @@
     "openMenu": "Open navigation menu"
   },
   "breadcrumb": "Breadcrumb",
+  "board": {
+    "title": "Board",
+    "empty": "No tasks in this goal yet. Create one from the list view.",
+    "dropHere": "Drop tasks here",
+    "moved": "Moved {{name}} to {{status}}",
+    "boardView": "Board view",
+    "listView": "List view"
+  },
+  "card": {
+    "labels": "Labels",
+    "noLabels": "No labels yet.",
+    "newLabel": "New label name",
+    "labelColor": "Label color",
+    "add": "Add",
+    "assignees": "Assignees",
+    "noAssignees": "Nobody assigned yet.",
+    "addAssignee": "Assign by user ID",
+    "assigneePlaceholder": "User ID",
+    "removeAssignee": "Remove {{name}}"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "noTasks": "No tasks on this day."
+  },
   "today": {
     "title": "Today",
     "runningNow": "Running now",
@@ -264,10 +291,13 @@
     "allClearHint": "Nothing is due today. Start something pending or plan ahead.",
     "dayBudget": "Day budget",
     "spentToday": "Spent today",
-    "empty": "No tasks across your workspaces yet."
+    "empty": "No tasks across your workspaces yet.",
+    "showMore": "+{{count}} more",
+    "showLess": "Show less"
   },
   "nav": {
     "today": "Today",
-    "workspaces": "Workspaces"
+    "workspaces": "Workspaces",
+    "calendar": "Calendar"
   }
 }

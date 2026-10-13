@@ -206,9 +206,11 @@
     },
     "stopNow": "توقف",
     "adjustStopTime": "تنظیم زمان توقف",
-    "startedAt": "شروع در {{time}}",      "anotherTaskActiveShort": "کار دیگری در حال اجراست - اول آن را متوقف کن.",
-      "markDone": "علامت‌گذاری به‌عنوان انجام‌شده",
-      "deleteTask": "حذف کار"
+    "startedAt": "شروع در {{time}}",
+    "anotherTaskActiveShort": "کار دیگری در حال اجراست - اول آن را متوقف کن.",
+    "markDone": "علامت‌گذاری به‌عنوان انجام‌شده",
+    "markFailed": "علامت‌گذاری به‌عنوان ناموفق",
+    "deleteTask": "حذف کار"
   },
   "cancel": "لغو",
   "confirm": "تایید",
@@ -240,9 +242,35 @@
     "dismiss": "رد کردن"
   },
   "notFound": "یافت نشد",
+  "card": {
+    "labels": "برچسب‌ها",
+    "noLabels": "هنوز برچسبی نیست.",
+    "newLabel": "نام برچسب جدید",
+    "labelColor": "رنگ برچسب",
+    "add": "افزودن",
+    "assignees": "مسئولان",
+    "noAssignees": "هنوز کسی منصوب نشده.",
+    "addAssignee": "تخصیص با شناسه کاربر",
+    "assigneePlaceholder": "شناسه کاربر",
+    "removeAssignee": "حذف {{name}}"
+  },
+  "calendar": {
+    "title": "تقویم",
+    "prevMonth": "ماه قبل",
+    "nextMonth": "ماه بعد",
+    "noTasks": "در این روز کاری نیست."
+  },
   "pageNotFound": "صفحه یافت نشد.",
   "close": "بستن",
   "deleteError": "خطای حذف.",
+  "board": {
+    "title": "برد",
+    "empty": "هنوز کاری در این هدف نیست. از نمای لیست بساز.",
+    "dropHere": "کارها را اینجا رها کن",
+    "moved": "{{name}} به {{status}} منتقل شد",
+    "boardView": "نمای برد",
+    "listView": "نمای لیست"
+  },
   "today": {
     "title": "امروز",
     "runningNow": "در حال اجرا",
@@ -253,10 +281,13 @@
     "allClearHint": "امروز کاری سررسید ندارد. یک کار در انتظار را شروع کن یا برنامه‌ریزی کن.",
     "dayBudget": "بودجه روز",
     "spentToday": "هزینه‌شده امروز",
-    "empty": "هنوز کاری در فضاهای کاری تو نیست."
+    "empty": "هنوز کاری در فضاهای کاری تو نیست.",
+    "showMore": "+{{count}} مورد بیشتر",
+    "showLess": "نمایش کمتر"
   },
   "nav": {
     "today": "امروز",
-    "workspaces": "فضاهای کاری"
+    "workspaces": "فضاهای کاری",
+    "calendar": "تقویم"
   }
 }

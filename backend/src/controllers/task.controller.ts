@@ -61,6 +61,7 @@ export const createTask = catchAsync(async (req: Request, res: Response) => {
     // send it; drizzle would then bind the pg-schema boolean default (JS false),
     // which crashes better-sqlite3. Always materialize it.
     isRecurring: validatedData.isRecurring ?? false,
+    position: validatedData.position ?? 0,
     userId,
     deadline: validatedData.deadline?.toISOString(),
   });
@@ -82,6 +83,7 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
       ownedConditions.push(eq(tasks.goalId, goalId as string));
     }
     const ownedTasks = await db.select().from(tasks).where(and(...ownedConditions)).orderBy(
+      tasks.position,
       sql`CASE
         WHEN ${tasks.status} = 'started' THEN 0
         WHEN ${tasks.status} = 'pending' THEN 1
@@ -104,6 +106,7 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
       ))
       .where(goalId ? eq(tasks.goalId, goalId as string) : undefined)
       .orderBy(
+        sql`${tasks.position}`,
         sql`CASE
           WHEN ${tasks.status} = 'started' THEN 0
           WHEN ${tasks.status} = 'pending' THEN 1
@@ -160,6 +163,7 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
   .leftJoin(taskTrackingRecords, joinCondition)
   .where(and(...ownedConditions))
   .orderBy(
+    tasks.position,
     sql`CASE
       WHEN ${tasks.status} = 'started' THEN 0
       WHEN ${tasks.status} = 'pending' THEN 1
@@ -187,6 +191,7 @@ export const getTasks = catchAsync(async (req: Request, res: Response) => {
   .leftJoin(taskTrackingRecords, joinCondition)
   .where(and(...sharedConditions))
   .orderBy(
+    tasks.position,
     sql`CASE
       WHEN ${tasks.status} = 'started' THEN 0
       WHEN ${tasks.status} = 'pending' THEN 1
@@ -224,6 +229,24 @@ export const updateTask = catchAsync(async (req: Request, res: Response) => {
   const updatedTask = await db.update(tasks).set(validatedData).where(eq(tasks.id, id)).returning();
   if (updatedTask.length === 0) {
     return res.status(404).json({ message: 'Task not found' });
+  }
+  const task = updatedTask[0] as typeof tasks.$inferSelect;
+  // Phase D hooks (best-effort, never fail the update): rules-lite + webhooks.
+  if (validatedData.status === 'done') {
+    const goalRows = await db.select({ workspaceId: goals.workspaceId }).from(goals).where(eq(goals.id, task.goalId));
+    const workspaceId = goalRows[0]?.workspaceId;
+    const { evaluateTaskDoneRules, fireWebhooks } = await import('./automation.controller');
+    await evaluateTaskDoneRules(task.goalId);
+    if (workspaceId) {
+      void fireWebhooks(workspaceId, 'task.done', { taskId: task.id, goalId: task.goalId, status: task.status });
+    }
+  } else if (validatedData.status !== undefined || validatedData.position !== undefined) {
+    const goalRows = await db.select({ workspaceId: goals.workspaceId }).from(goals).where(eq(goals.id, task.goalId));
+    const workspaceId = goalRows[0]?.workspaceId;
+    if (workspaceId) {
+      const { fireWebhooks } = await import('./automation.controller');
+      void fireWebhooks(workspaceId, 'task.updated', { taskId: task.id, goalId: task.goalId, status: task.status });
+    }
   }
   res.status(200).json(updatedTask[0]);
 });

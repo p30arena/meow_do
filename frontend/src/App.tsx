@@ -18,7 +18,9 @@ const GoalList = lazy(() => import("./components/goal/GoalList"));
 const GoalForm = lazy(() => import("./components/goal/GoalForm"));
 const TaskList = lazy(() => import("./components/task/TaskList"));
 const TaskForm = lazy(() => import("./components/task/TaskForm"));
+const BoardView = lazy(() => import("./components/task/BoardView"));
 const TodayView = lazy(() => import("./components/task/TodayView"));
+const CalendarView = lazy(() => import("./components/task/CalendarView"));
 import { deleteGoal, getGoalById, type Goal } from "./api/goal";
 import { deleteTask } from "./api/task";
 import { getWorkspaceById, type Workspace } from "./api/workspace";
@@ -165,6 +167,21 @@ function AuthenticatedRoutes({
       <Routes>
         <Route path="/" element={<Navigate to="/today" replace />} />
         <Route
+          path="/calendar"
+          element={
+            <CalendarView
+              onOpenTask={async (task) => {
+                try {
+                  const goal = await getGoalById(task.goalId);
+                  navigate(`/workspaces/${goal.workspaceId}/goals/${task.goalId}/tasks/${task.id}/edit`);
+                } catch {
+                  navigate(`/workspaces`);
+                }
+              }}
+            />
+          }
+        />
+        <Route
           path="/today"
           element={
             <TodayView
@@ -207,6 +224,7 @@ function AuthenticatedRoutes({
           element={<GoalFormRoute />}
         />
         <Route path="/workspaces/:workspaceId/goals/:goalId" element={<TasksView onDeleteTask={onDeleteTask} />} />
+        <Route path="/workspaces/:workspaceId/goals/:goalId/board" element={<BoardViewRoute />} />
         <Route
           path="/workspaces/:workspaceId/goals/:goalId/tasks/new"
           element={<TaskFormRoute />}
@@ -289,6 +307,21 @@ function GoalsView({ onDeleteGoal }: { onDeleteGoal: (goalId: string) => Promise
   );
 }
 
+function BoardViewRoute() {
+  const { workspaceId, goalId } = useParams<{ workspaceId: string; goalId: string }>();
+  const { t } = useTranslation();
+  if (!workspaceId || !goalId) return <NoMatch />;
+  return (
+    <div>
+      <ResourceHeader workspaceId={workspaceId} goalId={goalId} />
+      <div className="mb-4 flex justify-start">
+        <Link className="text-primary underline-offset-4 hover:underline" to={`/workspaces/${workspaceId}/goals/${goalId}`}>{t("board.listView")}</Link>
+      </div>
+      <BoardView workspaceId={workspaceId} goalId={goalId} />
+    </div>
+  );
+}
+
 function TasksView({ onDeleteTask }: { onDeleteTask: (taskId: string) => Promise<void> }) {
   const { t } = useTranslation();
   const { workspaceId, goalId } = useParams<{ workspaceId: string; goalId: string }>();
@@ -297,8 +330,9 @@ function TasksView({ onDeleteTask }: { onDeleteTask: (taskId: string) => Promise
   return (
     <div>
       <ResourceHeader workspaceId={workspaceId} goalId={goalId} />
-      <div className="mb-4 flex justify-start">
+      <div className="mb-4 flex justify-start gap-4">
         <Link className="text-primary underline-offset-4 hover:underline" to={`/workspaces/${workspaceId}`}>{t("backToGoals")}</Link>
+        <Link className="text-primary underline-offset-4 hover:underline" to={`/workspaces/${workspaceId}/goals/${goalId}/board`}>{t("board.boardView")}</Link>
       </div>
       <TaskList workspaceId={workspaceId} goalId={goalId} onCreateNew={() => navigate(`/workspaces/${workspaceId}/goals/${goalId}/tasks/new`)} onEditTask={(task) => navigate(`/workspaces/${workspaceId}/goals/${goalId}/tasks/${task.id}/edit`)} onDeleteTask={onDeleteTask} />
       <div className="mt-8"><TaskTrackingChart goalId={goalId} /></div>

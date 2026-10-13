@@ -9,6 +9,7 @@ export interface Task {
   deadline?: string; // ISO date string
   status: 'pending' | 'started' | 'failed' | 'done';
   priority: number; // Add priority to Task interface
+  position: number; // Manual order within a goal (kanban drag-and-drop)
   isRecurring: boolean;
   createdAt: string;
   updatedAt: string;
@@ -23,6 +24,7 @@ export interface CreateTaskPayload {
   deadline?: string;
   status?: 'pending' | 'started' | 'failed' | 'done'; // Status can be optional for creation
   priority?: number; // Add priority to CreateTaskPayload
+  position?: number; // Optional manual order; server defaults to 0
   isRecurring?: boolean;
 }
 
@@ -38,6 +40,7 @@ export interface UpdateTaskPayload {
   deadline?: string;
   status?: 'pending' | 'started' | 'failed' | 'done';
   priority?: number; // Add priority to UpdateTaskPayload
+  position?: number; // Manual order within a goal (kanban drag-and-drop)
   isRecurring?: boolean;
 }
 
@@ -56,7 +59,7 @@ export interface TaskTrackingRecord {
   taskId: string;
   userId: string;
   startTime: string;
-  endTime?: string;
+  endTime?: string | null;
   duration?: number; // in seconds
   createdAt: string;
   updatedAt: string;

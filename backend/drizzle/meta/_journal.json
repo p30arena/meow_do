@@ -50,6 +50,34 @@
       "when": 1749961929678,
       "tag": "0006_bent_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791141548635,
+      "tag": "0007_task_position",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791295024509,
+      "tag": "0008_rich_cards_b1",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791511387913,
+      "tag": "0009_phase_c_reminders",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791651979003,
+      "tag": "0010_phase_d_automation",
+      "breakpoints": true
     }
   ]
 }

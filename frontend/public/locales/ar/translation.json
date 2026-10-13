@@ -206,11 +206,11 @@
     },
     "stopNow": "إيقاف",
     "adjustStopTime": "تعديل وقت التوقف",
-    "startedAt": "بدأت في {{time}}",      "anotherTaskActiveShort": "مهمة أخرى قيد التشغيل - أوقفها أولاً.",
-      "markDone": "وضع علامة كمكتملة",
-      "deleteTask": "حذف المهمة",
-      "markDone": "وضع علامة كمكتملة",
-      "deleteTask": "حذف المهمة"
+    "startedAt": "بدأت في {{time}}",
+    "anotherTaskActiveShort": "مهمة أخرى قيد التشغيل - أوقفها أولاً.",
+    "markDone": "وضع علامة كمكتملة",
+    "markFailed": "وضع علامة كفاشلة",
+    "deleteTask": "حذف المهمة"
   },
   "cancel": "إلغاء",
   "confirm": "تأكيد",
@@ -242,9 +242,35 @@
     "dismiss": "تجاهل"
   },
   "notFound": "غير موجود",
+  "card": {
+    "labels": "الوسوم",
+    "noLabels": "لا توجد وسوم بعد.",
+    "newLabel": "اسم وسم جديد",
+    "labelColor": "لون الوسم",
+    "add": "إضافة",
+    "assignees": "المسؤولون",
+    "noAssignees": "لم يُعيَّن أحد بعد.",
+    "addAssignee": "تعيين عبر معرّف المستخدم",
+    "assigneePlaceholder": "معرّف المستخدم",
+    "removeAssignee": "إزالة {{name}}"
+  },
+  "calendar": {
+    "title": "التقويم",
+    "prevMonth": "الشهر السابق",
+    "nextMonth": "الشهر التالي",
+    "noTasks": "لا توجد مهام في هذا اليوم."
+  },
   "pageNotFound": "الصفحة غير موجودة.",
   "close": "إغلاق",
   "deleteError": "خطأ في الحذف.",
+  "board": {
+    "title": "لوحة",
+    "empty": "لا توجد مهام في هذا الهدف بعد. أنشئ واحدة من عرض القائمة.",
+    "dropHere": "أفلت المهام هنا",
+    "moved": "تم نقل {{name}} إلى {{status}}",
+    "boardView": "عرض اللوحة",
+    "listView": "عرض القائمة"
+  },
   "today": {
     "title": "اليوم",
     "runningNow": "جارٍ الآن",
@@ -255,10 +281,13 @@
     "allClearHint": "لا مهام مستحقة اليوم. ابدأ مهمة معلقة أو خطط للمستقبل.",
     "dayBudget": "ميزانية اليوم",
     "spentToday": "المنفق اليوم",
-    "empty": "لا توجد مهام في مساحات عملك بعد."
+    "empty": "لا توجد مهام في مساحات عملك بعد.",
+    "showMore": "+{{count}} المزيد",
+    "showLess": "عرض أقل"
   },
   "nav": {
     "today": "اليوم",
-    "workspaces": "مساحات العمل"
+    "workspaces": "مساحات العمل",
+    "calendar": "التقويم"
   }
 }
